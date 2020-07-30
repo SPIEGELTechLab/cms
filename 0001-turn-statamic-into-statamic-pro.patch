@@ -1,0 +1,26 @@
+From 3177d2e161916f8c6d8bc5e05bb3ec01c97a199d Mon Sep 17 00:00:00 2001
+From: Alexander Willing <alexander.willing@spiegel.de>
+Date: Thu, 30 Jul 2020 10:36:38 +0200
+Subject: [PATCH] turn statamic into statamic pro ;)
+
+required to use statamic with multiple users
+---
+ config/editions.php | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/config/editions.php b/config/editions.php
+index e4839d4c3..cad0faaaa 100644
+--- a/config/editions.php
++++ b/config/editions.php
+@@ -2,7 +2,7 @@
+
+ return [
+
+-    'pro' => false,
++    'pro' => true,
+
+     'addons' => [
+         //
+--
+2.26.1
+
