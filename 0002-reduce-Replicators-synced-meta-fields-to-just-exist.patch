@@ -1,0 +1,12 @@
+diff --git a/src/Fieldtypes/Replicator.php b/src/Fieldtypes/Replicator.php
+index 4e5d0b20e..977488c3b 100644
+--- a/src/Fieldtypes/Replicator.php
++++ b/src/Fieldtypes/Replicator.php
+@@ -150,6 +150,7 @@ class Replicator extends Fieldtype
+                     return null;
+                 })->all();
+             })->all(),
++            '__collaboration' => ['existing'],
+         ];
+     }
+ }
