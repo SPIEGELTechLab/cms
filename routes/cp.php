@@ -26,6 +26,8 @@ Route::middleware('statamic.cp.authenticated')->group(function () {
     Route::get('/', 'StartPageController')->name('index');
     Route::get('dashboard', 'DashboardController@index')->name('dashboard');
 
+    Route::view('livepreview/loading-screen', 'statamic::livepreview/loading-screen');
+
     Route::get('select-site/{handle}', 'SelectSiteController@select');
 
     Route::group(['namespace' => 'Navigation'], function () {
