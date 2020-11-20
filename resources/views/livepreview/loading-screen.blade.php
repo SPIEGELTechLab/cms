@@ -27,7 +27,7 @@
                 </g>
             </svg>
 
-            <div class="mt-1">Lade Live-Preview</div>
+            <div class="mt-1">Aktualisiere Live-Preview</div>
         </div>
     </div>
 </body>
