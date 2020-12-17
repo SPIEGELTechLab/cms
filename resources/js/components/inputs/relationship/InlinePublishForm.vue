@@ -56,8 +56,17 @@ export default {
 
     computed: {
 
+        isBase() {
+            return (
+                this.$store.state.publish['base'] &&
+                this.$store.state.publish['base'].values.id === this.item.id
+            );
+        },
+
         publishContainer() {
-            return `relate-fieldtype-inline-${this._uid}`;
+            return this.isBase
+                ? 'base'
+                : `relate-fieldtype-inline-${this._uid}`;
         }
 
     },
