@@ -23,7 +23,6 @@ index b5618489c..bc8462742 100644
 +                ? 'base'
 +                : `relate-fieldtype-inline-${this._uid}`;
          }
-
      },
 diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
 index 504bbc4cc..add10d7e7 100644
@@ -47,10 +46,8 @@ index 504bbc4cc..add10d7e7 100644
              }
 @@ -170,6 +172,8 @@ export default {
          },
-
          removeVuexModule() {
 +            if (!this.managingVuexModule) return;
 +
              this.$store.unregisterModule(['publish', this.name]);
          },
-
