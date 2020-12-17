@@ -23,6 +23,7 @@ index b5618489c..bc8462742 100644
 +                ? 'base'
 +                : `relate-fieldtype-inline-${this._uid}`;
          }
+
      },
 diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
 index 504bbc4cc..add10d7e7 100644
@@ -35,6 +36,7 @@ index 504bbc4cc..add10d7e7 100644
 +            managingVuexModule: true,
          }
      },
+
 @@ -87,6 +88,7 @@ export default {
              // If the store already exists, just reinitialize the state.
              if (this.$store.state.hasOwnProperty('publish')
@@ -45,8 +47,10 @@ index 504bbc4cc..add10d7e7 100644
              }
 @@ -170,6 +172,8 @@ export default {
          },
+
          removeVuexModule() {
 +            if (!this.managingVuexModule) return;
 +
              this.$store.unregisterModule(['publish', this.name]);
          },
+
