@@ -1,5 +1,4 @@
 diff --git a/resources/js/components/inputs/relationship/InlinePublishForm.vue b/resources/js/components/inputs/relationship/InlinePublishForm.vue
-index b5618489c..bc8462742 100644
 --- a/resources/js/components/inputs/relationship/InlinePublishForm.vue
 +++ b/resources/js/components/inputs/relationship/InlinePublishForm.vue
 @@ -56,8 +56,17 @@ export default {
