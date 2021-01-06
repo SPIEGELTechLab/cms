@@ -1,6 +1,5 @@
 diff --git a/resources/js/components/inputs/relationship/InlinePublishForm.vue b/resources/js/components/inputs/relationship/InlinePublishForm.vue
-<<<<<<< HEAD
-index b5618489c..bc8462742 100644
+index 7b63f4c2e..b5618489c 100644
 --- a/resources/js/components/inputs/relationship/InlinePublishForm.vue
 +++ b/resources/js/components/inputs/relationship/InlinePublishForm.vue
 @@ -56,8 +56,17 @@ export default {
@@ -17,21 +16,6 @@ index b5618489c..bc8462742 100644
                  this.$store.state.publish['base'].values.id === this.item.id
              );
          },
-=======
-index 7b63f4c2e..b5618489c 100644
---- a/resources/js/components/inputs/relationship/InlinePublishForm.vue
-+++ b/resources/js/components/inputs/relationship/InlinePublishForm.vue
-@@ -56,8 +56,17 @@ export default {
- 
-     computed: {
- 
-+        isBase() {
-+            return (
-+                this.$store.state.publish['base'] &&
-+                this.$store.state.publish['base'].values.id === this.item.id
-+            );
-+        },
->>>>>>> 9a6521667 (Added patch for https://github.com/statamic/cms/issues/3026)
 +
          publishContainer() {
 -            return `relate-fieldtype-inline-${this._uid}`;
@@ -39,11 +23,7 @@ index 7b63f4c2e..b5618489c 100644
 +                ? 'base'
 +                : `relate-fieldtype-inline-${this._uid}`;
          }
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 9a6521667 (Added patch for https://github.com/statamic/cms/issues/3026)
      },
 diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
 index 504bbc4cc..add10d7e7 100644
@@ -56,11 +36,7 @@ index 504bbc4cc..add10d7e7 100644
 +            managingVuexModule: true,
          }
      },
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 9a6521667 (Added patch for https://github.com/statamic/cms/issues/3026)
 @@ -87,6 +88,7 @@ export default {
              // If the store already exists, just reinitialize the state.
              if (this.$store.state.hasOwnProperty('publish')
@@ -71,18 +47,10 @@ index 504bbc4cc..add10d7e7 100644
              }
 @@ -170,6 +172,8 @@ export default {
          },
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 9a6521667 (Added patch for https://github.com/statamic/cms/issues/3026)
          removeVuexModule() {
 +            if (!this.managingVuexModule) return;
 +
              this.$store.unregisterModule(['publish', this.name]);
          },
-<<<<<<< HEAD
 
-=======
- 
->>>>>>> 9a6521667 (Added patch for https://github.com/statamic/cms/issues/3026)
