@@ -1,0 +1,58 @@
+diff --git a/resources/js/components/DropdownList.vue b/resources/js/components/DropdownList.vue
+index fbe6b5300..336bce2a8 100644
+--- a/resources/js/components/DropdownList.vue
++++ b/resources/js/components/DropdownList.vue
+@@ -1,5 +1,5 @@
+ <template>
+-    <popover class="dropdown-list" :disabled="disabled" :placement="placement">
++    <popover class="dropdown-list" :disabled="disabled" :placement="placement" :scroll="scroll">
+         <template #trigger>
+             <slot name="trigger">
+                 <button class="rotating-dots-button" :aria-label="__('Open Dropdown')">
+@@ -21,6 +21,10 @@ export default {
+         placement: {
+             type: String,
+             default: 'bottom-end'
++        },
++        scroll: {
++            type: Boolean,
++            default: false
+         }
+     }
+ }
+diff --git a/resources/js/components/Popover.vue b/resources/js/components/Popover.vue
+index 236e046d7..385ec5c52 100644
+--- a/resources/js/components/Popover.vue
++++ b/resources/js/components/Popover.vue
+@@ -31,6 +31,10 @@ export default {
+         offset: {
+             type: Array,
+             default: () => [0, 10]
++        },
++        scroll: {
++            type: Boolean,
++            default: false,
+         }
+     },
+ 
+@@ -58,7 +62,7 @@ export default {
+                     {
+                         name: 'eventListeners',
+                         options: {
+-                            scroll: false,
++                            scroll: this.scroll,
+                             resize: true
+                         }
+                     }
+diff --git a/resources/js/components/fieldtypes/replicator/SetPicker.vue b/resources/js/components/fieldtypes/replicator/SetPicker.vue
+index d7839efe1..6f3c12341 100644
+--- a/resources/js/components/fieldtypes/replicator/SetPicker.vue
++++ b/resources/js/components/fieldtypes/replicator/SetPicker.vue
+@@ -1,6 +1,6 @@
+ <template>
+ 
+-    <div class="replicator-set-picker">
++    <div class="replicator-set-picker" :scroll="true">
+         <dropdown-list class="align-left inline-block" placement="bottom-start">
+             <template v-slot:trigger>
+                 <button v-if="last" class="btn-round" v-tooltip.right="__('Add Set')" :aria-label="__('Add Set')">
