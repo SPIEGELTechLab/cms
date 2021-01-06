@@ -34,7 +34,7 @@ export default {
         },
         scroll: {
             type: Boolean,
-            default: false
+            default: false,
         }
     },
 

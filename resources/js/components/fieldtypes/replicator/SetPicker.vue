@@ -1,5 +1,4 @@
 <template>
-
     <div class="replicator-set-picker">
         <dropdown-list class="align-left inline-block" placement="bottom-start" v-if="sets.length > 1" :scroll="true">
             <template v-slot:trigger>
