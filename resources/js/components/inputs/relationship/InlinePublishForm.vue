@@ -58,7 +58,10 @@ export default {
 
         isBase() {
             return (
-                this.$store.state.publish['base'] &&
+                this.$store.state.hasOwnProperty('publish') &&
+                this.$store.state.publish.hasOwnProperty('base') &&
+                typeof this.item !== 'undefined' &&
+                this.item.hasOwnProperty('id') &&
                 this.$store.state.publish['base'].values.id === this.item.id
             );
         },
