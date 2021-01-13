@@ -46,6 +46,7 @@ index 504bbc4cc..add10d7e7 100644
              }
 @@ -170,6 +172,8 @@ export default {
          },
+
          removeVuexModule() {
 +            if (!this.managingVuexModule) return;
 +
