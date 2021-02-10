@@ -1,0 +1,13 @@
+diff --git a/resources/lang/de.json b/resources/lang/de.json
+index 3777880b9..38351ad28 100644
+--- a/resources/lang/de.json
++++ b/resources/lang/de.json
+@@ -529,7 +529,7 @@
+     "Pin to Favorites": "Als Favorit speichern",
+     "Placeholder": "Platzhalter",
+     "Pop in": "Popup schliessen",
+-    "Pop out": "als Popup öffnen",
++    "Pop out": "❐",
+     "Port": "Port",
+     "Prefix": "Präfix",
+     "Prepend": "Voranstellen",
