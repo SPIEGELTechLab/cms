@@ -289,8 +289,8 @@ export default {
             extensions: this.getExtensions(),
             content: content,
             editable: !this.readOnly,
-            disableInputRules: ! this.config.enable_input_rules,
-            disablePasteRules: ! this.config.enable_paste_rules,
+            disableInputRules: ['italic'],
+            disablePasteRules: ['italic'],
             onInit: ({ state }) => {
                 if (content !== null && typeof content === 'object') {
                     try {
