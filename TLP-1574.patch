@@ -1,0 +1,13 @@
+diff --git a/resources/js/components/fieldtypes/bard/BardFieldtype.vue b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+index d939463d5..29614b05e 100644
+--- a/resources/js/components/fieldtypes/bard/BardFieldtype.vue
++++ b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+@@ -223,6 +223,8 @@ export default {
+             extensions: this.getExtensions(),
+             content: this.valueToContent(clone(this.value)),
+             editable: !this.readOnly,
++            disableInputRules: ['italic'],
++            disablePasteRules: ['italic'],
+             onFocus: () => this.$emit('focus'),
+             onBlur: () => {
+                 // Since clicking into a field inside a set would also trigger a blur, we can't just emit the
