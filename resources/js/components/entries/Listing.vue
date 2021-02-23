@@ -156,7 +156,7 @@ export default {
         getStatusClass(entry) {
             // TODO: Replace with `entry.status` (will need to pass down)
             if (entry.published && entry.private) {
-                return 'bg-transparent border border-grey-60';
+                return 'bg-orange';
             } else if (entry.published) {
                 return 'bg-green';
             } else {
