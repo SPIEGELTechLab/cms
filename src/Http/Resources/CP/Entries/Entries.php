@@ -9,9 +9,13 @@ class Entries extends ResourceCollection
 {
     use HasRequestedColumns;
 
-    public $collects = ListedEntry::class;
     protected $blueprint;
     protected $columnPreferenceKey;
+
+    public function collects()
+    {
+        return app(ListedEntry::class);
+    }
 
     public function blueprint($blueprint)
     {

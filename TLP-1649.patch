@@ -1,0 +1,20 @@
+diff --git a/src/Http/Resources/CP/Entries/Entries.php b/src/Http/Resources/CP/Entries/Entries.php
+index 8813894f0..f695052e0 100644
+--- a/src/Http/Resources/CP/Entries/Entries.php
++++ b/src/Http/Resources/CP/Entries/Entries.php
+@@ -9,10 +9,14 @@ class Entries extends ResourceCollection
+ {
+     use HasRequestedColumns;
+ 
+-    public $collects = ListedEntry::class;
+     protected $blueprint;
+     protected $columnPreferenceKey;
+ 
++    public function collects()
++    {
++        return app(ListedEntry::class);
++    }
++
+     public function blueprint($blueprint)
+     {
+         $this->blueprint = $blueprint;
