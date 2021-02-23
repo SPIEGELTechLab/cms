@@ -1,0 +1,39 @@
+diff --git a/resources/js/components/entries/Listing.vue b/resources/js/components/entries/Listing.vue
+index 7acea92fa..a844690fa 100644
+--- a/resources/js/components/entries/Listing.vue
++++ b/resources/js/components/entries/Listing.vue
+@@ -156,7 +156,7 @@ export default {
+         getStatusClass(entry) {
+             // TODO: Replace with `entry.status` (will need to pass down)
+             if (entry.published && entry.private) {
+-                return 'bg-transparent border border-grey-60';
++                return 'bg-orange';
+             } else if (entry.published) {
+                 return 'bg-green';
+             } else {
+diff --git a/resources/js/components/inputs/relationship/Selector.vue b/resources/js/components/inputs/relationship/Selector.vue
+index 0dd17c2fa..e01bd9007 100644
+--- a/resources/js/components/inputs/relationship/Selector.vue
++++ b/resources/js/components/inputs/relationship/Selector.vue
+@@ -260,7 +260,7 @@ export default {
+ 
+         getStatusClass(entry) {
+             if (entry.published && entry.private) {
+-                return 'bg-transparent border border-grey-60';
++                return 'bg-orange';
+             } else if (entry.published) {
+                 return 'bg-green';
+             } else {
+diff --git a/resources/sass/elements/icons.scss b/resources/sass/elements/icons.scss
+index f23547da8..f543510fd 100644
+--- a/resources/sass/elements/icons.scss
++++ b/resources/sass/elements/icons.scss
+@@ -35,7 +35,7 @@ svg {
+ 
+     &.published { @apply bg-green-light }
+     &.draft, &.expired { @apply bg-grey-60 }
+-    &.scheduled { @apply bg-transparent border border-grey-60 }
++    &.scheduled { @apply bg-orange }
+ }
+ 
+ .icon-status-draft {
