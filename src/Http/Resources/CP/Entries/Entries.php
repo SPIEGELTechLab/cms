@@ -48,9 +48,7 @@ class Entries extends ResourceCollection
 
         return [
             'data' => $this->collection->each(function ($entry) {
-                $entry
-                    ->blueprint($this->blueprint)
-                    ->columns($this->requestedColumns());
+                $entry->columns($this->requestedColumns());
             }),
 
             'meta' => [
