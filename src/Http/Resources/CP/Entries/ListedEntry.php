@@ -8,15 +8,7 @@ use Statamic\Facades\User;
 
 class ListedEntry extends JsonResource
 {
-    protected $blueprint;
     protected $columns;
-
-    public function blueprint($blueprint)
-    {
-        $this->blueprint = $blueprint;
-
-        return $this;
-    }
 
     public function columns($columns)
     {
@@ -60,7 +52,7 @@ class ListedEntry extends JsonResource
                 $value = $extra[$key] ?? $this->resource->value($key);
             }
 
-            $value = $this->blueprint
+            $value = $this->resource->blueprint() // blinked
                 ->field($key)
                 ->setValue($value)
                 ->setParent($this->resource)
