@@ -1,0 +1,12 @@
+diff --git a/resources/lang/de/validation.php b/resources/lang/de/validation.php
+index 40567fe63..fa8e33a60 100644
+--- a/resources/lang/de/validation.php
++++ b/resources/lang/de/validation.php
+@@ -86,6 +86,7 @@ return [
+     'url' => 'Das Format ist ungültig.',
+     'unique_entry_value' => 'Dieser Wert wurde bereits vergeben.',
+     'unique_user_value' => 'Dieser Wert wurde bereits vergeben.',
++    'unique_value' => 'Dieser Wert wurde bereits vergeben.',
+     'duplicate_field_handle' => 'Feld mit dem Handle :handle kann nicht mehr als einmal verwendet werden.',
+     'one_site_without_origin' => 'Mindestens eine Website darf keine Quelle enthalten.',
+     'origin_cannot_be_disabled' => 'Kann keine deaktivierte Quelle auswählen.',
