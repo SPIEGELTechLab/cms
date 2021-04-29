@@ -37,6 +37,7 @@
         </div>
 
         <div class="flex justify-between">
+<<<<<<< HEAD
             <div ref="publishSectionWrapper" class="publish-section-wrapper w-full">
                 <div
                     role="tabpanel"
@@ -63,6 +64,29 @@
                         @blur-set="$emit('blur-set', $event)"
                     />
                 </div>
+=======
+            <div
+                class="publish-section"
+                :class="{ 'rounded-tl-none' : mainSections.length > 1 }"
+                v-for="section in mainSections"
+                :key="section.handle"
+                v-show="section.handle === active"
+            >
+                <publish-fields
+                    :fields="section.fields"
+                    :read-only="readOnly"
+                    :syncable="syncable"
+                    :can-toggle-labels="canToggleLabels"
+                    @updated="(handle, value) => $emit('updated', handle, value)"
+                    @meta-updated="(handle, value) => $emit('meta-updated', handle, value)"
+                    @synced="$emit('synced', $event)"
+                    @desynced="$emit('desynced', $event)"
+                    @focus="$emit('focus', $event)"
+                    @blur="$emit('blur', $event)"
+                    @focus-set="$emit('focus-set', $event)"
+                    @blur-set="$emit('blur-set', $event)"
+                />
+>>>>>>> 891bcc6fe (add and apply patch for TLP-1633)
             </div>
 
             <div :class="{ 'publish-sidebar': shouldShowSidebar }">
