@@ -126,14 +126,6 @@ export default {
 
         storeState() {
             return this.$store.state.publish[this.storeName] || {};
-        },
-
-        lockedSets() {
-            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
-        },
-
-        canReorder() {
-            return !this.lockedSets || !Object.keys(this.lockedSets).length;
         }
     },
 
