@@ -141,7 +141,11 @@ export default {
 
         isInvalid() {
             return Object.keys(this.config).length === 0;
-        }
+        },
+        
+        isReadOnly() {
+            return this.options.bard.isReadOnly;
+        },
 
     },
 
