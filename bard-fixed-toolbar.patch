@@ -1,0 +1,41 @@
+diff --git a/resources/sass/components/fieldtypes/bard.scss b/resources/sass/components/fieldtypes/bard.scss
+index b7d2b4e36..12c3b0fba 100644
+--- a/resources/sass/components/fieldtypes/bard.scss
++++ b/resources/sass/components/fieldtypes/bard.scss
+@@ -86,12 +86,14 @@
+ // Fixed toolbar inside another bard field
+ .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar {
+     z-index: 4;
+-    top: 40px;
++    top: 0 !important;
++    position: relative;
+ }
+ 
+ // Fixed toolbar inside the live preview
+-.live-preview-fields .bard-fixed-toolbar { top: 0; }
+-.live-preview-fields .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 40px; }
++.live-preview-fields-narrow .bard-fixed-toolbar { top: 0; }
++.live-preview-fields-wide .bard-fixed-toolbar { top: -24px; }
++// .live-preview-fields .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 40px; }
+ 
+ // Fixed toolbar inside a stack
+ .stack-content .bard-fixed-toolbar { top: -24px; }
+@@ -100,14 +102,14 @@
+ @screen md {
+     // Fixed toolbar below fixed global header
+     .bard-fixed-toolbar { top: 52px; }
+-    .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 92px; }
++    // .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 92px; }
+ 
+     // Fixed toolbar inside the live preview
+-    .live-preview-fields .bard-fixed-toolbar { top: -24px; }
+-    .live-preview-fields .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 16px; }
++    // .live-preview-fields .bard-fixed-toolbar { top: -24px; }
++    // .live-preview-fields .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 16px; }
+ 
+     // Fixed toolbar inside a stack
+-    .stack-content .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 16px; }
++    // .stack-content .bard-fieldtype .bard-fieldtype .bard-fixed-toolbar { top: 16px; }
+ }
+ 
+ .bard-floating-toolbar {
