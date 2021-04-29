@@ -5,7 +5,10 @@
         <div class="replicator-set-header" :class="{ 'p-1': isReadOnly, 'collapsed': collapsed }">
             <div class="item-move sortable-handle" :class="sortableHandleClass" v-if="!isReadOnly"></div>
             <div class="flex-1 p-1" :class="{'flex items-center': collapsed}" @dblclick="toggleCollapsedState">
-                <label v-text="config.display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
+                <div class="flex">
+                    <label v-text="config.display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
+                    <avatar v-if="lockingUser" :user="lockingUser" class="w-4 h-4 mt-px rounded-full" v-tooltip="lockingUser.name" />
+                </div>
                 <div
                     v-if="config.instructions"
                     v-show="!collapsed"
@@ -127,6 +130,10 @@ export default {
         previews: Object,
         showFieldPreviews: {
             type: Boolean
+        },
+        lockingUser: {
+            type: Object,
+            required: false
         }
     },
 
