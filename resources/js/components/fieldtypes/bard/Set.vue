@@ -128,7 +128,11 @@ export default {
 
         hasError() {
             return this.options.bard.setsWithErrors.includes(this.index);
-        }
+        },
+
+        isReadOnly() {
+            return this.options.bard.isReadOnly;
+        },
 
     },
 
