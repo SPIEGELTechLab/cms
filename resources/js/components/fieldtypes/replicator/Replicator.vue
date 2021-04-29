@@ -132,14 +132,6 @@ export default {
         replicatorPreview() {
             return `${this.config.display}: ${__n(':count set|:count sets', this.value.length)}`;
         },
-
-        lockedSets() {
-            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
-        },
-
-        canReorder() {
-            return !this.lockedSets || !Object.keys(this.lockedSets).length;
-        },
     },
 
     methods: {
