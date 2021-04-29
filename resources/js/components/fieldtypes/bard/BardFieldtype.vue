@@ -7,7 +7,7 @@
         @dragend="ignorePageHeader(false)"
     >
 
-        <editor-menu-bar :editor="editor" v-if="!readOnly">
+        <editor-menu-bar :editor="editor" v-if="!isReadOnly">
             <div slot-scope="{ commands, isActive, menu }" class="bard-fixed-toolbar" v-if="showFixedToolbar">
                 <div class="flex flex-wrap items-center no-select" v-if="toolbarIsFixed">
                     <component
@@ -36,8 +36,8 @@
             </div>
         </editor-menu-bar>
 
-        <div class="bard-editor" :class="{ 'mode:read-only': readOnly, 'mode:minimal': ! showFixedToolbar }" tabindex="0">
-            <editor-menu-bubble :editor="editor" v-if="toolbarIsFloating && !readOnly">
+        <div class="bard-editor" :class="{ 'mode:read-only': isReadOnly, 'mode:minimal': ! showFixedToolbar }" tabindex="0">
+            <editor-menu-bubble :editor="editor" v-if="toolbarIsFloating && !isReadOnly">
                 <div
                     slot-scope="{ commands, isActive, menu }"
                     class="bard-floating-toolbar"
@@ -292,7 +292,7 @@ export default {
                 // blur event immediately. We need to make sure that the newly focused element is outside
                 // of Bard. We use a timeout because activeElement only exists after the blur event.
                 setTimeout(() => {
-                    if (!this.$el.contains(document.activeElement)) this.$emit('blur');
+                    if (!document.hasFocus() || !this.$el.contains(document.activeElement)) this.$emit('blur');
                 }, 1);
             },
             onUpdate: ({ getJSON, getHTML }) => {
@@ -345,8 +345,8 @@ export default {
             }
         },
 
-        readOnly(readOnly) {
-            this.editor.setOptions({ editable: !this.readOnly });
+        isReadOnly(readOnly) {
+            this.editor.setOptions({ editable: !readOnly });
         },
 
         collapsed(value) {

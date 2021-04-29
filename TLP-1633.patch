@@ -1,0 +1,335 @@
+diff --git a/resources/js/components/entries/PublishForm.vue b/resources/js/components/entries/PublishForm.vue
+index 483301733..2b6aa235c 100644
+--- a/resources/js/components/entries/PublishForm.vue
++++ b/resources/js/components/entries/PublishForm.vue
+@@ -95,6 +95,8 @@
+                             @desynced="desyncField"
+                             @focus="container.$emit('focus', $event)"
+                             @blur="container.$emit('blur', $event)"
++                            @focus-set="container.$emit('focus-set', $event)"
++                            @blur-set="container.$emit('blur-set', $event)"
+                         >
+                             <template #actions="{ shouldShowSidebar }">
+
+diff --git a/resources/js/components/fieldtypes/bard/BardFieldtype.vue b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+index ef46c8452..543d671e5 100644
+--- a/resources/js/components/fieldtypes/bard/BardFieldtype.vue
++++ b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+@@ -7,7 +7,7 @@
+         @dragend="ignorePageHeader(false)"
+     >
+
+-        <editor-menu-bar :editor="editor" v-if="!readOnly">
++        <editor-menu-bar :editor="editor" v-if="!isReadOnly">
+             <div slot-scope="{ commands, isActive, menu }" class="bard-fixed-toolbar" v-if="showFixedToolbar">
+                 <div class="flex flex-wrap items-center no-select" v-if="toolbarIsFixed">
+                     <component
+@@ -36,8 +36,8 @@
+             </div>
+         </editor-menu-bar>
+
+-        <div class="bard-editor" :class="{ 'mode:read-only': readOnly, 'mode:minimal': ! showFixedToolbar }" tabindex="0">
+-            <editor-menu-bubble :editor="editor" v-if="toolbarIsFloating && !readOnly">
++        <div class="bard-editor" :class="{ 'mode:read-only': isReadOnly, 'mode:minimal': ! showFixedToolbar }" tabindex="0">
++            <editor-menu-bubble :editor="editor" v-if="toolbarIsFloating && !isReadOnly">
+                 <div
+                     slot-scope="{ commands, isActive, menu }"
+                     class="bard-floating-toolbar"
+@@ -249,7 +249,7 @@ export default {
+                 // blur event immediately. We need to make sure that the newly focused element is outside
+                 // of Bard. We use a timeout because activeElement only exists after the blur event.
+                 setTimeout(() => {
+-                    if (!this.$el.contains(document.activeElement)) this.$emit('blur');
++                    if (!document.hasFocus() || !this.$el.contains(document.activeElement)) this.$emit('blur');
+                 }, 1);
+             },
+             onUpdate: ({ getJSON, getHTML }) => {
+@@ -292,8 +292,8 @@ export default {
+             }
+         },
+
+-        readOnly(readOnly) {
+-            this.editor.setOptions({ editable: !this.readOnly });
++        isReadOnly(readOnly) {
++            this.editor.setOptions({ editable: !readOnly });
+         },
+
+         collapsed(value) {
+diff --git a/resources/js/components/fieldtypes/bard/Set.vue b/resources/js/components/fieldtypes/bard/Set.vue
+index a9364b20b..f82672074 100644
+--- a/resources/js/components/fieldtypes/bard/Set.vue
++++ b/resources/js/components/fieldtypes/bard/Set.vue
+@@ -44,6 +44,7 @@
+                 :parent-name="parentName"
+                 :set-index="index"
+                 :error-key="errorKey(field)"
++                :read-only="isReadOnly"
+                 @updated="updated(field.handle, $event)"
+                 @meta-updated="metaUpdated(field.handle, $event)"
+                 @focus="focused"
+@@ -125,6 +126,10 @@ export default {
+             return this.config.instructions ? markdown(this.config.instructions) : null;
+         },
+
++        isReadOnly() {
++            return this.options.bard.isReadOnly;
++        },
++
+     },
+
+     methods: {
+diff --git a/resources/js/components/fieldtypes/replicator/Replicator.vue b/resources/js/components/fieldtypes/replicator/Replicator.vue
+index 25ad89e71..035d23409 100644
+--- a/resources/js/components/fieldtypes/replicator/Replicator.vue
++++ b/resources/js/components/fieldtypes/replicator/Replicator.vue
+@@ -25,19 +25,20 @@
+                     :meta="meta.existing[set._id]"
+                     :config="setConfig(set.type)"
+                     :parent-name="name"
+-                    :sortable-item-class="sortableItemClass"
+-                    :sortable-handle-class="sortableHandleClass"
+-                    :is-read-only="isReadOnly"
++                    :sortable-item-class="canReorder ? sortableItemClass : '__not_sortable__'"
++                    :sortable-handle-class="canReorder ? sortableHandleClass : 'hidden'"
++                    :is-read-only="isReadOnly || isSetLocked(set._id)"
+                     :collapsed="collapsed.includes(set._id)"
+                     :error-key-prefix="errorKeyPrefix || handle"
+                     :previews="previews[set._id]"
++                    :locking-user="lockedSets ? lockedSets[set._id] : null"
+                     @collapsed="collapseSet(set._id)"
+                     @expanded="expandSet(set._id)"
+                     @updated="updated"
+                     @meta-updated="updateSetMeta(set._id, $event)"
+                     @removed="removed(set, index)"
+-                    @focus="focused = true"
+-                    @blur="blurred"
++                    @focus="$emit('focus-set', set._id)"
++                    @blur="$emit('blur-set', set._id)"
+                     @previews-updated="previews[set._id] = $event"
+                 >
+                     <template v-slot:picker v-if="index !== values.length-1 && canAddSet">
+@@ -78,10 +79,11 @@ export default {
+         SetPicker,
+     },
+
++    inject: ['storeName'],
++
+     data() {
+         return {
+             values: this.value,
+-            focused: false,
+             collapsed: this.meta.collapsed,
+             previews: this.meta.previews,
+         }
+@@ -90,6 +92,7 @@ export default {
+     computed: {
+         canAddSet() {
+             if (this.isReadOnly) return false;
++            if (this.lockedSets && Object.keys(this.lockedSets).length) return false;
+
+             return !this.config.max_sets || this.values.length < this.config.max_sets;
+         },
+@@ -104,11 +107,22 @@ export default {
+
+         sortableHandleClass() {
+             return `${this.name}-sortable-handle`;
+-        }
++        },
++
++        lockedSets() {
++            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
++        },
++
++        canReorder() {
++            return !this.lockedSets || !Object.keys(this.lockedSets).length;
++        },
+
+     },
+
+     methods: {
++        isSetLocked(id) {
++            return this.lockedSets[id] && this.lockedSets[id].id !== Statamic.user.id;
++        },
+
+         setConfig(handle) {
+             return _.find(this.setConfigs, { handle }) || {};
+@@ -174,13 +188,6 @@ export default {
+             this.collapsed = [];
+         },
+
+-        blurred() {
+-            setTimeout(() => {
+-                if (!this.$el.contains(document.activeElement)) {
+-                    this.focused = false;
+-                }
+-            }, 1);
+-        },
+     },
+
+     mounted() {
+@@ -200,18 +207,6 @@ export default {
+             }
+         },
+
+-        focused(focused, oldFocused) {
+-            if (focused === oldFocused) return;
+-
+-            if (focused) return this.$emit('focus');
+-
+-            setTimeout(() => {
+-                if (!this.$el.contains(document.activeElement)) {
+-                    this.$emit('blur');
+-                }
+-            }, 1);
+-        },
+-
+         collapsed(value) {
+             const meta = this.meta;
+             meta.collapsed = value;
+diff --git a/resources/js/components/fieldtypes/replicator/Set.vue b/resources/js/components/fieldtypes/replicator/Set.vue
+index 8ae1aebfb..699e3d578 100644
+--- a/resources/js/components/fieldtypes/replicator/Set.vue
++++ b/resources/js/components/fieldtypes/replicator/Set.vue
+@@ -5,7 +5,10 @@
+         <div class="replicator-set-header" :class="{ 'p-1': isReadOnly, 'collapsed': collapsed }">
+             <div class="item-move sortable-handle" :class="sortableHandleClass" v-if="!isReadOnly"></div>
+             <div class="flex-1 p-1" :class="{'flex items-center': collapsed}" @dblclick="toggleCollapsedState">
+-                <label v-text="config.display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
++                <div class="flex">
++                    <label v-text="config.display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
++                    <avatar v-if="lockingUser" :user="lockingUser" class="w-4 h-4 mt-px rounded-full" v-tooltip="lockingUser.name" />
++                </div>
+                 <div
+                     v-if="config.instructions"
+                     v-show="!collapsed"
+@@ -116,6 +119,10 @@ export default {
+         },
+         isReadOnly: Boolean,
+         previews: Object,
++        lockingUser: {
++            type: Object,
++            required: false
++        },
+     },
+
+     computed: {
+diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
+index e6c16247c..a3261c33c 100644
+--- a/resources/js/components/publish/Container.vue
++++ b/resources/js/components/publish/Container.vue
+@@ -102,6 +102,7 @@ export default {
+                     localizedFields: initial.localizedFields,
+                     site: initial.site,
+                     fieldLocks: {},
++                    replicatorSetLocks: {},
+                     errors: {},
+                     isRoot: initial.isRoot,
+                     preloadedAssets: [],
+@@ -139,8 +140,23 @@ export default {
+                     lockField(state, { handle, user }) {
+                         Vue.set(state.fieldLocks, handle, user || true);
+                     },
+-                    unlockField(state, handle) {
+-                        Vue.delete(state.fieldLocks, handle);
++                    lockReplicatorSet(state, { handle, user, setId }) {
++                        if (!state.replicatorSetLocks[handle]) {
++                            Vue.set(state.replicatorSetLocks, handle, {});
++                        }
++                        Vue.set(state.replicatorSetLocks[handle], setId, user || true);
++                    },
++                     unlockField(state, handle) {
++                         Vue.delete(state.fieldLocks, handle);
++                     },
++                    unlockReplicatorSet(state, { handle, setId }) {
++                        if (!state.replicatorSetLocks[handle]) {
++                            return;
++                        }
++                        Vue.delete(state.replicatorSetLocks[handle], setId);
++                        if (!Object.keys(state.replicatorSetLocks[handle]).length) {
++                            Vue.delete(state.replicatorSetLocks, handle);
++                        }
+                     },
+                     initialize(state, payload) {
+                         state.blueprint = payload.blueprint;
+diff --git a/resources/js/components/publish/Field.vue b/resources/js/components/publish/Field.vue
+index 3faea7810..75db0b6e8 100644
+--- a/resources/js/components/publish/Field.vue
++++ b/resources/js/components/publish/Field.vue
+@@ -61,6 +61,8 @@
+                 @meta-updated="$emit('meta-updated', $event)"
+                 @focus="focused"
+                 @blur="blurred"
++                @focus-set="focusedSet"
++                @blur-set="blurredSet"
+             /> <!-- TODO: name prop should include prefixing when used recursively like inside a grid. -->
+         </slot>
+
+@@ -195,6 +197,18 @@ export default {
+             }
+         },
+
++        focusedSet(id) {
++            if (!this.isLocked) {
++                this.$emit('focus-set', id);
++            }
++        },
++
++        blurredSet(id) {
++            if (!this.isLocked) {
++                this.$emit('blur-set', id);
++            }
++        },
++
+         toggleLabel() {
+             if (this.canToggleLabel) {
+                 this.showHandle = ! this.showHandle
+diff --git a/resources/js/components/publish/Fields.vue b/resources/js/components/publish/Fields.vue
+index 78b00ee09..f1408579e 100644
+--- a/resources/js/components/publish/Fields.vue
++++ b/resources/js/components/publish/Fields.vue
+@@ -20,6 +20,8 @@
+             @desynced="$emit('desynced', field.handle)"
+             @focus="$emit('focus', field.handle)"
+             @blur="$emit('blur', field.handle)"
++            @focus-set="$emit('focus-set', {handle: field.handle, id: $event})"
++            @blur-set="$emit('blur-set', {handle: field.handle, id: $event})"
+         />
+
+     </publish-fields-container>
+diff --git a/resources/js/components/publish/Sections.vue b/resources/js/components/publish/Sections.vue
+index 385c814c6..9e18156af 100644
+--- a/resources/js/components/publish/Sections.vue
++++ b/resources/js/components/publish/Sections.vue
+@@ -34,6 +34,8 @@
+                     @desynced="$emit('desynced', $event)"
+                     @focus="$emit('focus', $event)"
+                     @blur="$emit('blur', $event)"
++                    @focus-set="$emit('focus-set', $event)"
++                    @blur-set="$emit('blur-set', $event)"
+                 />
+             </div>
+
+diff --git a/src/Fieldtypes/Relationship.php b/src/Fieldtypes/Relationship.php
+index ffeb89251..a0fc72902 100644
+--- a/src/Fieldtypes/Relationship.php
++++ b/src/Fieldtypes/Relationship.php
+@@ -122,6 +122,7 @@ abstract class Relationship extends Fieldtype
+             'formComponent' => $this->getFormComponent(),
+             'formComponentProps' => $this->getFormComponentProps(),
+             'taggable' => $this->getTaggable(),
++            '__collaboration' => [ 'data' ],
+         ];
+     }
+
+diff --git a/src/Fieldtypes/Replicator.php b/src/Fieldtypes/Replicator.php
+index 546fa270c..e0c245c90 100644
+--- a/src/Fieldtypes/Replicator.php
++++ b/src/Fieldtypes/Replicator.php
+@@ -169,6 +169,6 @@ class Replicator extends Fieldtype
+                     return null;
+                 })->all();
+             })->all(),
+-            '__collaboration' => ['existing'],
++            '__collaboration' => [ 'existing', 'previews' ],
+         ];
+     }

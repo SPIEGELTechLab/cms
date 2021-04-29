@@ -131,6 +131,7 @@ abstract class Relationship extends Fieldtype
             'formComponent' => $this->getFormComponent(),
             'formComponentProps' => $this->getFormComponentProps(),
             'taggable' => $this->getTaggable(),
+            '__collaboration' => [ 'data' ],
         ];
     }
 
