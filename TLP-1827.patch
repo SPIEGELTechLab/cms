@@ -1,0 +1,36 @@
+Sizes the publish status icon relative to font size.
+As a result, the dots should be almost the same in listings, but considerably larger on the entry edit page.
+
+diff --git a/resources/sass/elements/icons.scss b/resources/sass/elements/icons.scss
+index f543510fdd..893f7fcf1b 100644
+--- a/resources/sass/elements/icons.scss
++++ b/resources/sass/elements/icons.scss
+@@ -19,25 +19,25 @@ svg {
+
+ 	.icon-group & {
+ 		margin: 0 0 0 10px;
+ 		vertical-align: middle;
+ 	}
+ }
+ .icon-left { margin-right: 10px; }
+ .icon-right { margin-left: 10px; }
+
+ .icon-status, .little-dot {
+-	border-radius: 7px;
++	border-radius: calc(2em / 3);
+ 	display: inline-block;
+-	height: 7px;
++	height: calc(2em / 3);
+ 	position: relative;
+-	width: 7px;
++	width: calc(2em / 3);
+     flex-shrink: 0;
+
+     &.published { @apply bg-green-light }
+     &.draft, &.expired { @apply bg-grey-60 }
+     &.scheduled { @apply bg-orange }
+ }
+
+ .icon-status-draft {
+ 	background: $color_gray_light;
+ }
