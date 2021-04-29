@@ -205,6 +205,14 @@ export default {
             this.setIframeAttributes(document.getElementById('live-preview-iframe'));
         },
 
+        deviceSelectOptions: {
+            handler() {
+                if (!this.deviceSelectOptions || !Array.isArray(this.deviceSelectOptions) || !this.deviceSelectOptions.length) return;
+                this.previewDevice = this.deviceSelectOptions[0].value;
+            },
+            immediate: true,
+        },
+
     },
 
     created() {
