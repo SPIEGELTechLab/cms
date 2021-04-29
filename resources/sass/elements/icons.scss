@@ -26,11 +26,11 @@ svg {
 .icon-right { margin-left: 10px; }
 
 .icon-status, .little-dot {
-	border-radius: 7px;
+	border-radius: calc(2em / 3);
 	display: inline-block;
-	height: 7px;
+	height: calc(2em / 3);
 	position: relative;
-	width: 7px;
+	width: calc(2em / 3);
     flex-shrink: 0;
 
     &.published { @apply bg-green-light }
