@@ -131,7 +131,7 @@ export default {
 
         canReorder() {
             return !this.lockedSets || !Object.keys(this.lockedSets).length;
-        },
+        }
     },
 
     methods: {
@@ -240,6 +240,7 @@ export default {
 
             return Object.keys(this.storeState.errors ?? []).some(handle => handle.startsWith(prefix));
         },
+
     },
 
     mounted() {
