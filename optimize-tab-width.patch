@@ -1,0 +1,13 @@
+diff --git a/resources/sass/components/tabs.scss b/resources/sass/components/tabs.scss
+index abf4f9512..e06cbfe58 100644
+--- a/resources/sass/components/tabs.scss
++++ b/resources/sass/components/tabs.scss
+@@ -37,7 +37,7 @@
+ 
+ @screen md {
+     .tabs a {
+-        min-width: 140px;
++        min-width: 100px;
+     }
+ }
+ 
