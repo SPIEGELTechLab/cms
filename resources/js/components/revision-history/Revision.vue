@@ -27,6 +27,7 @@
                 <revision-preview
                     v-if="showDetails"
                     :revision="revision"
+                    :indexUrl="indexUrl"
                     component="entry-publish-form"
                     :component-props="componentProps"
                     @closed="showDetails = false"
@@ -57,6 +58,7 @@ export default {
     },
 
     props: {
+        indexUrl: String,
         revision: Object,
         restoreUrl: String,
         reference: String,

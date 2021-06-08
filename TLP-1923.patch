@@ -1,0 +1,65 @@
+diff --git a/resources/js/components/revision-history/History.vue b/resources/js/components/revision-history/History.vue
+index 367216d85..62e07f6a7 100644
+--- a/resources/js/components/revision-history/History.vue
++++ b/resources/js/components/revision-history/History.vue
+@@ -33,6 +33,7 @@
+                         :revision="revision"
+                         :restore-url="restoreUrl"
+                         :reference="reference"
++                        :index-url="indexUrl"
+                         @working-copy-selected="close"
+                     />
+                 </div>
+diff --git a/resources/js/components/revision-history/Preview.vue b/resources/js/components/revision-history/Preview.vue
+index b6759378d..64098e415 100644
+--- a/resources/js/components/revision-history/Preview.vue
++++ b/resources/js/components/revision-history/Preview.vue
+@@ -6,7 +6,8 @@ export default {
+     mixins: [InlinePublishForm],
+ 
+     props: {
+-        revision: Object
++        revision: Object,
++        indexUrl: String,
+     },
+ 
+     data() {
+@@ -16,10 +17,17 @@ export default {
+             method: 'patch',
+             action: 'update',
+             title: this.revision.attributes.data.title,
+-            itemUrl: `${document.location.pathname}/revisions/${this.revision.id}`,
+         }
+     },
+ 
++    computed: {
++        itemUrl() {
++            return this.indexUrl
++                ? `${this.indexUrl}/${this.revision.id}`
++                : `${document.location.pathname}/revisions/${this.revision.id}`;
++        },
++    },
++
+     methods: {
+ 
+         saved(response) {
+diff --git a/resources/js/components/revision-history/Revision.vue b/resources/js/components/revision-history/Revision.vue
+index 213488c16..87dae0682 100644
+--- a/resources/js/components/revision-history/Revision.vue
++++ b/resources/js/components/revision-history/Revision.vue
+@@ -27,6 +27,7 @@
+                 <revision-preview
+                     v-if="showDetails"
+                     :revision="revision"
++                    :indexUrl="indexUrl"
+                     component="entry-publish-form"
+                     :component-props="componentProps"
+                     @closed="showDetails = false"
+@@ -57,6 +58,7 @@ export default {
+     },
+ 
+     props: {
++        indexUrl: String,
+         revision: Object,
+         restoreUrl: String,
+         reference: String,
