@@ -33,6 +33,7 @@
                         :revision="revision"
                         :restore-url="restoreUrl"
                         :reference="reference"
+                        :index-url="indexUrl"
                         @working-copy-selected="close"
                     />
                 </div>
