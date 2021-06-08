@@ -6,7 +6,8 @@ export default {
     mixins: [InlinePublishForm],
 
     props: {
-        revision: Object
+        revision: Object,
+        indexUrl: String,
     },
 
     data() {
@@ -16,8 +17,15 @@ export default {
             method: 'patch',
             action: 'update',
             title: this.revision.attributes.data.title,
-            itemUrl: `${document.location.pathname}/revisions/${this.revision.id}`,
         }
+    },
+
+    computed: {
+        itemUrl() {
+            return this.indexUrl
+                ? `${this.indexUrl}/${this.revision.id}`
+                : `${document.location.pathname}/revisions/${this.revision.id}`;
+        },
     },
 
     methods: {
