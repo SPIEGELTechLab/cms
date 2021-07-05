@@ -1,0 +1,22 @@
+diff --git a/resources/sass/components/fieldtypes/bard.scss b/resources/sass/components/fieldtypes/bard.scss
+index c94603fd9..b4c9b3ee5 100644
+--- a/resources/sass/components/fieldtypes/bard.scss
++++ b/resources/sass/components/fieldtypes/bard.scss
+@@ -388,6 +388,17 @@
+                 content: '';
+             }
+         }
++
++        a {
++            @apply text-blue underline break-words;
++        }
++
++        a:active,
++        a:focus,
++        a:hover {
++            outline: 0;
++            text-decoration: underline;
++        }
+     }
+ 
+     p > code {
