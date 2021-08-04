@@ -36,7 +36,7 @@ export default {
 
         restore() {
             const payload = {
-                revision: this.revision.date,
+                revision: this.revision.id,
             };
 
             this.$axios.post(this.url, payload).then(response => {
