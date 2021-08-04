@@ -177,6 +177,8 @@ export default {
 
         previewUpdated(handle, value) {
             setTimeout(() => {
+                if (!this.previews) return;
+
                 this.$emit('previews-updated', { ...this.previews, [handle]: value });
             }, 0);
         },
