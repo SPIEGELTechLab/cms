@@ -93,7 +93,8 @@
             }
 
             td {
-                @apply py-1 px-2 break-words;
+                @apply py-1 px-2;
+                word-break: break-normal;
             }
 		}
 		.actions-column {
