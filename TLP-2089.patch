@@ -1,0 +1,13 @@
+diff --git a/resources/sass/elements/tables.scss b/resources/sass/elements/tables.scss
+index b07b9a6a1..830fcb810 100644
+--- a/resources/sass/elements/tables.scss
++++ b/resources/sass/elements/tables.scss
+@@ -80,7 +80,7 @@
+ 
+             td {
+                 @apply py-1 px-2;
+-                word-break: break-all;
++                word-break: break-normal;
+             }
+ 		}
+ 		.actions-column {
