@@ -1,19 +1,21 @@
 @inject('licenses', 'Statamic\Licensing\LicenseManager')
 
 @if ($licenses->requestFailed())
-    <div class="p-1 w-full fixed bottom-0 z-20">
-        <div class="py-1.5 px-2 text-sm w-full rounded-md bg-yellow border border-yellow-dark">
-        @if ($licenses->requestErrorCode() === 422)
-            {{ __('statamic::messages.outpost_error_422') }}
-            {{ join(' ', $licenses->requestValidationErrors()->unique()) }}
-        @elseif ($licenses->requestErrorCode() === 429)
-            {{ __('statamic::messages.outpost_error_429') }}
-            {{ trans_choice('statamic::messages.try_again_in_seconds', $licenses->failedRequestRetrySeconds()) }}
-        @else
-            {{ __('statamic::messages.outpost_issue_try_later') }}
-        @endif
+    @if ($licenses->requestErrorCode() !== 429)
+        <div class="p-1 w-full fixed bottom-0 z-20">
+            <div class="py-1.5 px-2 text-sm w-full rounded-md bg-yellow border border-yellow-dark">
+            @if ($licenses->requestErrorCode() === 422)
+                {{ __('statamic::messages.outpost_error_422') }}
+                {{ join(' ', $licenses->requestValidationErrors()->unique()) }}
+            {{-- @elseif ($licenses->requestErrorCode() === 429)
+                {{ __('statamic::messages.outpost_error_429') }}
+                {{ trans_choice('statamic::messages.try_again_in_seconds', $licenses->failedRequestRetrySeconds()) }} --}}
+            @else
+                {{ __('statamic::messages.outpost_issue_try_later') }}
+            @endif
+            </div>
         </div>
-    </div>
+    @endif
 @else
     @if ($licenses->invalid())
         <div class="p-1 w-full fixed bottom-0 z-20" v-show="showBanner">
