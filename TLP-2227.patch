@@ -1,0 +1,13 @@
+diff --git a/resources/js/components/Echo.js b/resources/js/components/Echo.js
+index 3a2761b6f..8c75e6c06 100644
+--- a/resources/js/components/Echo.js
++++ b/resources/js/components/Echo.js
+@@ -25,6 +25,8 @@ class Echo {
+ 
+         this.bootedCallbacks.forEach(callback => callback(this));
+         this.bootedCallbacks = [];
++        
++        window.addEventListener('beforeunload', () => this.echo.disconnect());
+     }
+ }
+ 
