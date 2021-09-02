@@ -25,6 +25,8 @@ class Echo {
 
         this.bootedCallbacks.forEach(callback => callback(this));
         this.bootedCallbacks = [];
+        
+        window.addEventListener('beforeunload', () => this.echo.disconnect());
     }
 }
 
