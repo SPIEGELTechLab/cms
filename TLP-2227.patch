@@ -10,3 +10,4 @@ index 3a2761b6f..8e0b7a12b 100644
 +        window.addEventListener('beforeunload', () => this.echo.disconnect());
      }
  }
+
