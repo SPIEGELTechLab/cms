@@ -1,5 +1,5 @@
 diff --git a/resources/js/components/Echo.js b/resources/js/components/Echo.js
-index 3a2761b6f..8c75e6c06 100644
+index 3a2761b6f..8e0b7a12b 100644
 --- a/resources/js/components/Echo.js
 +++ b/resources/js/components/Echo.js
 @@ -25,6 +25,8 @@ class Echo {
