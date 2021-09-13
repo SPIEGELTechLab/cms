@@ -1,58 +1,136 @@
+commit 4236109be4984ee9ed256ac468f53e8186bb6784
+Author: Martin Schön <martin.schoen@spiegel.de>
+Date:   Fri Nov 20 10:48:55 2020 +0100
+
+    Added livepreview reload patch
+
 diff --git a/resources/js/components/live-preview/LivePreview.vue b/resources/js/components/live-preview/LivePreview.vue
-index 3fe026779..43c7167d5 100644
+index 07c4ee936..fc1cade15 100644
 --- a/resources/js/components/live-preview/LivePreview.vue
 +++ b/resources/js/components/live-preview/LivePreview.vue
-@@ -121,6 +121,7 @@ export default {
-             keybinding: null,
-             token: null,
-             target: 0,
-+            loadingUrl: '/services/statamic/cp/livepreview/loading-screen',
-         }
-     },
+@@ -226,12 +226,33 @@ export default {
+             const scrollX = $(iframe.contentWindow.document).scrollLeft();
+             const scrollY = $(iframe.contentWindow.document).scrollTop();
 
-@@ -176,16 +177,6 @@ export default {
+-            contents += '<script type="text/javascript">window.scrollTo('+scrollX+', '+scrollY+');\x3c/script>';
++            // the statamicResetPreview() patch is needed for our frontend scripts
++            // until https://github.com/statamic/ideas/issues/382 is part of core
++            contents +=
++                '<script type="text/javascript">window.statamicResetPreview = function(){window.location="' +
++                cp_url('livepreview/loading-screen') +
++                '";};window.scrollTo(' +
++                scrollX +
++                ', ' +
++                scrollY +
++                ');\x3c/script>';
++
++            const handleIframeReady = () => {
++                iframe.contentWindow.document.open();
++                iframe.contentWindow.document.write(contents);
++                iframe.contentWindow.document.close();
++                this.loading = false;
++            };
 
-         canPopOut() {
-             return typeof BroadcastChannel === 'function';
--        },
--
--        tokenizedUrl() {
--            let url = this.url;
--
--            url += (url.includes('?') ? '&' : '?') + `target=${this.target}`;
--
--            if (this.token) url += `&token=${this.token}`;
--
--            return url;
-         }
-
-     },
-@@ -239,8 +230,9 @@ export default {
-             source = this.$axios.CancelToken.source();
-
-             this.loading = true;
-+            this.updateIframeContents(this.tokenizedUrl(this.loadingUrl));
-
--            this.$axios.post(this.tokenizedUrl, this.payload, { cancelToken: source.token }).then(response => {
-+            this.$axios.post(this.tokenizedUrl(this.url), this.payload, { cancelToken: source.token }).then(response => {
-                 this.token = response.data.token;
-                 const url = response.data.url;
-                 this.poppedOut
-@@ -259,6 +251,13 @@ export default {
-             if (this.previewDevice) iframe.setAttribute('style', `width: ${this.previewDeviceWidth}; height: ${this.previewDeviceHeight}`);
+-            iframe.contentWindow.document.open();
+-            iframe.contentWindow.document.write(contents);
+-            iframe.contentWindow.document.close();
+-            this.loading = false;
++            if (
++                iframe.contentWindow.statamicResetPreview
++                && typeof iframe.contentWindow.statamicResetPreview === 'function'
++            ) {
++                iframe.contentWindow.statamicResetPreview();
++                iframe.addEventListener('load', handleIframeReady, { once: true });
++            } else {
++                handleIframeReady();
++            }
          },
 
-+        tokenizedUrl(url) {
-+            url += (url.includes('?') ? '&' : '?') + `target=${this.target}`;
-+            if (this.token) url += `&token=${this.token}`;
-+
-+            return url;
-+        },
-+
          close() {
-             if (this.poppedOut) this.closePopout();
+diff --git a/resources/js/components/live-preview/Popout.vue b/resources/js/components/live-preview/Popout.vue
+index 4806a634c..8d40122cd 100644
+--- a/resources/js/components/live-preview/Popout.vue
++++ b/resources/js/components/live-preview/Popout.vue
+@@ -60,12 +60,33 @@ export default {
+             const scrollX = $(iframe.contentWindow.document).scrollLeft();
+             const scrollY = $(iframe.contentWindow.document).scrollTop();
 
+-            contents += '<script type="text/javascript">window.scrollTo('+scrollX+', '+scrollY+');\x3c/script>';
+-
+-            iframe.contentWindow.document.open();
+-            iframe.contentWindow.document.write(contents);
+-            iframe.contentWindow.document.close();
+-            this.channel.postMessage({ event: 'popout.loaded' })
++            // the statamicResetPreview() patch is needed for our frontend scripts
++            // until https://github.com/statamic/ideas/issues/382 is part of core
++            contents +=
++                '<script type="text/javascript">window.statamicResetPreview = function(){window.location="' +
++                cp_url('livepreview/loading-screen') +
++                '";};window.scrollTo(' +
++                scrollX +
++                ', ' +
++                scrollY +
++                ');\x3c/script>';
++
++            const handleIframeReady = () => {
++                iframe.contentWindow.document.open();
++                iframe.contentWindow.document.write(contents);
++                iframe.contentWindow.document.close();
++                this.channel.postMessage({ event: 'popout.loaded' });
++            };
++
++            if (
++                iframe.contentWindow.statamicResetPreview
++                && typeof iframe.contentWindow.statamicResetPreview === 'function'
++            ) {
++                iframe.contentWindow.statamicResetPreview();
++                iframe.addEventListener('load', handleIframeReady, { once: true });
++            } else {
++                handleIframeReady();
++            }
+         },
 
+     }
+diff --git a/resources/views/livepreview/loading-screen.blade.php b/resources/views/livepreview/loading-screen.blade.php
+new file mode 100644
+index 000000000..b9a153eec
+--- /dev/null
++++ b/resources/views/livepreview/loading-screen.blade.php
+@@ -0,0 +1,34 @@
++<!doctype html>
++<html lang="{{ config('app.locale') }}">
++<head>
++    @include('statamic::partials.head')
++</head>
++<body>
++    <div class="text-center">
++        <div class="m-auto mt-5">
++            <svg xmlns="http://www.w3.org/2000/svg"
++                width="40px"
++                height="40px"
++                viewBox="0 0 40 40"
++                stroke="#737f8c">
++                <g fill="none" fill-rule="evenodd">
++                    <g transform="translate(2 2)" stroke-width="4">
++                        <circle stroke-opacity=".5" cx="18" cy="18" r="18"/>
++                        <path d="M36 18c0-9.94-8.06-18-18-18">
++                            <animateTransform
++                                attributeName="transform"
++                                type="rotate"
++                                from="0 18 18"
++                                to="360 18 18"
++                                dur="1s"
++                                repeatCount="indefinite"/>
++                        </path>
++                    </g>
++                </g>
++            </svg>
++
++            <div class="mt-1">Aktualisiere Live-Preview</div>
++        </div>
++    </div>
++</body>
++</html>
 diff --git a/routes/cp.php b/routes/cp.php
 index fcf7a965a..2fa0aeec3 100644
 --- a/routes/cp.php
@@ -66,17 +144,3 @@ index fcf7a965a..2fa0aeec3 100644
      Route::get('select-site/{handle}', 'SelectSiteController@select');
 
      Route::group(['namespace' => 'Structures'], function () {
-
-diff --git a/resources/views/livepreview/loading-screen.blade.php b/resources/views/livepreview/loading-screen.blade.php
-index b9a153eec..3c260a766 100644
---- a/resources/views/livepreview/loading-screen.blade.php
-+++ b/resources/views/livepreview/loading-screen.blade.php
-@@ -27,7 +27,7 @@
-                 </g>
-             </svg>
-
--            <div class="mt-1">Aktualisiere Live-Preview</div>
-+            <div class="mt-1">Lade Live-Preview</div>
-         </div>
-     </div>
- </body>
