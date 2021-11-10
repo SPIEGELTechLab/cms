@@ -100,8 +100,7 @@
             }
 
             td {
-                @apply py-1 px-2;
-                word-break: break-normal;
+                @apply py-1 px-2 break-words;
             }
 		}
 		.type-column {
