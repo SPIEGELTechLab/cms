@@ -43,8 +43,8 @@
 }
 
 @screen md {
-    .tabs a {
-        min-width: 100px;
+    .tabs .tab-button {
+        min-width: 120px;
     }
 }
 
