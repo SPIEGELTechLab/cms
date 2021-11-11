@@ -108,7 +108,6 @@ https://github.com/sauerbraten/cms/commit/43fd02e5f6b7442a82103499a17cee7f67b2f3
 > Not something we would bring into core – this is a workaround you'll probably need to keep around for a while. We've had discussions around a totally separate approach here though so it's likely not a permalninant thing!
 
 ---
-
 # Needs consideration or feedback:
 
 ### Buggy live preview behavior: JS context not reset correctly on reload
@@ -149,7 +148,6 @@ https://github.com/sauerbraten/cms/commit/917c72e23e4bfe114c29ec0daf36c1be055f9d
 > It's unclear from the code how this is working exactly — is it enforcing mobile first all the time? That would be a default behavior change and would be undesired for a lot of people. We could certainly add an option for default breakpoint though.
 
 ---
-
 # Other stuff
 
 ### Fix access into undefined in Replicator Set preview
