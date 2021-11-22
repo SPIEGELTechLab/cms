@@ -1,3 +1,43 @@
+# Needs consideration:
+
+### Buggy live preview behavior: JS context not reset correctly on reload
+- https://github.com/sauerbraten/cms/commit/4236109be4984ee9ed256ac468f53e8186bb6784
+
+- https://github.com/sauerbraten/cms/commit/807a26f4172caa1b40d9bbe774a45e452f8eba6b
+
+> Needs consideration 🤔 How can we recreate the issue so we can evaluate your patch?
+
+### Allow overriding ListedEntry resource
+
+we override ListedEntry::columns() to inject a column that's not in the blueprints (so users can't toggle it off). Our listings get their entries from Elastic, and when saving a working copy, we inject certain fields into a special section of the Elastic document and let them override the 'live' values in the listing by loading that section into that column, then accessing "working copy" values from custom *Index fieldtypes.
+
+https://github.com/sauerbraten/cms/commit/b82bd5d1b9a287966a60202b4a905865faf9c611
+
+> Needs consideration 🤔
+
+### Use correct blueprint for each entry in a RelationshipFieldtype response
+
+When defining an Entries field and passing multiple collections, its listing/selector processes all entries' fields through the first collection's blueprint, instead of the one appropriate for each entry.
+
+https://github.com/sauerbraten/cms/commit/61de309c259a8f42b4925d2bb627789dbb1361a8
+
+> Needs consideration 🤔
+ 
+### reference revision by ID, not date, when restoring
+
+A revision's ID and date are probably the same thing for you, but they aren't for our custom RevisionsRepository
+
+https://github.com/sauerbraten/cms/commit/bbc7fa53f4b15108cb3bd1907dfc800d7c705b01
+
+> Needs consideration 🤔
+
+### Default to mobile view in live preview (“mobile first” etc.)
+
+https://github.com/sauerbraten/cms/commit/917c72e23e4bfe114c29ec0daf36c1be055f9d7b
+
+> It's unclear from the code how this is working exactly — is it enforcing mobile first all the time? That would be a default behavior change and would be undesired for a lot of people. We could certainly add an option for default breakpoint though.
+
+---
 # Done:
 
 ### Replicator doesn't recognize popover position correctly when there are many options 
@@ -66,46 +106,6 @@ https://github.com/sauerbraten/cms/commit/7c648629c5ad049b28eac56c7077121df4e4ee
 https://github.com/sauerbraten/cms/commit/43fd02e5f6b7442a82103499a17cee7f67b2f3c5
 
 > Not something we would bring into core – this is a workaround you'll probably need to keep around for a while. We've had discussions around a totally separate approach here though so it's likely not a permalninant thing!
-
----
-# Needs consideration or feedback:
-
-### Buggy live preview behavior: JS context not reset correctly on reload
-- https://github.com/sauerbraten/cms/commit/4236109be4984ee9ed256ac468f53e8186bb6784
-
-- https://github.com/sauerbraten/cms/commit/807a26f4172caa1b40d9bbe774a45e452f8eba6b
-
-> Needs consideration 🤔 How can we recreate the issue so we can evaluate your patch?
-
-### Allow overriding ListedEntry resource
-
-we override ListedEntry::columns() to inject a column that's not in the blueprints (so users can't toggle it off). Our listings get their entries from Elastic, and when saving a working copy, we inject certain fields into a special section of the Elastic document and let them override the 'live' values in the listing by loading that section into that column, then accessing "working copy" values from custom *Index fieldtypes.
-
-https://github.com/sauerbraten/cms/commit/b82bd5d1b9a287966a60202b4a905865faf9c611
-
-> Needs consideration 🤔
-
-### Use correct blueprint for each entry in a RelationshipFieldtype response
-
-When defining an Entries field and passing multiple collections, its listing/selector processes all entries' fields through the first collection's blueprint, instead of the one appropriate for each entry.
-
-https://github.com/sauerbraten/cms/commit/61de309c259a8f42b4925d2bb627789dbb1361a8
-
-> Needs consideration 🤔
- 
-### reference revision by ID, not date, when restoring
-
-A revision's ID and date are probably the same thing for you, but they aren't for our custom RevisionsRepository
-
-https://github.com/sauerbraten/cms/commit/bbc7fa53f4b15108cb3bd1907dfc800d7c705b01
-
-> Needs consideration 🤔
-
-### Default to mobile view in live preview (“mobile first” etc.)
-
-https://github.com/sauerbraten/cms/commit/917c72e23e4bfe114c29ec0daf36c1be055f9d7b
-
-> It's unclear from the code how this is working exactly — is it enforcing mobile first all the time? That would be a default behavior change and would be undesired for a lot of people. We could certainly add an option for default breakpoint though.
 
 ---
 # Other stuff
