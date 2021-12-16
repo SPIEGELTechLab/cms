@@ -1,0 +1,12 @@
+diff --git a/resources/lang/de/validation.php b/resources/lang/de/validation.php
+index 2219f5fc5..3575708d2 100644
+--- a/resources/lang/de/validation.php
++++ b/resources/lang/de/validation.php
+@@ -88,6 +88,7 @@ return [
+     'unique_term_value' => 'Dieser Wert wurde bereits vergeben.',
+     'unique_user_value' => 'Dieser Wert wurde bereits vergeben.',
+     'unique_value' => 'Dieser Wert wurde bereits vergeben.',
++    'uuid_or_deleted' => 'Dieser Wert muss eine gültige UUID oder "delete" sein.',
+     'duplicate_field_handle' => 'Feld mit dem Handle :handle kann nicht mehr als einmal verwendet werden.',
+     'one_site_without_origin' => 'Mindestens eine Website darf keine Quelle enthalten.',
+     'origin_cannot_be_disabled' => 'Kann keine deaktivierte Quelle auswählen.',
