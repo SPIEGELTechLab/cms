@@ -138,6 +138,9 @@ class Outpost
         if ($code == 422) {
             return $this->cacheAndReturnValidationResponse($e);
         } elseif ($code == 429) {
+            if ($this->hasCachedResponse()) {
+                return $this->getCachedResponse();
+            }
             return $this->cacheAndReturnRateLimitResponse($e);
         } elseif ($code >= 500 && $code < 600) {
             return $this->cacheAndReturnErrorResponse($e);
