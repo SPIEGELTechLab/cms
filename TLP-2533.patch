@@ -1,0 +1,16 @@
+diff --git a/resources/sass/components/fieldtypes/bard.scss b/resources/sass/components/fieldtypes/bard.scss
+index 178eb9d17..c8e3bb558 100644
+--- a/resources/sass/components/fieldtypes/bard.scss
++++ b/resources/sass/components/fieldtypes/bard.scss
+@@ -226,6 +226,11 @@
+         > p > code, > pre code {
+             @apply bg-grey-30;
+         }
++
++        // To remove min height from nested bard fields inside bard in fullscreen mode.
++        * > .ProseMirror { 
++            min-height: auto;
++        }
+     }
+ 
+     .bard-set-selector {
