@@ -19,6 +19,13 @@ class Echo {
             encrypted: Statamic.$config.get('broadcasting.pusher.encrypted'),
             csrfToken: Statamic.$config.get('csrfToken'),
             authEndpoint: Statamic.$config.get('broadcasting.endpoint'),
+            // the following config lines define the activityTimeout and pongTimeout (pusher default values serve as fallback)
+            activityTimeout: Statamic.$config.get('broadcasting.pusher.activityTimeout')
+                ? Statamic.$config.get('broadcasting.pusher.activityTimeout')
+                : 120000, // default activityTimeout: 120000
+            pongTimeout: Statamic.$config.get('broadcasting.pusher.pongTimeout')
+                ? Statamic.$config.get('broadcasting.pusher.pongTimeout')
+                : 30000, // default pongTimeout: 30000
         };
 
         this.echo = new LaravelEcho(config);
