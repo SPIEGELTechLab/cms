@@ -184,6 +184,8 @@ export default {
 
         previewUpdated(handle, value) {
             setTimeout(() => {
+                // Workaround until the bug is fixed - this will not be passed in Statamic core
+                // Collaboration Bug: when adding a new set, this.preview is undefined for all other users
                 if (!this.previews) return;
 
                 this.$emit('previews-updated', { ...this.previews, [handle]: value });

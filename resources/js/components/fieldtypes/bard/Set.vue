@@ -161,6 +161,9 @@ export default {
         },
 
         previewUpdated(handle, value) {
+            // Workaround until the bug is fixed - this will not be passed in Statamic core
+            // Collaboration Bug: when adding a new set, this.preview is undefined for all other users
+            if (!this.previews) return;
             let previews = clone(this.previews);
             previews[handle] = value;
             this.options.bard.updateSetPreviews(this.node.attrs.id, previews);
