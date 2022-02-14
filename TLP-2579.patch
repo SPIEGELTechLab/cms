@@ -4,7 +4,7 @@ index 29805a0ca..f3f9ed79a 100644
 +++ b/resources/js/components/fieldtypes/bard/Set.vue
 @@ -148,6 +148,9 @@ export default {
          },
- 
+
          previewUpdated(handle, value) {
 +            // Workaround until the bug is fixed - this will not be passed in Statamic core
 +            // Collaboration Bug: when adding a new set, this.preview is undefined for all other users
@@ -13,16 +13,27 @@ index 29805a0ca..f3f9ed79a 100644
              previews[handle] = value;
              this.options.bard.updateSetPreviews(this.node.attrs.id, previews);
 diff --git a/resources/js/components/fieldtypes/replicator/Set.vue b/resources/js/components/fieldtypes/replicator/Set.vue
-index 699e3d578..9d3a50dbd 100644
+index 86bcdd7e3..de2b2ae20 100644
 --- a/resources/js/components/fieldtypes/replicator/Set.vue
 +++ b/resources/js/components/fieldtypes/replicator/Set.vue
-@@ -164,6 +164,9 @@ export default {
-         },
- 
+@@ -35,7 +35,9 @@
+             </div>
+         </div>
+
+-        <div class="replicator-set-body" v-if="!collapsed">
++        <!-- Workaround (meta) until the bug is fixed - this will not be passed in Statamic core
++        Collaboration Bug: when adding a new set meta is undefined for all other users -->
++        <div class="replicator-set-body" v-if="!collapsed && meta">
+             <set-field
+                 v-for="field in fields"
+                 v-show="showField(field)"
+@@ -172,12 +174,8 @@ export default {
+
          previewUpdated(handle, value) {
-+            // Workaround until the bug is fixed - this will not be passed in Statamic core
-+            // Collaboration Bug: when adding a new set, this.preview is undefined for all other users
-+            if (!this.previews) return;
-             let previews = this.previews;
-             previews[handle] = value;
-             this.$emit('previews-updated', previews);
+             setTimeout(() => {
+                 this.$emit('previews-updated', { ...this.previews, [handle]: value });
+-            }, 0);
++            }, 1);
+         },
+
+         destroy() {
