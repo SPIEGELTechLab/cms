@@ -38,7 +38,9 @@
             </div>
         </div>
 
-        <div class="replicator-set-body" v-if="!collapsed">
+        <!-- Workaround (meta) until the bug is fixed - this will not be passed in Statamic core
+        Collaboration Bug: when adding a new set meta is undefined for all other users -->
+        <div class="replicator-set-body" v-if="!collapsed && meta">
             <set-field
                 v-for="field in fields"
                 v-show="showField(field, fieldPath(field))"
@@ -184,12 +186,8 @@ export default {
 
         previewUpdated(handle, value) {
             setTimeout(() => {
-                // Workaround until the bug is fixed - this will not be passed in Statamic core
-                // Collaboration Bug: when adding a new set, this.preview is undefined for all other users
-                if (!this.previews) return;
-
                 this.$emit('previews-updated', { ...this.previews, [handle]: value });
-            }, 0);
+            }, 1);
         },
 
         destroy() {
