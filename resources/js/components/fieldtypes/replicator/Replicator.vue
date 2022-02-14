@@ -116,14 +116,6 @@ export default {
             return `${this.name}-sortable-handle`;
         },
 
-        lockedSets() {
-            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
-        },
-
-        canReorder() {
-            return !this.lockedSets || !Object.keys(this.lockedSets).length;
-        },
-
         storeState() {
             return this.$store.state.publish[this.storeName] || {};
         }
