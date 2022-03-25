@@ -1,0 +1,18 @@
+diff --git a/resources/js/components/inputs/Textarea.vue b/resources/js/components/inputs/Textarea.vue
+index 215362ff2..5de19090e 100644
+--- a/resources/js/components/inputs/Textarea.vue
++++ b/resources/js/components/inputs/Textarea.vue
+@@ -37,7 +37,12 @@ export default {
+ 
+     },
+     mounted() {
+-        autosize(this.$refs.textarea)
++        autosize(this.$refs.textarea);
++
++        // https://stackoverflow.com/questions/47634258/what-is-nexttick-or-what-does-it-do-in-vuejs?answertab=votes#answer-47636157
++        setTimeout(() => {
++            this.updateSize();
++        }, 1);
+         this.$events.$on('tab-switched', this.updateSize);
+     },
+ 
