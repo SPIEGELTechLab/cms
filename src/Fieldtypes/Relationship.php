@@ -115,8 +115,32 @@ abstract class Relationship extends Fieldtype
 
     public function preload()
     {
+        $collaboration = [
+            'data',
+            'itemDataUrl',
+            'filtersUrl',
+            'baseSelectionsUrl',
+            'itemComponent',
+            'getBaseSelectionsUrlParameters',
+            'canEdit',
+            'canCreate',
+            'canSearch',
+            'statusIcons',
+            'formComponent',
+            'taggable'
+        ];
+
+        if ($this->canCreate() === true) {
+            array_push($collaboration, 'creatables');
+        }
+
+        $data = $this->getItemData($this->field->value())->all();
+        if (!empty($data)) {
+            array_push($collaboration, 'formComponentProps');
+        }
+
         return [
-            'data' => $this->getItemData($this->field->value())->all(),
+            'data' => $data,
             'columns' => $this->getColumns(),
             'itemDataUrl' => $this->getItemDataUrl(),
             'filtersUrl' => $this->getFiltersUrl(),
@@ -131,7 +155,7 @@ abstract class Relationship extends Fieldtype
             'formComponent' => $this->getFormComponent(),
             'formComponentProps' => $this->getFormComponentProps(),
             'taggable' => $this->getTaggable(),
-            '__collaboration' => [ 'data' ],
+            '__collaboration' => $collaboration,
         ];
     }
 
