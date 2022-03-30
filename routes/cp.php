@@ -79,6 +79,11 @@ Route::middleware('statamic.cp.authenticated')->group(function () {
                 Route::get('{slug}', fn ($collection, $entry, $slug) => redirect($entry->editUrl()));
             });
         });
+
+        // TODO: Should be removed at some point.
+        Route::get('{entry}/{slug}', function ($collection, $entry, $slug) {
+            return redirect($entry->editUrl(), 301);
+        });
     });
 
     Route::group(['namespace' => 'Taxonomies'], function () {
