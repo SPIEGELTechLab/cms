@@ -109,7 +109,6 @@ export default {
             editorWidth: null,
             editorResizing: false,
             editorCollapsed: false,
-            previewDevice: null,
             provides: {
                 storeName: this.name
             },
@@ -145,8 +144,14 @@ export default {
             let options = Object.values(_.mapObject(this.$config.get('livePreview.devices'), (dimensions, device) => {
                 return { value: device, label: __(device) };
             }));
-            options.unshift({ value: null, label: __('Responsive') });
+            options.push({ value: null, label: __('Responsive') });
             return options;
+        },
+
+        previewDevice() {
+            // SPIEGEL UPDATE (TLP-1828): we want the default value to be 'mobile
+            if (!this.deviceSelectOptions || !Array.isArray(this.deviceSelectOptions) || !this.deviceSelectOptions.length) return null;
+            return this.deviceSelectOptions[0].value;
         },
 
         previewDeviceWidth() {
