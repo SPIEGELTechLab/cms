@@ -1,18 +1,16 @@
-Makes the LivePreview device select field default to the first option configured in
-config/statamic/live_preview.php (instead of defaulting to 'Responsive').
-
 diff --git a/resources/js/components/live-preview/LivePreview.vue b/resources/js/components/live-preview/LivePreview.vue
-index fc1cade157..4957933f2b 100644
+index 542ee960f..3fe026779 100644
 --- a/resources/js/components/live-preview/LivePreview.vue
 +++ b/resources/js/components/live-preview/LivePreview.vue
-@@ -129,21 +129,21 @@ export default {
-                 blueprint: this.blueprint,
-                 preview: this.values,
-                 extras: this.extras
-             }
-         },
-
-         deviceSelectOptions() {
+@@ -109,7 +109,6 @@ export default {
+             editorWidth: null,
+             editorResizing: false,
+             editorCollapsed: false,
+-            previewDevice: null,
+             provides: {
+                 storeName: this.name
+             },
+@@ -145,10 +144,16 @@ export default {
              let options = Object.values(_.mapObject(this.$config.get('livePreview.devices'), (dimensions, device) => {
                  return { value: device, label: __(device) };
              }));
@@ -21,41 +19,12 @@ index fc1cade157..4957933f2b 100644
              return options;
          },
 
++        previewDevice() {
++            // SPIEGEL UPDATE (TLP-1828): we want the default value to be 'mobile
++            if (!this.deviceSelectOptions || !Array.isArray(this.deviceSelectOptions) || !this.deviceSelectOptions.length) return null;
++            return this.deviceSelectOptions[0].value;
++        },
++
          previewDeviceWidth() {
              if (this.previewDevice) {
                  return `${this.$config.get('livePreview.devices')[this.previewDevice].width}px`;
-             }
-         },
-
-         previewDeviceHeight() {
-@@ -173,21 +173,29 @@ export default {
-
-             this.update();
-             this.animateIn();
-         },
-
-         payload: {
-             deep: true,
-             handler(payload) {
-                 if (this.previewing) this.update();
-             }
--        }
-+        },
-+
-+        deviceSelectOptions: {
-+            handler() {
-+                if (!this.deviceSelectOptions || !Array.isArray(this.deviceSelectOptions) || !this.deviceSelectOptions.length) return;
-+                this.previewDevice = this.deviceSelectOptions[0].value;
-+            },
-+            immediate: true,
-+        },
-
-     },
-
-     created() {
-         this.editorWidth = localStorage.getItem(widthLocalStorageKey) || 400
-
-         this.keybinding = this.$keys.bindGlobal('mod+shift+p', () => {
-             this.previewing ? this.close() : this.$emit('opened-via-keyboard');
-         });
-     },
