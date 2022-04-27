@@ -145,7 +145,7 @@ export default {
             let options = Object.values(_.mapObject(this.$config.get('livePreview.devices'), (dimensions, device) => {
                 return { value: device, label: __(device) };
             }));
-            options.unshift({ value: null, label: __('Responsive') });
+            options.push({ value: null, label: __('Responsive') });
             return options;
         },
 
