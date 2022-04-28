@@ -121,6 +121,7 @@ export default {
             keybinding: null,
             token: null,
             target: 0,
+            loadingUrl: '/services/statamic/cp/livepreview/loading-screen',
         }
     },
 
@@ -176,16 +177,6 @@ export default {
 
         canPopOut() {
             return typeof BroadcastChannel === 'function';
-        },
-
-        tokenizedUrl() {
-            let url = this.url;
-
-            url += (url.includes('?') ? '&' : '?') + `target=${this.target}`;
-
-            if (this.token) url += `&token=${this.token}`;
-
-            return url;
         }
 
     },
@@ -239,8 +230,9 @@ export default {
             source = this.$axios.CancelToken.source();
 
             this.loading = true;
+            this.updateIframeContents(this.tokenizedUrl(this.loadingUrl));
 
-            this.$axios.post(this.tokenizedUrl, this.payload, { cancelToken: source.token }).then(response => {
+            this.$axios.post(this.tokenizedUrl(this.url), this.payload, { cancelToken: source.token }).then(response => {
                 this.token = response.data.token;
                 const url = response.data.url;
                 this.poppedOut
@@ -257,6 +249,13 @@ export default {
             iframe.setAttribute('frameborder', '0');
             iframe.setAttribute('class', this.previewDevice ? 'device' : 'responsive');
             if (this.previewDevice) iframe.setAttribute('style', `width: ${this.previewDeviceWidth}; height: ${this.previewDeviceHeight}`);
+        },
+
+        tokenizedUrl(url) {
+            url += (url.includes('?') ? '&' : '?') + `target=${this.target}`;
+            if (this.token) url += `&token=${this.token}`;
+
+            return url;
         },
 
         close() {
