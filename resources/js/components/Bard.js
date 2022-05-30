@@ -1,4 +1,5 @@
 import * as core from '@tiptap/core';
+import * as Y from 'yjs';
 
 class Bard {
     constructor(instance) {
@@ -26,7 +27,7 @@ class Bard {
     }
 
     get tiptap() {
-        return { core };
+        return { core, Y };
     }
 }
 
