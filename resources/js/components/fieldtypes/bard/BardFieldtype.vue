@@ -79,6 +79,7 @@ import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
 import Code from '@tiptap/extension-code';
 import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
+import Collaboration from '@tiptap/extension-collaboration'
 import HardBreak from '@tiptap/extension-hard-break';
 import Heading from '@tiptap/extension-heading';
 import History from '@tiptap/extension-history';
@@ -111,6 +112,7 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import css from 'highlight.js/lib/languages/css'
 import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/github.css';
+
 
 /** @deprecated */
 // import mark from './Mark';
@@ -239,39 +241,42 @@ export default {
     },
 
     mounted() {
-        this.initToolbarButtons();
+        // wait until Statamic is booted
+        Statamic.booted(() => {
+            this.initToolbarButtons();
 
-        this.editor = new Editor({
-            extensions: this.getExtensions(),
-            content: this.valueToContent(clone(this.value)),
-            editable: !this.readOnly,
-            disableInputRules: ! this.config.enable_input_rules,
-            disablePasteRules: ! this.config.enable_paste_rules,
-            onFocus: () => this.$emit('focus'),
-            onBlur: () => {
-                // Since clicking into a field inside a set would also trigger a blur, we can't just emit the
-                // blur event immediately. We need to make sure that the newly focused element is outside
-                // of Bard. We use a timeout because activeElement only exists after the blur event.
-                setTimeout(() => {
-                    if (!this.$el.contains(document.activeElement)) this.$emit('blur');
-                }, 1);
-            },
-            onUpdate: () => {
-                this.json = this.editor.getJSON().content;
-                this.html = this.editor.getHTML();
-            },
-        });
+            this.editor = new Editor({
+                extensions: this.getExtensions(),
+                content: this.valueToContent(clone(this.value)),
+                editable: !this.readOnly,
+                disableInputRules: ! this.config.enable_input_rules,
+                disablePasteRules: ! this.config.enable_paste_rules,
+                onFocus: () => this.$emit('focus'),
+                onBlur: () => {
+                    // Since clicking into a field inside a set would also trigger a blur, we can't just emit the
+                    // blur event immediately. We need to make sure that the newly focused element is outside
+                    // of Bard. We use a timeout because activeElement only exists after the blur event.
+                    setTimeout(() => {
+                        if (!this.$el.contains(document.activeElement)) this.$emit('blur');
+                    }, 1);
+                },
+                onUpdate: () => {
+                    this.json = this.editor.getJSON().content;
+                    this.html = this.editor.getHTML();
+                },
+            });
 
-        this.json = this.editor.getJSON().content;
-        this.html = this.editor.getHTML();
+            this.json = this.editor.getJSON().content;
+            this.html = this.editor.getHTML();
 
-        this.$keys.bind('esc', this.closeFullscreen)
+            this.$keys.bind('esc', this.closeFullscreen)
 
-        this.$nextTick(() => this.mounted = true);
+            this.$nextTick(() => this.mounted = true);
 
-        this.pageHeader = document.querySelector('.global-header');
+            this.pageHeader = document.querySelector('.global-header');
 
-        this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
+            this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
+        }) 
     },
 
     beforeDestroy() {
@@ -503,6 +508,8 @@ export default {
                 Set.configure({ bard: this }),
                 Text
             ];
+
+            exts.push(Collaboration.configure({ document: Statamic.$sharedEditing.workspaces.base.document }))
 
             let btns = this.buttons.map(button => button.name);
 
