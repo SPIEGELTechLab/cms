@@ -95,8 +95,7 @@
     "vue-reactive-provide": "^0.3.0",
     "vue-select": "^3.10.1",
     "vue-toasted": "^1.1.27",
-    "vuex": "^3.1.2",
-    "yjs": "^13.5.38"
+    "vuex": "^3.1.2"
   },
   "devDependencies": {
     "babel-jest": "^24.9.0",
