@@ -56,12 +56,20 @@ export default {
     created() {
         this.registerVuexModule();
         this.$events.$emit('publish-container-created', this);
+
+        /* if (this.$config.get('collaboration.enabled')) { */
+            this.$collaboration.start(this);
+        /* } */
     },
 
     destroyed() {
         this.removeVuexModule();
         this.clearDirtyState();
         this.$events.$emit('publish-container-destroyed', this);
+
+        /* if (this.$config.get('collaboration.enabled')) { */
+            this.$collaboration.destroy(this);
+        /* } */
     },
 
     provide() {

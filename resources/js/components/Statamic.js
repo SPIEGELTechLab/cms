@@ -6,6 +6,7 @@ import Hooks from './Hooks';
 import Components from './Components';
 import FieldConditions from './FieldConditions';
 import Callbacks from './Callbacks';
+import Collaboration from './Collaboration';
 const echo = new Echo;
 const bard = new Bard;
 const keys = new Keys;
@@ -13,6 +14,7 @@ const hooks = new Hooks;
 const components = new Components;
 const conditions = new FieldConditions;
 const callbacks = new Callbacks;
+const collaboration = new Collaboration;
 
 export default new Vue({
     data() {
@@ -23,6 +25,10 @@ export default new Vue({
     },
 
     computed: {
+
+        $collaboration() {
+            return collaboration;
+        },
 
         $callbacks() {
             return callbacks;
