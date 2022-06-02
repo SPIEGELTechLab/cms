@@ -26,6 +26,7 @@
     "@tiptap/extension-bullet-list": "^2.0.0-beta.26",
     "@tiptap/extension-code": "^2.0.0-beta.26",
     "@tiptap/extension-code-block-lowlight": "^2.0.0-beta.68",
+    "@tiptap/extension-collaboration": "2.0.0-beta.33",
     "@tiptap/extension-document": "^2.0.0-beta.15",
     "@tiptap/extension-hard-break": "^2.0.0-beta.30",
     "@tiptap/extension-heading": "^2.0.0-beta.26",
@@ -104,6 +105,7 @@
     "kind-of": ">=6.0.3",
     "laravel-mix": "^5.0.9",
     "sass": "^1.26.2",
+    "node-ray": "^1.18.0",
     "sass-loader": "^8.0.2",
     "tailwindcss": "^1.9.0",
     "vue-template-compiler": "^2.6.11"
