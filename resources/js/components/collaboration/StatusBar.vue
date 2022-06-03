@@ -40,9 +40,8 @@ export default {
       ];
     },
   },
-  
+
   mounted() {
-    console.log('Status Bar loaded')
     this.awareness.on("change", () => {
       this.users = [];
       for (const [key, value] of this.awareness.getStates().entries()) {
