@@ -551,7 +551,7 @@ export default {
                     }),
 
                     CollaborationCursor.configure({
-                        provider: Statamic.$collaboration.workspaces[this.storeName].provider,
+                        provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
                         user: {
                             ...Statamic.user,
                             color: `#${Math.floor(Math.random()*16777215).toString(16)}`

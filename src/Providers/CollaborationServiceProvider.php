@@ -12,6 +12,9 @@ class CollaborationServiceProvider extends ServiceProvider
     {
         Statamic::provideToScript(['collaboration' => [
             'enabled' => $this->isCollaborationEnabled(),
+            'websocket' => [
+                'url' => config('statamic.collaboration.websocket.url'),
+            ]
         ]]);
     }
 
