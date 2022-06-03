@@ -542,19 +542,23 @@ export default {
                     TableRow,
                 );
             }
-            exts.push(
-                Collaboration.configure({
-                    // TODO: We should do some error handling and clean this up a bit
-                    fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
-                }),
-                CollaborationCursor.configure({
-                    provider: Statamic.$collaboration.workspaces[this.storeName].provider,
-                    user: {
-                        ...Statamic.user,
-                        color: `#${Math.floor(Math.random()*16777215).toString(16)}`
-                    }
-                }),
-            )
+
+            if (Statamic.$config.get('collaboration.enabled')) {
+                exts.push(
+                    Collaboration.configure({
+                        // TODO: We should do some error handling and clean this up a bit
+                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
+                    }),
+
+                    CollaborationCursor.configure({
+                        provider: Statamic.$collaboration.workspaces[this.storeName].provider,
+                        user: {
+                            ...Statamic.user,
+                            color: `#${Math.floor(Math.random()*16777215).toString(16)}`
+                        }
+                    }),
+                )
+            }
 
             this.$bard.extensionCallbacks.forEach((callback) => {
                 let returned = callback({ bard: this});
