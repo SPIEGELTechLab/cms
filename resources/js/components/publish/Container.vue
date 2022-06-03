@@ -114,6 +114,7 @@ export default {
                     errors: {},
                     isRoot: initial.isRoot,
                     preloadedAssets: [],
+                    users: [],
                 },
                 mutations: {
                     setFieldValue(state, payload) {
@@ -175,6 +176,12 @@ export default {
                     },
                     setPreloadedAssets(state, assets) {
                         state.preloadedAssets = assets;
+                    },
+                    addUser(state, user) {
+                        state.users.push(user);
+                    },
+                    removeUser(state, removedUser) {
+                        state.users = state.users.filter(user => user.id !== removedUser.id);
                     }
                 },
                 actions: {

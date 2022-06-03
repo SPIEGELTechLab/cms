@@ -7,33 +7,33 @@ export default class Workspace {
         this.container = container;
         this.started = false;
         this.document = null;
-        this.providers = [];
+        this.provider = null;
+        this.users;
     }
 
-    start(providers) {
-        ray('start worspace').red()
-
+    start() {
+        ray('start workspace').red()
         if (this.started) return;
 
-        this.providers = providers
         this.initializeSharedDocument();
-
-        this.workspaceStarted()
+        this.started = true;
     }
 
     destroy() {
-        ray('destroy worspace').red()
+        ray('destroy workspace').red()
     }
 
     initializeSharedDocument() {
+        // add yjs shared document
         this.document = new Y.Doc()
+        this.roomName =  this.container.reference;
 
-        if (!this.providers || this.providers.length === 0) { // Return if no provider have been provided
+        if (!this.provider) { // Return if no provider have been provided
             // this.provider = new WebsocketProvider(
-            //     'wss://demos.yjs.dev', this.container.reference, this.document
+            //     'wss://demos.yjs.dev', this.roomName, this.document
             // );
 
-            this.provider = new WebrtcProvider(this.container.reference, this.document)
+            this.provider = new WebrtcProvider(this.roomName, this.document)
 
             // TODO: add offline support
             // const provider = new IndexeddbPersistence(this.container.reference, this.document);
@@ -41,9 +41,33 @@ export default class Workspace {
             return;
         }
 
+        // TODO: make provider setting customizable
         this.providers.forEach((providerCallback) => {
-            providerCallback({ container: this.container.reference, document: this.document });
-        })
+            providerCallback({ container: this.roomName, document: this.document });
+        });
+
+        this.initializeAwareness();
+    }
+
+    initializeAwareness() {
+        this.provider.awareness.setLocalStateField('user', Statamic.user);
+
+        this.users = this.awarenessStatesToArray(this.provider.awareness.states);
+        this.provider.awareness.on('update', () => {
+            this.users = this.awarenessStatesToArray(this.provider.awareness.states);
+        });
+
+        ray('awareness', this.users).red();
+
+    }
+
+    awarenessStatesToArray(states) {
+        return Array.from(states.entries()).map(([key, value]) => {
+            return {
+                clientId: key,
+                user: value.user,
+            }
+        });
     }
 
     initializeBlueprint() {
