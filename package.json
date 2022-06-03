@@ -96,7 +96,9 @@
     "vue-reactive-provide": "^0.3.0",
     "vue-select": "^3.10.1",
     "vue-toasted": "^1.1.27",
-    "vuex": "^3.1.2"
+    "vuex": "^3.1.2",
+    "y-webrtc": "^10.2.3",
+    "y-websocket": "^1.4.3"
   },
   "devDependencies": {
     "babel-jest": "^24.9.0",
@@ -104,8 +106,8 @@
     "jest": "^24.9.0",
     "kind-of": ">=6.0.3",
     "laravel-mix": "^5.0.9",
-    "sass": "^1.26.2",
     "node-ray": "^1.18.0",
+    "sass": "^1.26.2",
     "sass-loader": "^8.0.2",
     "tailwindcss": "^1.9.0",
     "vue-template-compiler": "^2.6.11"

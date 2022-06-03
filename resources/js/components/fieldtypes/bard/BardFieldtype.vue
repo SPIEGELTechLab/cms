@@ -74,6 +74,7 @@
 <script>
 import uniqid from 'uniqid';
 import { BubbleMenu, Editor, EditorContent, FloatingMenu } from '@tiptap/vue-2';
+import Collaboration from '@tiptap/extension-collaboration'
 import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
@@ -540,6 +541,13 @@ export default {
                     TableRow,
                 );
             }
+
+            exts.push(
+                Collaboration.configure({
+                    // TODO: We should do some error handling and clean this up a bit
+                    fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
+                })
+            )
 
             this.$bard.extensionCallbacks.forEach((callback) => {
                 let returned = callback({ bard: this});
