@@ -543,7 +543,6 @@ export default {
                 );
             }
 
-
             if (
                 Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
                 && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
