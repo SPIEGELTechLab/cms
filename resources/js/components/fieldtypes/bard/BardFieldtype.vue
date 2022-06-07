@@ -557,7 +557,12 @@ export default {
                             color: `#${Math.floor(Math.random()*16777215).toString(16)}`
                         }
                     }),
-                )
+                );
+
+
+                // watch XML fragment to update meta data (set meta and previews)
+                // otherwise there are display errors with other users
+                this.observeXMLFragment();
             }
 
             this.$bard.extensionCallbacks.forEach((callback) => {
@@ -575,7 +580,10 @@ export default {
                 exts[index] = newExtension;
             });
 
+            return exts;
+        },
 
+        observeXMLFragment() {
             Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle).observe((yxmlEvent) => {
                 yxmlEvent.changes.delta.forEach((change) => {
                     if (!Array.isArray(change.insert)) return;
@@ -595,8 +603,6 @@ export default {
                     });
                 });
             });
-
-            return exts;
         },
 
         updateSetPreviews(set, previews) {
