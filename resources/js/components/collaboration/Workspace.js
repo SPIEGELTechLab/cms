@@ -59,14 +59,21 @@ export default class Workspace {
     initializeAwareness() {
         this.awareness = this.mainProvider.awareness
 
-        this.awareness.setLocalStateField('user', Statamic.user);
+        this.awareness.setLocalStateField('user', this.loggedInUser);
 
         this.users = this.awarenessStatesToArray(this.awareness.states);
+
         this.awareness.on('update', () => {
             this.users = this.awarenessStatesToArray(this.awareness.states);
         });
+    }
 
-        ray('awareness', this.users).red();
+    loggedInUser() {
+        return {
+            name: Statamic.user.name,
+            initials: Statamic.user.initials,
+            avatar: Statamic.user.avatar?.permalink,
+        }
     }
 
     awarenessStatesToArray(states) {

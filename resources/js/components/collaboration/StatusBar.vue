@@ -1,9 +1,22 @@
 <template>
-  <div class="flex -mt-2 mb-2 cursor-default">
+  <div class="grid gap-2 mb-2 cursor-default">
     <template v-for="(user, key) of uniqueUsers">
       <div
-        v-if="user.name"
-        class="relative inline-block mr-1 relative inline-block mr-1 rounded-full h-8 w-8"
+        v-if="user.avatar"
+        class="relative flex items-center justify-center rounded-full h-8 w-8"
+        :key="key"
+        v-tooltip="user.name"
+        :style="`background-color: ${user.color}`"
+      >
+        <img :src="user.avatar" :alt="user.name" class="h-7 w-7 rounded-full">
+        <span
+          style="height: 0.5rem !important"
+          class="absolute bottom-0 right-0 inline-block w-2 bg-green border-2 border-white rounded-full"
+        ></span>
+      </div>
+      <div
+        v-else
+        class="relative inline-block rounded-full h-8 w-8"
         :key="key"
         v-tooltip="user.name"
         :style="`background-color: ${user.color}`"
