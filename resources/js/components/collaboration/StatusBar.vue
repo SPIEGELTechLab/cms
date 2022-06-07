@@ -1,5 +1,5 @@
 <template>
-  <div class="grid gap-2 mb-2 cursor-default">
+  <div class="flex space-x-1 mb-2 cursor-default">
     <template v-for="(user, key) of uniqueUsers">
       <div
         v-if="user.avatar"
@@ -48,6 +48,9 @@ export default {
 
   computed: {
     uniqueUsers() {
+      console.log(this.users, [
+        ...new Map(this.users.map((user) => [user["id"], user])).values(),
+      ])
       return [
         ...new Map(this.users.map((user) => [user["id"], user])).values(),
       ];
