@@ -543,7 +543,11 @@ export default {
                 );
             }
 
-            if (Statamic.$config.get('collaboration.enabled')) {
+
+            if (
+                Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
+                && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
+            ) {
                 exts.push(
                     Collaboration.configure({
                         // TODO: We should do some error handling and clean this up a bit
