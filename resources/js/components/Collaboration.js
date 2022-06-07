@@ -6,6 +6,9 @@ class Collaboration {
     }
 
     boot() {
+        // Don't start collaboration if not enabled.
+        if (!Statamic.$config.get('collaboration.enabled')) return;
+
         Object.values(this.workspaces).forEach(workspace => {
             workspace.start();
         });
