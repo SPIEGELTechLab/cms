@@ -70,6 +70,7 @@ export default class Workspace {
 
     loggedInUser() {
         return {
+            id: Statamic.user.id,
             name: Statamic.user.name,
             initials: Statamic.user.initials,
             avatar: Statamic.user.avatar?.permalink,

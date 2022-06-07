@@ -1,33 +1,22 @@
 <template>
-  <div class="grid gap-2 mb-2 cursor-default">
+  <div class="flex space-x-1 mb-2 cursor-default">
     <template v-for="(user, key) of uniqueUsers">
       <div
-        v-if="user.avatar"
+        v-if="user.name"
         class="relative flex items-center justify-center rounded-full h-8 w-8"
         :key="key"
         v-tooltip="user.name"
         :style="`background-color: ${user.color}`"
       >
-        <img :src="user.avatar" :alt="user.name" class="h-7 w-7 rounded-full">
-        <span
-          style="height: 0.5rem !important"
-          class="absolute bottom-0 right-0 inline-block w-2 bg-green border-2 border-white rounded-full"
-        ></span>
-      </div>
-      <div
-        v-else
-        class="relative inline-block rounded-full h-8 w-8"
-        :key="key"
-        v-tooltip="user.name"
-        :style="`background-color: ${user.color}`"
-      >
-        <span
+        <img v-if="user.avatar" :src="user.avatar" :alt="user.name" class="h-7 w-7 rounded-full">
+        <span v-else
           class="absolute"
           style="top: 50%; left: 50%; transform: translate(-50%, -50%)"
-        >
-          {{ user.initials }}
-        </span>
-        <span
+        >{{ user.initials }}</span>
+        <span v-if="user.openTabs && user.openTabs > 1"
+          class="absolute flex items-center justify-center -bottom-1 -right-1 w-5 h-5 text-xs text-white bg-green border-2 border-white rounded-full"
+        >{{ user.openTabs }}</span>
+        <span v-else
           style="height: 0.5rem !important"
           class="absolute bottom-0 right-0 inline-block w-2 bg-green border-2 border-white rounded-full"
         ></span>
@@ -49,7 +38,12 @@ export default {
   computed: {
     uniqueUsers() {
       return [
-        ...new Map(this.users.map((user) => [user["id"], user])).values(),
+        ...new Map(this.users.map((user) => [
+          user["id"], {
+            ...user,
+            openTabs: Statamic.user.id === user.id ? this.countOpenTabs(user.id) : null,
+          }
+        ])).values(),
       ];
     },
   },
@@ -66,5 +60,11 @@ export default {
       }
     });
   },
+
+  methods: {
+    countOpenTabs(id) {
+      return this.users.filter((user) => user.id === id).length
+    }
+  }
 };
 </script>
