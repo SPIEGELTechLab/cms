@@ -245,7 +245,7 @@ export default {
 
         this.editor = new Editor({
             extensions: this.getExtensions(),
-            content: this.valueToContent(clone(this.value)),
+            content: Statamic.$config.get('collaboration.enabled') ?  '' : this.valueToContent(clone(this.value)),
             editable: !this.readOnly,
             disableInputRules: ! this.config.enable_input_rules,
             disablePasteRules: ! this.config.enable_paste_rules,
