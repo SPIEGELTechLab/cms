@@ -571,6 +571,27 @@ export default {
                 exts[index] = newExtension;
             });
 
+
+            Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle).observe((yxmlEvent) => {
+                yxmlEvent.changes.delta.forEach((change) => {
+                    if (!Array.isArray(change.insert)) return;
+
+                    change.insert.forEach((yxmlElement) => {
+                        const id = yxmlElement.getAttribute('id');
+                        const handle = yxmlElement.getAttribute('values') ? yxmlElement.getAttribute('values').type : null;
+                       if (id && handle && !Object.keys(this.meta.existing).includes(id)) {
+                            // update previews
+                            let previews = {};
+                            Object.keys(this.meta.defaults[handle]).forEach(key => previews[key] = null);
+                            this.previews = Object.assign({}, this.previews, { [id]: previews });
+
+                            // update meta
+                            this.updateSetMeta(id, this.meta.new[handle]);
+                        }
+                    });
+                });
+            });
+
             return exts;
         },
 
