@@ -94,7 +94,17 @@ export default {
         },
 
         meta() {
-            return this.extension.options.bard.meta.existing[this.node.attrs.id];
+            /* TODO: find a better solution
+            if collaboration is active, there may be problems with the initial load
+            so the values are set as fallback */
+            if (this.extension.options.bard.meta.existing[this.node.attrs.id]) {
+                this.extension.options.bard.meta.existing[this.node.attrs.id]
+            }
+
+            return {
+                ...this.extension.options.bard.values,
+                _: "_"
+            };
         },
 
         previews() {
