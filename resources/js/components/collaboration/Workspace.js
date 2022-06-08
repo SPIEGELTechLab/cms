@@ -2,6 +2,7 @@ import * as Y from 'yjs'
 import StatusBar from './StatusBar.vue';
 import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
+import { IndexeddbPersistence } from 'y-indexeddb';
 
 export default class Workspace {
     constructor(container) {
@@ -33,7 +34,7 @@ export default class Workspace {
         this.document = new Y.Doc()
 
         if (this.providers.length === 0) { // Return if no provider have been provided
-            
+
             this.providers.push(new WebsocketProvider(
                 Statamic.$config.get('collaboration.websocket.url'), this.roomName, this.document
             ));
@@ -50,6 +51,9 @@ export default class Workspace {
                 providerCallback({ container: this.roomName, document: this.document });
             });
         }
+
+        // offline support
+        this.providers.push(new IndexeddbPersistence(this.roomName, this.document));
 
         if (! this.providers || this.providers.length === 0) throw "Collaboration needs at least one provider to sync changes and to work properly."
 
@@ -74,7 +78,15 @@ export default class Workspace {
             name: Statamic.user.name,
             initials: Statamic.user.initials,
             avatar: Statamic.user.avatar?.permalink,
+            color: this.generateRandomLightColorHex(),
         }
+    }
+
+    generateRandomLightColorHex() {
+        let color = "#";
+        for (let i = 0; i < 3; i++)
+            color += ("0" + Math.floor(((1 + Math.random()) * Math.pow(16, 2)) / 2).toString(16)).slice(-2);
+        return color;
     }
 
     awarenessStatesToArray(states) {
