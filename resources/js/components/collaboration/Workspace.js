@@ -39,12 +39,7 @@ export default class Workspace {
                 Statamic.$config.get('collaboration.websocket.url'), this.roomName, this.document
             ));
 
-            this.providers.push(new WebrtcProvider(
-                this.roomName, this.document
-            ))
-
-            // TODO: add offline support
-            // const provider = new IndexeddbPersistence(this.container.reference, this.document);
+            this.providers.push(new WebrtcProvider(this.roomName, this.document));
         } else {
             // TODO: make provider setting customizable
             this.providers.forEach((providerCallback) => {
