@@ -17,7 +17,7 @@ export default class Workspace {
     }
 
     start() {
-        ray('start workspace').red()
+        console.log('start workspace');
         if (this.started) return;
 
         this.initializeSharedDocument();
@@ -27,7 +27,7 @@ export default class Workspace {
     }
 
     destroy() {
-        ray('destroy workspace').red()
+        console.log('destroy workspace');
     }
 
     initializeSharedDocument() {

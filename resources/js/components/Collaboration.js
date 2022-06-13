@@ -17,7 +17,7 @@ class Collaboration {
     start(container) {
         if (!container.reference) return;
 
-        ray('START COLLABORATION').green()
+        console.log('START COLLABORATION');
         const workspace = new Workspace(container);
         this.workspaces[container.name] = workspace;
 
@@ -27,7 +27,7 @@ class Collaboration {
     destroy(container) {
         if (!this.workspaces[container.name]) return;
 
-        ray('DESTROY COLLABORATION').green();
+        console.log('DESTROY COLLABORATION');
         this.workspaces[container.name].destroy();
         delete this.workspaces[container.name];
     }

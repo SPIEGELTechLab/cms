@@ -4,7 +4,6 @@ import Statamic from './components/Statamic.js';
 import Alpine from 'alpinejs'
 import * as Globals from './bootstrap/globals'
 import { default as underscore } from 'underscore'
-import { ray } from 'node-ray/web'
 
 let global_functions = Object.keys(Globals)
 global_functions.forEach(fnName => { global[fnName] = Globals[fnName] })
@@ -20,7 +19,6 @@ window.Statamic = Statamic;
 window._ = underscore;
 window.$ = window.jQuery = require('jquery');
 window.rangy = require('rangy');
-window.ray = ray;
 
 require('./bootstrap/polyfills');
 require('./bootstrap/underscore-mixins');

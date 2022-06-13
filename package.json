@@ -109,7 +109,6 @@
     "jest": "^24.9.0",
     "kind-of": ">=6.0.3",
     "laravel-mix": "^5.0.9",
-    "node-ray": "^1.18.0",
     "sass": "^1.26.2",
     "sass-loader": "^8.0.2",
     "tailwindcss": "^1.9.0",
