@@ -489,27 +489,36 @@ export default {
         },
 
         valueToYjsDoc(value) {
-            // TODO: replace timeout
-            setTimeout(() => {
+            // Load the value as soon after the mainProvider synced
+            Statamic.$collaboration.workspaces.base.mainProvider.on('synced', () => {
+
                 value = this.valueToContent(value);
-                const collaborationyxmlFragment = Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle);
-                const existingyxmlFragment = Statamic.$collaboration.workspaces[this.storeName].yProsemirror.yXmlFragmentToProsemirrorJSON(collaborationyxmlFragment);
-                // the saved values must be add once in the collaboration document
+                const Workspace =  Statamic.$collaboration.workspaces[this.storeName];
+                const BardFragment = Workspace.document.getXmlFragment(this.handle);
+                const Y = Workspace.Y;
 
-                if (Statamic.$collaboration.workspaces[this.storeName] && !existingyxmlFragment.content.length) {
-
-                    // create collaboration document with the saved values
-                    const ydoc1 = new Statamic.$collaboration.workspaces[this.storeName].Y.Doc();
-                    const yxmlFragment = ydoc1.getXmlFragment(this.handle);
-                    Statamic.$collaboration.workspaces[this.storeName].yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, yxmlFragment);
-
-                    // merge stored values with the values from collaboration
-                    const encodeDoc = Statamic.$collaboration.workspaces[this.storeName].Y.encodeStateAsUpdate(ydoc1);
-                    Statamic.$collaboration.workspaces[this.storeName].Y.applyUpdate(Statamic.$collaboration.workspaces[this.storeName].document, encodeDoc);
+                // Abort if no Workspace has been created.
+                if (! Workspace) {
+                    throw `(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`
                 }
 
-                return null;
-            }, 250);
+                // Don't initialize the value, if no value has been provied.
+                if (! value) return;
+
+                // Don't initialize the content, as the document does already exist. 
+                if (BardFragment.length > 0) return;
+
+                // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
+                const temporaryYDoc = new Y.Doc();
+                const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
+
+                Workspace.yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
+
+                // Merge stored values with the values from collaboration
+                const encodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
+                Y.applyUpdate(Workspace.document, encodedDoc);
+
+            })
         },
 
         valueToContent(value) {
