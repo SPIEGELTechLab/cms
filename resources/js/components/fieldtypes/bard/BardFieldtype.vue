@@ -74,6 +74,7 @@
 <script>
 import uniqid from 'uniqid';
 import { BubbleMenu, Editor, EditorContent, FloatingMenu } from '@tiptap/vue-2';
+import { getSchema } from "@tiptap/core";
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
 import Blockquote from '@tiptap/extension-blockquote';
@@ -245,7 +246,7 @@ export default {
 
         this.editor = new Editor({
             extensions: this.getExtensions(),
-            content: Statamic.$config.get('collaboration.enabled') ?  '' : this.valueToContent(clone(this.value)),
+            content: Statamic.$config.get('collaboration.enabled') ?  this.valueToYjsDoc(clone(this.value)) : this.valueToContent(clone(this.value)),
             editable: !this.readOnly,
             disableInputRules: ! this.config.enable_input_rules,
             disablePasteRules: ! this.config.enable_paste_rules,
@@ -485,6 +486,30 @@ export default {
 
         visibleButtons(buttons) {
             return buttons.filter(button => this.buttonIsVisible(button));
+        },
+
+        valueToYjsDoc(value) {
+            // TODO: replace timeout
+            setTimeout(() => {
+                value = this.valueToContent(value);
+                const collaborationyxmlFragment = Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle);
+                const existingyxmlFragment = Statamic.$collaboration.workspaces[this.storeName].yProsemirror.yXmlFragmentToProsemirrorJSON(collaborationyxmlFragment);
+                // the saved values must be add once in the collaboration document
+
+                if (Statamic.$collaboration.workspaces[this.storeName] && !existingyxmlFragment.content.length) {
+
+                    // create collaboration document with the saved values
+                    const ydoc1 = new Statamic.$collaboration.workspaces[this.storeName].Y.Doc();
+                    const yxmlFragment = ydoc1.getXmlFragment(this.handle);
+                    Statamic.$collaboration.workspaces[this.storeName].yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, yxmlFragment);
+
+                    // merge stored values with the values from collaboration
+                    const encodeDoc = Statamic.$collaboration.workspaces[this.storeName].Y.encodeStateAsUpdate(ydoc1);
+                    Statamic.$collaboration.workspaces[this.storeName].Y.applyUpdate(Statamic.$collaboration.workspaces[this.storeName].document, encodeDoc);
+                }
+
+                return null;
+            }, 250);
         },
 
         valueToContent(value) {

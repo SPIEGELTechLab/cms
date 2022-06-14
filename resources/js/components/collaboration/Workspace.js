@@ -1,8 +1,10 @@
-import * as Y from 'yjs'
+import * as Y from 'yjs';
+import * as yProsemirror from 'y-prosemirror';
 import StatusBar from './StatusBar.vue';
 import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
+
 
 export default class Workspace {
     constructor(container) {
@@ -14,6 +16,8 @@ export default class Workspace {
         this.mainProvider = null;
         this.roomName = this.container.reference;
         this.users;
+        this.Y = Y;
+        this.yProsemirror = yProsemirror;
     }
 
     start() {
