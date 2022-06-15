@@ -493,32 +493,32 @@ export default {
             Statamic.$collaboration.workspaces.base.mainProvider.on('synced', () => {
 
                 value = this.valueToContent(value);
-                const Workspace =  Statamic.$collaboration.workspaces[this.storeName];
-                const BardFragment = Workspace.document.getXmlFragment(this.handle);
-                const Y = Workspace.Y;
+                const workspace =  Statamic.$collaboration.workspaces[this.storeName];
+                const bardFragment = workspace.document.getXmlFragment(this.handle);
+                const Y = workspace.Y;
 
                 // Abort if no Workspace has been created.
-                if (! Workspace) {
-                    throw `(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`
+                if (!workspace) {
+                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`);
                 }
 
                 // Don't initialize the value, if no value has been provied.
-                if (! value) return;
+                if (!value) return;
 
-                // Don't initialize the content, as the document does already exist. 
-                if (BardFragment.length > 0) return;
+                // Don't initialize the content, as the document does already exist.
+                if (bardFragment.length > 0) return;
 
                 // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
                 const temporaryYDoc = new Y.Doc();
                 const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
 
-                Workspace.yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
+                workspace.yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
 
                 // Merge stored values with the values from collaboration
                 const encodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
-                Y.applyUpdate(Workspace.document, encodedDoc);
+                Y.applyUpdate(workspace.document, encodedDoc);
 
-            })
+            });
         },
 
         valueToContent(value) {
