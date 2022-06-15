@@ -490,7 +490,7 @@ export default {
 
         valueToYjsDoc(value) {
             // Load the value as soon after the mainProvider synced
-            Statamic.$collaboration.workspaces.base.mainProvider.on('synced', () => {
+            Statamic.$collaboration.workspaces[this.storeName].mainProvider.on('synced', () => {
 
                 value = this.valueToContent(value);
                 // Don't initialize the value, if no value has been provied.
