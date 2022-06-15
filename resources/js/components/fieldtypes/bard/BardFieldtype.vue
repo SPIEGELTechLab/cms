@@ -493,21 +493,21 @@ export default {
             Statamic.$collaboration.workspaces.base.mainProvider.on('synced', () => {
 
                 value = this.valueToContent(value);
-                const workspace =  Statamic.$collaboration.workspaces[this.storeName];
-                const bardFragment = workspace.document.getXmlFragment(this.handle);
-                const Y = workspace.Y;
-
-                // Abort if no Workspace has been created.
-                if (!workspace) {
-                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`);
-                }
-
                 // Don't initialize the value, if no value has been provied.
                 if (!value) return;
 
-                // Don't initialize the content, as the document does already exist.
+                const workspace =  Statamic.$collaboration.workspaces[this.storeName];
+                // Abort if no Workspace has been created.
+                if (!workspace) {
+                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`);
+                    return;
+                }
+
+                const bardFragment = workspace.document.getXmlFragment(this.handle);
+                 // Don't initialize the content, as the document does already exist.
                 if (bardFragment.length > 0) return;
 
+                const Y = workspace.Y;
                 // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
                 const temporaryYDoc = new Y.Doc();
                 const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
