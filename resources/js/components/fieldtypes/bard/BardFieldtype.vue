@@ -504,8 +504,11 @@ export default {
                 }
 
                 const bardFragment = workspace.document.getXmlFragment(this.handle);
+                if (bardFragment.length > 0) return;
+
+
                 // Remove the state from the XMLFragment for the first user to show only the stored values
-                if (workspace.users.length === 1 && bardFragment.length > 0) {
+                if (workspace.users.length === 1) {
                    bardFragment.delete(0, bardFragment.length);
                 }
 
@@ -516,25 +519,14 @@ export default {
 
                 workspace.yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
 
-                // Encode the current state as a binary buffer
-                let workspaceEncodedDoc = Y.encodeStateAsUpdate(workspace.document);
-                let encodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
+                // Encode the temporary state as a binary buffer
+                let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
 
                 // Apply saved values for single user
                 if (workspace.users.length === 1) {
-                   Y.applyUpdate(workspace.document, encodedDoc);
+                   Y.applyUpdate(workspace.document, temporaryEncodedDoc);
                    return;
                 }
-
-                // Syncing clients using state vectors without using the Y.Doc
-                const stateVector1 = Y.encodeStateVectorFromUpdate(workspaceEncodedDoc)
-                const stateVector2 = Y.encodeStateVectorFromUpdate(encodedDoc)
-                const diff1 = Y.diffUpdate(workspaceEncodedDoc, stateVector2)
-                const diff2 = Y.diffUpdate(encodedDoc, stateVector1)
-
-                // Sync mulitple clients
-                workspaceEncodedDoc = Y.mergeUpdates([encodedDoc, diff2])
-                workspaceEncodedDoc = Y.mergeUpdates([encodedDoc, diff1])
 
             });
         },
