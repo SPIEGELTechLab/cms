@@ -504,6 +504,11 @@ export default {
                 }
 
                 const bardFragment = workspace.document.getXmlFragment(this.handle);
+                // Remove the state from the XMLFragment for the first user to show only the stored values
+                if (workspace.users.length === 1 && bardFragment.length > 0) {
+                    bardFragment.delete(0, bardFragment.length);
+                }
+
                  // Don't initialize the content, as the document does already exist.
                 if (bardFragment.length > 0) return;
 
