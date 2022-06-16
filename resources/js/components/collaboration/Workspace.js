@@ -4,6 +4,7 @@ import StatusBar from './StatusBar.vue';
 import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
+import Statamic from '../Statamic';
 
 
 export default class Workspace {
@@ -67,8 +68,22 @@ export default class Workspace {
 
         // Listen to any changes of the dirty state
         this.dirtyState.observe(event => {
+            console.log(event)
             // Sync the observed dirty state back to the actual document.
-            console.log('Dirty State', this.dirtyState.get(0))
+            let SyncedDirtyState = this.dirtyState.get(0)
+
+            // If the Yjs and local state are the same. Do nothing.
+            if (SyncedDirtyState === Statamic.$dirty.has(this.container.name)) return;
+
+            if (SyncedDirtyState === true) {
+                // Add the dirty state locally.
+                Statamic.$dirty.add(this.container.name)
+            } else {
+                // Only remove the dirty state if it has been set.
+                if (! Statamic.$dirty.has(this.container.name)) return;
+
+                Statamic.$dirty.remove(this.container.name);
+            }
           })
     }
 
@@ -180,10 +195,13 @@ export default class Workspace {
         if (this.dirtyState.get(0) === true) return;
 
         this.document.transact(() => {
-            if (this.dirtyState.length > 0) {
-                this.dirtyState.forEach((value, index) => {
-                    this.dirtyState.delete(index)
-                })
+            // if (this.dirtyState.length > 0) {
+            //     this.dirtyState.forEach((value, index) => {
+            //         this.dirtyState.delete(index)
+            //     })
+            // }
+            if (this.dirtyState.get(0)) {
+                this.dirtyState.delete(0)
             }
             this.dirtyState.insert(0, [true]);
         })
