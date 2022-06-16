@@ -15,6 +15,7 @@ export default class Workspace {
         this.providers = [];
         this.mainProvider = null;
         this.roomName = this.container.reference;
+        this.dirtyState = null;
         this.users;
         this.Y = Y;
         this.yProsemirror = yProsemirror;
@@ -25,6 +26,7 @@ export default class Workspace {
         if (this.started) return;
 
         this.initializeSharedDocument();
+        this.initializeDirtyState();
         this.initializeAwareness();
         this.initializeStatusBar();
         this.workspaceStarted();
@@ -57,6 +59,17 @@ export default class Workspace {
         if (! this.providers || this.providers.length === 0) throw "Collaboration needs at least one provider to sync changes and to work properly."
 
         this.mainProvider = this.providers[0]
+    }
+
+    initializeDirtyState() {
+        this.dirtyState = this.document.getArray('_dirtyState');
+        this.clearDirtyState(); // initialize the dirty state.
+
+        // Listen to any changes of the dirty state
+        this.dirtyState.observe(event => {
+            // Sync the observed dirty state back to the actual document.
+            console.log('Dirty State', this.dirtyState.get(0))
+          })
     }
 
     initializeAwareness() {
@@ -161,5 +174,29 @@ export default class Workspace {
 
     workspaceStarted() {
         this.started = true
+    }
+
+    dirty() {
+        if (this.dirtyState.get(0) === true) return;
+
+        this.document.transact(() => {
+            if (this.dirtyState.length > 0) {
+                this.dirtyState.forEach((value, index) => {
+                    this.dirtyState.delete(index)
+                })
+            }
+            this.dirtyState.insert(0, [true]);
+        })
+    }
+
+    clearDirtyState() {
+        if (this.dirtyState.get(0) === false) return;
+
+        this.document.transact(() => {
+            if (this.dirtyState.get(0)) {
+                this.dirtyState.delete(0)
+            }
+            this.dirtyState.insert(0, [false]);
+        })
     }
 }

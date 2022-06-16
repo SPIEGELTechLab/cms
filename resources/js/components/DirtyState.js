@@ -1,4 +1,5 @@
 import Vue from 'vue'
+import Statamic from './Statamic';
 
 const vm = new Vue({
 
@@ -25,12 +26,20 @@ const vm = new Vue({
         add(name) {
             if (this.names.indexOf(name) == -1) {
                 this.names.push(name);
+
+                if (Statamic.$config.get('collaboration.enabled')) {
+                    Statamic.$collaboration.workspaces[name].dirty();
+                }
             }
         },
 
         remove(name) {
             const i = this.names.indexOf(name);
             this.names.splice(i, 1);
+
+            if (Statamic.$config.get('collaboration.enabled')) {
+                Statamic.$collaboration.workspaces[name].clearDirtyState();
+            }
         },
 
         enableWarning() {
