@@ -68,7 +68,7 @@ export default class Workspace {
 
         // Listen to any changes of the dirty state
         this.dirtyState.observe(event => {
-            console.log(event)
+            // console.log(event)
             // Sync the observed dirty state back to the actual document.
             let SyncedDirtyState = this.dirtyState.get(0)
 
@@ -84,7 +84,7 @@ export default class Workspace {
 
                 Statamic.$dirty.remove(this.container.name);
             }
-          })
+        })
     }
 
     initializeAwareness() {

@@ -101,7 +101,7 @@ import Text from '@tiptap/extension-text';
 import Underline from '@tiptap/extension-underline';
 import BardSource from './Source.vue';
 import Document from './Document';
-import { Set } from './Set'
+import { Set } from './Set';
 import { Small } from './Small';
 import { Image } from './Image';
 import { Link } from './Link';
@@ -114,6 +114,8 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import css from 'highlight.js/lib/languages/css'
 import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/github.css';
+import SetCommand from './setCommand';
+import suggestion from './setSuggestion';
 
 /** @deprecated */
 // import mark from './Mark';
@@ -277,8 +279,13 @@ export default {
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
     },
 
+    created() {
+        this.$events.$on('add-set', this.addSet);
+    },
+
     beforeDestroy() {
         this.editor.destroy();
+        this.$events.$off('add-set');
     },
 
     watch: {
@@ -384,6 +391,8 @@ export default {
         },
 
         shouldShowSetButton({ view, state }) {
+            if (Statamic.$config.get('collaboration.enabled')) return false;
+
             const { selection } = state;
             const { $anchor, empty } = selection;
             const isRootDepth = $anchor.depth === 1;
@@ -596,6 +605,10 @@ export default {
                 && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
             ) {
                 exts.push(
+                    SetCommand.configure({
+                        suggestion: {...suggestion, items: () => { return this.config.sets } },
+                    }),
+
                     Collaboration.configure({
                         // TODO: We should do some error handling and clean this up a bit
                         fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
