@@ -492,7 +492,11 @@ export default {
             // Load the value as soon after the mainProvider synced
             Statamic.$collaboration.workspaces[this.storeName].mainProvider.on('synced', () => {
 
-                value = this.valueToContent(value);
+                // online offline support: value is already formatted for prosemirror
+                if (typeof value === 'string')  {
+                    value = this.valueToContent(value);
+                }
+
                 // Don't initialize the value, if no value has been provied.
                 if (!value) return;
 

@@ -88,14 +88,15 @@ export default class Workspace {
     }
 
     initializeAwareness() {
-        this.awareness = this.mainProvider.awareness
+        this.awareness = this.mainProvider.awareness;
 
-        this.awareness.setLocalStateField('user', this.loggedInUser);
+        this.awareness.setLocalStateField('user', this.loggedInUser());
 
         this.users = this.awarenessStatesToArray(this.awareness.states);
 
         this.awareness.on('update', () => {
             this.users = this.awarenessStatesToArray(this.awareness.states);
+            Statamic.$events.$emit('users-updated', this.users);
         });
     }
 
@@ -120,7 +121,11 @@ export default class Workspace {
         return Array.from(states.entries()).map(([key, value]) => {
             return {
                 clientId: key,
-                user: value.user,
+                user: {
+                    ...value.user,
+                    current: this.awareness.clientID === key,
+                    online: navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
+                },
             }
         });
     }
@@ -166,9 +171,7 @@ export default class Workspace {
     initializeStatusBar() {
         Statamic.component('CollaborationStatusBar', StatusBar);
 
-        this.container.pushComponent('CollaborationStatusBar', {
-            props: { awareness: this.awareness }
-        });
+        this.container.pushComponent('CollaborationStatusBar', { });
     }
 
     initializeFocus() {
