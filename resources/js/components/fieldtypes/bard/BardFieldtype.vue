@@ -535,7 +535,7 @@ export default {
             // A json string is passed from PHP since that's what's submitted.
             value = JSON.parse(value);
 
-            return value.length
+            return Array.isArray(value) && value.length
                 ? { type: 'doc', content: value }
                 : null;
         },
