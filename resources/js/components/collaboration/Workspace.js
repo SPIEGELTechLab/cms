@@ -68,7 +68,6 @@ export default class Workspace {
 
         // Listen to any changes of the dirty state
         this.dirtyState.observe(event => {
-            // console.log(event)
             // Sync the observed dirty state back to the actual document.
             let SyncedDirtyState = this.dirtyState.get(0)
 
@@ -76,13 +75,13 @@ export default class Workspace {
             if (SyncedDirtyState === Statamic.$dirty.has(this.container.name)) return;
 
             if (SyncedDirtyState === true) {
-                // Add the dirty state locally.
-                Statamic.$dirty.add(this.container.name)
-            } else {
-                // Only remove the dirty state if it has been set.
-                if (! Statamic.$dirty.has(this.container.name)) return;
 
-                Statamic.$dirty.remove(this.container.name);
+                Statamic.$dirty.add(this.container.name) // Add the dirty state locally.
+
+            } else if (Statamic.$dirty.has(this.container.name)) {
+
+                Statamic.$dirty.remove(this.container.name); // Only remove the dirty state if it has been set.
+
             }
         })
     }
