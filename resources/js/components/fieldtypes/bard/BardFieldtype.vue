@@ -47,20 +47,6 @@
                     :editor="editor" />
             </bubble-menu>
 
-            <floating-menu class="bard-set-selector" :editor="editor" :tippy-options="{ offset: calcFloatingOffset, zIndex: 6 }" :should-show="shouldShowSetButton" v-if="editor">
-                <dropdown-list>
-                    <template v-slot:trigger>
-                        <button type="button" class="btn-round" :aria-label="__('Add Set')" v-tooltip="__('Add Set')">
-                            <span class="icon icon-plus text-grey-80 antialiased"></span>
-                        </button>
-                    </template>
-
-                    <div v-for="set in config.sets" :key="set.handle">
-                        <dropdown-item :text="set.display || set.handle" @click="addSet(set.handle)" />
-                    </div>
-                </dropdown-list>
-            </floating-menu>
-
             <editor-content :editor="editor" v-show="!showSource" :id="fieldId" />
             <bard-source :html="htmlWithReplacedLinks" v-if="showSource" />
         </div>
@@ -73,7 +59,7 @@
 
 <script>
 import uniqid from 'uniqid';
-import { BubbleMenu, Editor, EditorContent, FloatingMenu } from '@tiptap/vue-2';
+import { BubbleMenu, Editor, EditorContent } from '@tiptap/vue-2';
 import Blockquote from '@tiptap/extension-blockquote';
 import Bold from '@tiptap/extension-bold';
 import BulletList from '@tiptap/extension-bullet-list';
@@ -123,7 +109,6 @@ export default {
         BardSource,
         BardToolbarButton,
         EditorContent,
-        FloatingMenu,
         LinkToolbarButton,
     },
 
@@ -419,21 +404,6 @@ export default {
         closeFullscreen() {
             this.fullScreenMode = false;
             this.$root.hideOverflow = false;
-        },
-
-        shouldShowSetButton({ view, state }) {
-            const { selection } = state;
-            const { $anchor, empty } = selection;
-            const isRootDepth = $anchor.depth === 1;
-            const isEmptyTextBlock = $anchor.parent.isTextblock && !$anchor.parent.type.spec.code && !$anchor.parent.textContent;
-
-            const isActive = view.hasFocus() && empty && isRootDepth && isEmptyTextBlock;
-            return this.config.sets.length && (this.config.always_show_set_button || isActive);
-        },
-
-        calcFloatingOffset({ reference }) {
-            let x = reference.x + reference.width + 20;
-            return [0, -x];
         },
 
         initToolbarButtons() {
