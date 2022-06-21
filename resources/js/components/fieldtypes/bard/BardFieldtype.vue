@@ -98,7 +98,9 @@ import Text from '@tiptap/extension-text';
 import Underline from '@tiptap/extension-underline';
 import BardSource from './Source.vue';
 import Document from './Document';
-import { Set } from './Set'
+import { Set } from './Set';
+import Commands from './Commands';
+import SetSuggestion from './SetSuggestion';
 import { Small } from './Small';
 import { Image } from './Image';
 import { Link } from './Link';
@@ -292,8 +294,13 @@ export default {
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
     },
 
+    created() {
+        this.$events.$on('add-set', this.addSet);
+    },
+
     beforeDestroy() {
         this.editor.destroy();
+        this.$events.$off('add-set');
     },
 
     watch: {
@@ -535,6 +542,9 @@ export default {
                 History,
                 Paragraph,
                 Set.configure({ bard: this }),
+                Commands.configure({
+                    suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
+                }),
                 Text
             ];
 

@@ -54,7 +54,8 @@ export const Set = Node.create({
                 const { selection } = tr;
                 const node = this.type.create(attrs);
                 if (dispatch) {
-                    const transaction = tr.insert(selection.$cursor.pos - 1, node);
+                    // replace slash and space before slash
+                    const transaction = tr.replaceWith(selection.$cursor.pos - 2, selection.$cursor.pos + 1, node);
                     dispatch(transaction);
                 }
             },
