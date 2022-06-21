@@ -73,6 +73,7 @@ import Italic from '@tiptap/extension-italic';
 import ListItem from '@tiptap/extension-list-item';
 import OrderedList from '@tiptap/extension-ordered-list';
 import Paragraph from '@tiptap/extension-paragraph';
+import Placeholder from '@tiptap/extension-placeholder';
 import Strike from '@tiptap/extension-strike';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
@@ -514,6 +515,9 @@ export default {
                 Set.configure({ bard: this }),
                 Commands.configure({
                     suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
+                }),
+                Placeholder.configure({
+                    placeholder: "type '/' to add sets",
                 }),
                 Text
             ];
