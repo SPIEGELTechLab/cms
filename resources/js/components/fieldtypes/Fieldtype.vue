@@ -26,20 +26,53 @@ export default {
     },
 
     methods: {
-        update(value) {
-            this.$emit('input', value);
+
+        update(input) {
+            this.$emit("input", this.isInputEvent(input) ? input.target.value : input);
+            this.updateCursorPosition(input);
         },
 
-        updateDebounced: _.debounce(function (value) {
-            this.update(value);
+        updateDebounced: _.debounce(function (input) {
+            this.update(input);
         }, 150),
 
         updateMeta(value) {
             this.$emit('meta-updated', value);
-        }
+        },
+
+        blurEvent() {
+            Statamic.user.cursor = null;
+            this.$emit('blur');
+        },
+
+        updateCursorPosition(input) {
+            if (! this.isInputEvent(input) && ! this.isPointerEvent(input) && ! this.isKeyboardEvent(input)) return;
+
+            Statamic.user.cursor = {
+                handle: this.handle,
+                position: {
+                    start: input.target.selectionStart,
+                    end: input.target.selectionEnd,
+                }
+            }
+        },
+
+        isInputEvent(input) {
+            return typeof input === "object" && input.constructor.name === "InputEvent";
+        },
+
+        isPointerEvent(input) {
+            return typeof input === "object" && input.constructor.name === "PointerEvent";
+        },
+
+        isKeyboardEvent(input) {
+            return typeof input === "object" && input.constructor.name === "KeyboardEvent";
+        },
+
     },
 
     computed: {
+
         name() {
             if (this.namePrefix) {
                 return `${this.namePrefix}[${this.handle}]`;
@@ -59,6 +92,7 @@ export default {
         fieldId() {
             return 'field_'+this.config.handle;
         }
+
     },
 
     watch: {
