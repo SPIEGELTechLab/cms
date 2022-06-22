@@ -31,6 +31,7 @@ export default class Workspace {
         this.initializeSharedDocument();
         
         this.mainProvider.on('status', event => {
+            // TODO: Will be called multiple times after a disconned
             if (event.status === 'connected') {
                 console.log('connected WORKSPACE')
                 // TODO: reset websocket in case one users opens the document.
@@ -150,84 +151,106 @@ export default class Workspace {
                 this.fieldsets.push({
                     handle: field.handle,
                     type: field.type,
-                    synced: false,
                 });
             })
         });
     }
 
     initializeWebsocket() {
-        this.fieldsets.forEach(field => {
-
-            switch (field.type) {
-                case 'text':
-                case 'slug':
-                case 'textarea':
-                    this.document.getText(field.handle).insert(0, this.container.values[field.handle])
-                    field.synced = true
-                    break;
-                default:
-                    console.log('The field', field.handle, 'will be synced via YJS.')
-            }
-           
-        })
+        setTimeout(() => { // TODO: That's nasty
+            this.fieldsets.forEach(field => {
+    
+                switch (field.type) {
+                    case 'text':
+                    case 'slug':
+                    case 'textarea':
+                        if (this.users.length > 1) {
+                            console.log('get from websocket')
+                            // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
+                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                                handle: field.handle,
+                                user: Statamic.user.id,
+                                value: this.document.getText(field.handle).toString() ?? ''
+                            });
+                        } else {
+                            console.log('reset websocket')
+                            // In case only one user has been logged in, we want to reset the websocket.                        
+                            this.document.transact(() => {
+                                // Delete websocket data in case some data does exist.
+                                if (this.document.getText(field.handle).length > 0) {
+                                    console.log('deletes with length of', this.document.getText(field.handle).length)
+                                    this.document.getText(field.handle).delete(0, this.document.getText(field.handle).length)
+                                }
+                                // Initialize the websocket
+                                console.log('insert the init data ', this.container.values[field.handle])
+                                this.document.getText(field.handle).insert(0, this.container.values[field.handle]);
+                            })
+                        }
+                        break;
+                    default:
+                        console.log('The field', field.handle, 'will not be synced via YJS.')
+                }
+            })
+        }, 2000)
     }
 
     syncLocalChanges() {
-        Statamic.$store.subscribe((mutation, state) => {
-            if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
+        setTimeout(() => { // TODO: That's nasty as well
+            Statamic.$store.subscribe((mutation, state) => {
+                if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
 
-            // Ignore bard fields for now. We need a better approach
-            if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
+                // Ignore bard fields for now. We need a better approach
+                if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
 
-            textUpdate(
-                this.document.getText(mutation.payload.handle),
-                mutation.payload.value,
-                this.document.getText(mutation.payload.handle).toString(),
-                mutation.payload.position,
-            )
-        });
+                textUpdate(
+                    this.document.getText(mutation.payload.handle),
+                    mutation.payload.value,
+                    this.document.getText(mutation.payload.handle).toString(),
+                    mutation.payload.position,
+                )
+            });
+        }, 2000)
     }
 
     observeYChanges() {
-        this.fieldsets.forEach(field => {
-            
-            if (!field.synced) return;
+        setTimeout(() => { // TODO: That's nasty 3
+            this.fieldsets.forEach(field => {
+                
+                console.log('observe')
 
-            switch (field.type) {
-                case 'text':
-                case 'slug':
-                case 'textarea':
-                    this.document.getText(field.handle).observe(event => {
-                        console.log('observed ', event)
+                switch (field.type) {
+                    case 'text':
+                    case 'slug':
+                    case 'textarea':
+                        this.document.getText(field.handle).observe(event => {
+                            console.log('observed ', event)
 
-                        let toUpdate = [];
+                            let toUpdate = [];
 
-                        // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
-                        event.delta.forEach((delta, index) => {
-                            if (toUpdate.includes(field.handle)) return;
-                            
-                            toUpdate.push(field.handle)
+                            // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
+                            event.delta.forEach((delta, index) => {
+                                if (toUpdate.includes(field.handle)) return;
+                                
+                                toUpdate.push(field.handle)
+                            })
+
+                            // Working through each field only once.
+                            toUpdate.forEach(handle => {
+                                Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                                    handle: handle,
+                                    user: Statamic.user.id,
+                                    value: this.document.getText(handle).toString()
+                                });
+                            })
+
+                            // Reset fields we did update
+                            toUpdate = []
+
                         })
-
-                        // Working through each field only once.
-                        toUpdate.forEach(handle => {
-                            this.document.getText(handle)
-
-                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
-                                handle: handle,
-                                user: Statamic.user.id,
-                                value: this.document.getText(handle).toString()
-                            });
-                        })
-
-                        // Reset fields we did update
-                        toUpdate = []
-
-                    })
-                    break;
-            }
-        })
+                        break;
+                }
+            })
+        }, 2500);
     }
 
     getFieldsetType(handle) {
@@ -264,7 +287,6 @@ export default class Workspace {
         if (this.dirtyState.get(0) === true) return;
 
         this.document.transact(() => {
-            console.log('dirty')
             // if (this.dirtyState.length > 0) {
             //     this.dirtyState.forEach((value, index) => {
             //         this.dirtyState.delete(index)
@@ -282,7 +304,7 @@ export default class Workspace {
 
         this.document.transact(() => {
             if (this.dirtyState.get(0)) {
-                this.dirtyState.delete(0)
+                this.dirtyState.delete(0, this.dirtyState.length)
             }
             this.dirtyState.insert(0, [false]);
         })
