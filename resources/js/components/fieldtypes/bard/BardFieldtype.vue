@@ -513,14 +513,19 @@ export default {
                 History,
                 Paragraph,
                 Set.configure({ bard: this }),
-                Commands.configure({
-                    suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
-                }),
-                Placeholder.configure({
-                    placeholder: "type '/' to add sets",
-                }),
                 Text
             ];
+
+            if (this.config.sets.length > 0) {
+                exts.push(
+                    Commands.configure({
+                        suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
+                    }),
+                    Placeholder.configure({
+                        placeholder: "type '/' to add sets",
+                    }),
+                );
+            }
 
             let btns = this.buttons.map(button => button.name);
 
