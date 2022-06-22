@@ -25,6 +25,12 @@
     min-height: 80px;
 }
 
+.bard-editor .ProseMirror p.is-empty::before {
+    content: attr(data-placeholder);
+    height: 0;
+    @apply text-grey-70 pointer-events-none float-left;
+}
+
 // Responive Wangjangling
 @screen md {
     .bard-editor .ProseMirror { @apply p-2; }

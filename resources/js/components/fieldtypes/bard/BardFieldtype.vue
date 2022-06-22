@@ -1,12 +1,10 @@
 <template>
-
     <div
         class="bard-fieldtype-wrapper"
-        :class="{'bard-fullscreen': fullScreenMode }"
+        :class="{ 'bard-fullscreen': fullScreenMode }"
         @dragstart.stop="ignorePageHeader(true)"
         @dragend="ignorePageHeader(false)"
     >
-
         <div class="bard-fixed-toolbar" v-if="!readOnly && showFixedToolbar">
             <div class="flex flex-wrap items-center no-select" v-if="toolbarIsFixed">
                 <component
@@ -17,25 +15,49 @@
                     :active="buttonIsActive(button)"
                     :config="config"
                     :bard="_self"
-                    :editor="editor" />
+                    :editor="editor"
+                />
             </div>
             <div class="flex items-center no-select">
                 <div class="h-10 -my-sm border-l pr-1 w-px" v-if="toolbarIsFixed && hasExtraButtons"></div>
-                <button class="bard-toolbar-button" @click="showSource = !showSource" v-if="allowSource" v-tooltip="__('Show HTML Source')" :aria-label="__('Show HTML Source')">
-                    <svg-icon name="file-code" class="w-4 h-4 "/>
+                <button
+                    class="bard-toolbar-button"
+                    @click="showSource = !showSource"
+                    v-if="allowSource"
+                    v-tooltip="__('Show HTML Source')"
+                    :aria-label="__('Show HTML Source')"
+                >
+                    <svg-icon name="file-code" class="w-4 h-4 " />
                 </button>
-                <button class="bard-toolbar-button" @click="toggleCollapseSets" v-tooltip="__('Expand/Collapse Sets')" :aria-label="__('Expand/Collapse Sets')" v-if="config.sets.length > 0">
+                <button
+                    class="bard-toolbar-button"
+                    @click="toggleCollapseSets"
+                    v-tooltip="__('Expand/Collapse Sets')"
+                    :aria-label="__('Expand/Collapse Sets')"
+                    v-if="config.sets.length > 0"
+                >
                     <svg-icon name="expand-collapse-vertical" class="w-4 h-4" />
                 </button>
-                <button class="bard-toolbar-button" @click="toggleFullscreen" v-tooltip="__('Toggle Fullscreen Mode')" aria-label="__('Toggle Fullscreen Mode')" v-if="config.fullscreen">
+                <button
+                    class="bard-toolbar-button"
+                    @click="toggleFullscreen"
+                    v-tooltip="__('Toggle Fullscreen Mode')"
+                    aria-label="__('Toggle Fullscreen Mode')"
+                    v-if="config.fullscreen"
+                >
                     <svg-icon name="shrink-all" class="w-4 h-4" v-if="fullScreenMode" />
                     <svg-icon name="expand" class="w-4 h-4" v-else />
                 </button>
             </div>
         </div>
 
-        <div class="bard-editor" :class="{ 'mode:read-only': readOnly, 'mode:minimal': ! showFixedToolbar }" tabindex="0">
-            <bubble-menu class="bard-floating-toolbar" :editor="editor" :tippy-options="{ maxWidth: 'none', zIndex: 1000 }" v-if="editor && toolbarIsFloating && !readOnly">
+        <div class="bard-editor" :class="{ 'mode:read-only': readOnly, 'mode:minimal': !showFixedToolbar }" tabindex="0">
+            <bubble-menu
+                class="bard-floating-toolbar"
+                :editor="editor"
+                :tippy-options="{ maxWidth: 'none', zIndex: 1000 }"
+                v-if="editor && toolbarIsFloating && !readOnly"
+            >
                 <component
                     v-for="button in visibleButtons(buttons)"
                     :key="button.name"
@@ -44,36 +66,20 @@
                     :active="buttonIsActive(button)"
                     :bard="_self"
                     :config="config"
-                    :editor="editor" />
+                    :editor="editor"
+                />
             </bubble-menu>
-
-            <floating-menu class="bard-set-selector" :editor="editor" :tippy-options="{ offset: calcFloatingOffset, zIndex: 6 }" :should-show="shouldShowSetButton" v-if="editor">
-                <dropdown-list>
-                    <template v-slot:trigger>
-                        <button type="button" class="btn-round" :aria-label="__('Add Set')" v-tooltip="__('Add Set')">
-                            <span class="icon icon-plus text-grey-80 antialiased"></span>
-                        </button>
-                    </template>
-
-                    <div v-for="set in config.sets" :key="set.handle">
-                        <dropdown-item :text="set.display || set.handle" @click="addSet(set.handle)" />
-                    </div>
-                </dropdown-list>
-            </floating-menu>
 
             <editor-content :editor="editor" v-show="!showSource" :id="fieldId" />
             <bard-source :html="htmlWithReplacedLinks" v-if="showSource" />
         </div>
-        <div class="bard-footer-toolbar" v-if="config.reading_time">
-            {{ readingTime }} {{ __('Reading Time') }}
-        </div>
+        <div class="bard-footer-toolbar" v-if="config.reading_time">{{ readingTime }} {{ __('Reading Time') }}</div>
     </div>
-
 </template>
 
 <script>
 import uniqid from 'uniqid';
-import { BubbleMenu, Editor, EditorContent, FloatingMenu } from '@tiptap/vue-2';
+import { BubbleMenu, Editor, EditorContent } from '@tiptap/vue-2';
 import { getSchema } from "@tiptap/core";
 import Collaboration from '@tiptap/extension-collaboration';
 import CollaborationCursor from '@tiptap/extension-collaboration-cursor';
@@ -90,6 +96,7 @@ import Italic from '@tiptap/extension-italic';
 import ListItem from '@tiptap/extension-list-item';
 import OrderedList from '@tiptap/extension-ordered-list';
 import Paragraph from '@tiptap/extension-paragraph';
+import Placeholder from '@tiptap/extension-placeholder';
 import Strike from '@tiptap/extension-strike';
 import Subscript from '@tiptap/extension-subscript';
 import Superscript from '@tiptap/extension-superscript';
@@ -102,6 +109,8 @@ import Underline from '@tiptap/extension-underline';
 import BardSource from './Source.vue';
 import Document from './Document';
 import { Set } from './Set';
+import Commands from './Commands';
+import SetSuggestion from './SetSuggestion';
 import { Small } from './Small';
 import { Image } from './Image';
 import { Link } from './Link';
@@ -124,7 +133,6 @@ export default {
         BardSource,
         BardToolbarButton,
         EditorContent,
-        FloatingMenu,
         LinkToolbarButton,
     },
 
@@ -295,8 +303,13 @@ export default {
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
     },
 
+    created() {
+        this.$events.$on('add-set', this.addSet);
+    },
+
     beforeDestroy() {
         this.editor.destroy();
+        this.$events.$off('add-set');
     },
 
     watch: {
@@ -415,23 +428,6 @@ export default {
         closeFullscreen() {
             this.fullScreenMode = false;
             this.$root.hideOverflow = false;
-        },
-
-        shouldShowSetButton({ view, state }) {
-            if (Statamic.$config.get('collaboration.enabled')) return false;
-
-            const { selection } = state;
-            const { $anchor, empty } = selection;
-            const isRootDepth = $anchor.depth === 1;
-            const isEmptyTextBlock = $anchor.parent.isTextblock && !$anchor.parent.type.spec.code && !$anchor.parent.textContent;
-
-            const isActive = view.hasFocus() && empty && isRootDepth && isEmptyTextBlock;
-            return this.config.sets.length && (this.config.always_show_set_button || isActive);
-        },
-
-        calcFloatingOffset({ reference }) {
-            let x = reference.x + reference.width + 20;
-            return [0, -x];
         },
 
         initToolbarButtons() {
@@ -589,6 +585,17 @@ export default {
                 Set.configure({ bard: this }),
                 Text
             ];
+
+            if (this.config.sets.length > 0) {
+                exts.push(
+                    Commands.configure({
+                        suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
+                    }),
+                    Placeholder.configure({
+                        placeholder: "type '/' to add sets",
+                    }),
+                );
+            }
 
             let btns = this.buttons.map(button => button.name);
 
