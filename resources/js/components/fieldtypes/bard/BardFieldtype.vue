@@ -115,10 +115,6 @@ import css from 'highlight.js/lib/languages/css'
 import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/github.css';
 
-/** @deprecated */
-// import mark from './Mark';
-// import node from './Node';
-
 export default {
 
     mixins: [Fieldtype, ManagesSetMeta],
@@ -237,7 +233,29 @@ export default {
 
                 return Object.keys(this.storeState.errors).some(key => key.startsWith(prefix));
             })
-        }
+        },
+
+        replicatorPreview() {
+            const stack = JSON.parse(this.value);
+            let text = '';
+            while (stack.length) {
+                const node = stack.shift();
+                if (node.type === 'text') {
+                    text += ` ${node.text || ''}`;
+                } else if (node.type === 'set') {
+                    const handle = node.attrs.values.type;
+                    const set = this.config.sets.find(set => set.handle === handle);
+                    text += ` [${set ? set.display : handle}]`;
+                }
+                if (text.length > 150) {
+                    break;
+                }
+                if (node.content) {
+                    stack.unshift(...node.content);
+                }
+            }
+            return text;
+        },
 
     },
 
@@ -248,8 +266,8 @@ export default {
             extensions: this.getExtensions(),
             content: Statamic.$config.get('collaboration.enabled') ?  this.valueToYjsDoc(clone(this.value)) : this.valueToContent(clone(this.value)),
             editable: !this.readOnly,
-            disableInputRules: ! this.config.enable_input_rules,
-            disablePasteRules: ! this.config.enable_paste_rules,
+            enableInputRules: this.config.enable_input_rules,
+            enablePasteRules: this.config.enable_paste_rules,
             onFocus: () => this.$emit('focus'),
             onBlur: () => {
                 // Since clicking into a field inside a set would also trigger a blur, we can't just emit the
@@ -302,13 +320,13 @@ export default {
             const content = this.valueToContent(value);
 
             if (JSON.stringify(content) !== JSON.stringify(oldContent)) {
-                this.editor.clearContent()
-                this.editor.setContent(content, true);
+                this.editor.commands.clearContent()
+                this.editor.commands.setContent(content, true);
             }
         },
 
         readOnly(readOnly) {
-            this.editor.setOptions({ editable: !this.readOnly });
+            this.editor.setEditable(!this.readOnly);
         },
 
         collapsed(value) {
@@ -345,6 +363,22 @@ export default {
             // Perform this in nextTick because the meta data won't be ready until then.
             this.$nextTick(() => {
                 this.editor.commands.set({ id, values });
+            });
+        },
+
+        duplicateSet(old_id, attrs, pos) {
+            const id = `set-${uniqid()}`;
+            const enabled = attrs.enabled;
+            const values = Object.assign({}, attrs.values);
+
+            let previews = Object.assign({}, this.previews[old_id]);
+            this.previews = Object.assign({}, this.previews, { [id]: previews });
+
+            this.updateSetMeta(id, this.meta.existing[old_id]);
+
+            // Perform this in nextTick because the meta data won't be ready until then.
+            this.$nextTick(() => {
+                this.editor.commands.setAt({ attrs: { id, enabled, values }, pos });
             });
         },
 
