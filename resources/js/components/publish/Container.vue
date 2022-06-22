@@ -121,6 +121,10 @@ export default {
                         const { handle, value } = payload;
                         state.values[handle] = value;
                     },
+                    setCollaborationFieldValue(state, payload) {
+                        const { handle, value } = payload;
+                        state.values[handle] = value;
+                    },
                     setValues(state, values) {
                         state.values = values;
                     },
@@ -189,6 +193,10 @@ export default {
                         context.commit('setFieldValue', payload);
                         vm.emitUpdatedEvent(context.state.values);
                     },
+                    setCollaborationFieldValue(context, payload) {
+                        context.commit('setCollaborationFieldValue', payload);
+                        vm.emitUpdatedEvent(context.state.values);
+                    },
                     setFieldMeta(context, payload) {
                         context.commit('setFieldMeta', payload);
                     },
@@ -230,6 +238,13 @@ export default {
             this.$store.dispatch(`publish/${this.name}/setFieldValue`, {
                 handle, value,
                 user: Statamic.user.id
+            });
+        },
+
+        setCollaborationFieldValue(handle, value) {
+            this.$store.dispatch(`publish/${this.name}/setCollaborationFieldValue`, {
+                handle, value,
+                // user: Statamic.user.id
             });
         },
 

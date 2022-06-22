@@ -59,6 +59,7 @@
     "dmuploader": "file:resources/js/vendor/dmuploader",
     "dropzone": "^4.0.1",
     "element-resize-detector": "^1.2.1",
+    "fast-diff": "^1.2.0",
     "fuse.js": "^3.4.6",
     "generate-password": "^1.5.1",
     "highlight.js": "^9.18.1",

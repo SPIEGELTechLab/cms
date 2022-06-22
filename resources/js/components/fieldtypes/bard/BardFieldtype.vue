@@ -535,14 +535,15 @@ export default {
                 const workspace =  Statamic.$collaboration.workspaces[this.storeName];
                 // Abort if no Workspace has been created.
                 if (!workspace) {
-                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as now Workspace has been created.`);
+                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as no Workspace has been created.`);
+
                     return;
                 }
 
                 const bardFragment = workspace.document.getXmlFragment(this.handle);
                 if (bardFragment.length > 0) return;
 
-
+                // TODO: This may be done via the Workspace, so there is only one place where we reset the complete YJS dcoument
                 // Remove the state from the XMLFragment for the first user to show only the stored values
                 if (workspace.users.length === 1) {
                    bardFragment.delete(0, bardFragment.length);

@@ -5,7 +5,7 @@ import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
-
+import { textUpdate } from "./text.js"
 
 export default class Workspace {
     constructor(container) {
@@ -14,6 +14,7 @@ export default class Workspace {
         this.started = false;
         this.document = null;
         this.providers = [];
+        this.fieldsets = [];
         this.mainProvider = null;
         this.roomName = this.container.reference;
         this.dirtyState = null;
@@ -26,11 +27,23 @@ export default class Workspace {
         console.log('start workspace');
         if (this.started) return;
 
-        this.initializeSharedDocument();
-        this.initializeDirtyState();
-        this.initializeAwareness();
-        this.initializeStatusBar();
         this.workspaceStarted();
+        this.initializeSharedDocument();
+        
+        this.mainProvider.on('status', event => {
+            if (event.status === 'connected') {
+                console.log('connected WORKSPACE')
+                // TODO: reset websocket in case one users opens the document.
+                
+                this.initializeAwareness();
+                this.initializeBlueprint();
+                this.initializeWebsocket();
+                this.initializeDirtyState();
+                this.initializeStatusBar();
+                this.syncLocalChanges();
+                this.observeYChanges();
+            }
+        })
     }
 
     destroy() {
@@ -94,6 +107,7 @@ export default class Workspace {
         this.users = this.awarenessStatesToArray(this.awareness.states);
 
         this.awareness.on('update', () => {
+            console.log('update awarenes')
             this.users = this.awarenessStatesToArray(this.awareness.states);
             Statamic.$events.$emit('users-updated', this.users);
         });
@@ -111,6 +125,7 @@ export default class Workspace {
 
     generateRandomLightColorHex() {
         let color = "#";
+
         for (let i = 0; i < 3; i++)
             color += ("0" + Math.floor(((1 + Math.random()) * Math.pow(16, 2)) / 2).toString(16)).slice(-2);
         return color;
@@ -132,35 +147,87 @@ export default class Workspace {
     initializeBlueprint() {
         this.container.blueprint.sections.forEach(section => {
             section.fields.forEach(field => {
-                // We wanna save all existing fieldsets into an array.
                 this.fieldsets.push({
                     handle: field.handle,
                     type: field.type,
+                    synced: false,
                 });
-                // We wanna add syncedStores object so fields can be synced.
-                this.addSyncValue(field)
             })
         });
     }
 
-    addSyncValue(field) {
-        //
+    initializeWebsocket() {
+        this.fieldsets.forEach(field => {
+
+            switch (field.type) {
+                case 'text':
+                case 'slug':
+                case 'textarea':
+                    this.document.getText(field.handle).insert(0, this.container.values[field.handle])
+                    field.synced = true
+                    break;
+                default:
+                    console.log('The field', field.handle, 'will be synced via YJS.')
+            }
+           
+        })
     }
 
-    subscribeToVuexMutations() {
-        //
+    syncLocalChanges() {
+        Statamic.$store.subscribe((mutation, state) => {
+            if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
+
+            // Ignore bard fields for now. We need a better approach
+            if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
+
+            textUpdate(
+                this.document.getText(mutation.payload.handle),
+                mutation.payload.value,
+                this.document.getText(mutation.payload.handle).toString(),
+                mutation.payload.position,
+            )
+        });
     }
 
-    observeStoreFields() {
-        //
-    }
+    observeYChanges() {
+        this.fieldsets.forEach(field => {
+            
+            if (!field.synced) return;
 
-    initialObserveStoreFields(fields) {
-        //
-    }
+            switch (field.type) {
+                case 'text':
+                case 'slug':
+                case 'textarea':
+                    this.document.getText(field.handle).observe(event => {
+                        console.log('observed ', event)
 
-    setVuexFieldValue(handle, value) {
-        //
+                        let toUpdate = [];
+
+                        // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
+                        event.delta.forEach((delta, index) => {
+                            if (toUpdate.includes(field.handle)) return;
+                            
+                            toUpdate.push(field.handle)
+                        })
+
+                        // Working through each field only once.
+                        toUpdate.forEach(handle => {
+                            this.document.getText(handle)
+
+                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                                handle: handle,
+                                user: Statamic.user.id,
+                                value: this.document.getText(handle).toString()
+                            });
+                        })
+
+                        // Reset fields we did update
+                        toUpdate = []
+
+                    })
+                    break;
+            }
+        })
     }
 
     getFieldsetType(handle) {
@@ -197,13 +264,14 @@ export default class Workspace {
         if (this.dirtyState.get(0) === true) return;
 
         this.document.transact(() => {
+            console.log('dirty')
             // if (this.dirtyState.length > 0) {
             //     this.dirtyState.forEach((value, index) => {
             //         this.dirtyState.delete(index)
             //     })
             // }
             if (this.dirtyState.get(0)) {
-                this.dirtyState.delete(0)
+                this.dirtyState.delete(0, this.dirtyState.length)
             }
             this.dirtyState.insert(0, [true]);
         })
