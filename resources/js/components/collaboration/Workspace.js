@@ -12,6 +12,7 @@ export default class Workspace {
         this.awareness = null;
         this.container = container;
         this.started = false;
+        this.synced = false;
         this.document = null;
         this.providers = [];
         this.fieldsets = [];
@@ -27,28 +28,33 @@ export default class Workspace {
         console.log('start workspace');
         if (this.started) return;
 
-        this.workspaceStarted();
+        this.started = true;
         this.initializeSharedDocument();
-        
+
         this.mainProvider.on('status', event => {
-            // TODO: Will be called multiple times after a disconned
-            if (event.status === 'connected') {
-                console.log('connected WORKSPACE')
+            if (event.status === 'connected' && !this.synced) {
+                console.log('CONNECTED WORKSPACE');
                 // TODO: reset websocket in case one users opens the document.
-                
                 this.initializeAwareness();
                 this.initializeBlueprint();
-                this.initializeWebsocket();
                 this.initializeDirtyState();
                 this.initializeStatusBar();
-                this.syncLocalChanges();
-                this.observeYChanges();
             }
-        })
+        });
+
+        this.mainProvider.on('synced', event => {
+            if (!event || this.synced) return;
+            this.synced = true;
+            console.log('SYNCED WORKSPACE');
+            this.initializeWebsocket();
+            this.syncLocalChanges();
+            this.observeYChanges();
+        });
     }
 
-    destroy() {
-        console.log('destroy workspace');
+    beforeDestroy() {
+        window.removeEventListener('online');
+        window.removeEventListener('offline');
     }
 
     initializeSharedDocument() {
@@ -71,7 +77,7 @@ export default class Workspace {
         // offline support
         this.providers.push(new IndexeddbPersistence(this.roomName, this.document));
 
-        if (! this.providers || this.providers.length === 0) throw "Collaboration needs at least one provider to sync changes and to work properly."
+        if (!this.providers || this.providers.length === 0) throw "Collaboration needs at least one provider to sync changes and to work properly."
 
         this.mainProvider = this.providers[0]
     }
@@ -108,7 +114,6 @@ export default class Workspace {
         this.users = this.awarenessStatesToArray(this.awareness.states);
 
         this.awareness.on('update', () => {
-            console.log('update awarenes')
             this.users = this.awarenessStatesToArray(this.awareness.states);
             Statamic.$events.$emit('users-updated', this.users);
         });
@@ -157,100 +162,95 @@ export default class Workspace {
     }
 
     initializeWebsocket() {
-        setTimeout(() => { // TODO: That's nasty
-            this.fieldsets.forEach(field => {
-    
-                switch (field.type) {
-                    case 'text':
-                    case 'slug':
-                    case 'textarea':
-                        if (this.users.length > 1) {
-                            console.log('get from websocket')
-                            // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
-                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
-                                handle: field.handle,
-                                user: Statamic.user.id,
-                                value: this.document.getText(field.handle).toString() ?? ''
-                            });
-                        } else {
-                            console.log('reset websocket')
-                            // In case only one user has been logged in, we want to reset the websocket.                        
-                            this.document.transact(() => {
-                                // Delete websocket data in case some data does exist.
-                                if (this.document.getText(field.handle).length > 0) {
-                                    console.log('deletes with length of', this.document.getText(field.handle).length)
-                                    this.document.getText(field.handle).delete(0, this.document.getText(field.handle).length)
-                                }
-                                // Initialize the websocket
-                                console.log('insert the init data ', this.container.values[field.handle])
-                                this.document.getText(field.handle).insert(0, this.container.values[field.handle]);
-                            })
-                        }
-                        break;
-                    default:
-                        console.log('The field', field.handle, 'will not be synced via YJS.')
-                }
-            })
-        }, 2000)
+        this.fieldsets.forEach(field => {
+
+            switch (field.type) {
+                case 'text':
+                case 'slug':
+                case 'textarea':
+                    if (this.users.length > 1) {
+                        console.log('get from websocket')
+                        // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
+                        Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                            handle: field.handle,
+                            user: Statamic.user.id,
+                            value: this.document.getText(field.handle).toString() ?? ''
+                        });
+                    } else {
+                        console.log('reset websocket')
+                        // In case only one user has been logged in, we want to reset the websocket.                        
+                        this.document.transact(() => {
+                            // Delete websocket data in case some data does exist.
+                            if (this.document.getText(field.handle).length > 0) {
+                                console.log('deletes with length of', this.document.getText(field.handle).length)
+                                this.document.getText(field.handle).delete(0, this.document.getText(field.handle).length)
+                            }
+                            // Initialize the websocket
+                            console.log('insert the init data ', this.container.values[field.handle])
+                            this.document.getText(field.handle).insert(0, this.container.values[field.handle]);
+                        })
+                    }
+                    break;
+                default:
+                    console.debug('The field', field.handle, 'will not be synced via YJS.')
+            }
+        })
     }
 
     syncLocalChanges() {
-        setTimeout(() => { // TODO: That's nasty as well
-            Statamic.$store.subscribe((mutation, state) => {
-                if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
+        Statamic.$store.subscribe((mutation, state) => {
+            if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
 
-                // Ignore bard fields for now. We need a better approach
-                if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
+            // Ignore bard fields for now. We need a better approach
+            if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
 
-                textUpdate(
-                    this.document.getText(mutation.payload.handle),
-                    mutation.payload.value,
-                    this.document.getText(mutation.payload.handle).toString(),
-                    mutation.payload.position,
-                )
-            });
-        }, 2000)
+            textUpdate(
+                this.document.getText(mutation.payload.handle),
+                mutation.payload.value,
+                this.document.getText(mutation.payload.handle).toString(),
+                mutation.payload.position,
+            )
+        });
+
     }
 
     observeYChanges() {
-        setTimeout(() => { // TODO: That's nasty 3
-            this.fieldsets.forEach(field => {
-                
-                console.log('observe')
+        this.fieldsets.forEach(field => {
 
-                switch (field.type) {
-                    case 'text':
-                    case 'slug':
-                    case 'textarea':
-                        this.document.getText(field.handle).observe(event => {
-                            console.log('observed ', event)
+            console.log('observe')
 
-                            let toUpdate = [];
+            switch (field.type) {
+                case 'text':
+                case 'slug':
+                case 'textarea':
+                    this.document.getText(field.handle).observe(event => {
+                        console.log('observed ', event)
 
-                            // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
-                            event.delta.forEach((delta, index) => {
-                                if (toUpdate.includes(field.handle)) return;
-                                
-                                toUpdate.push(field.handle)
-                            })
+                        let toUpdate = [];
 
-                            // Working through each field only once.
-                            toUpdate.forEach(handle => {
-                                Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
-                                    handle: handle,
-                                    user: Statamic.user.id,
-                                    value: this.document.getText(handle).toString()
-                                });
-                            })
+                        // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
+                        event.delta.forEach((delta, index) => {
+                            if (toUpdate.includes(field.handle)) return;
 
-                            // Reset fields we did update
-                            toUpdate = []
-
+                            toUpdate.push(field.handle)
                         })
-                        break;
-                }
-            })
-        }, 2500);
+
+                        // Working through each field only once.
+                        toUpdate.forEach(handle => {
+                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                                handle: handle,
+                                user: Statamic.user.id,
+                                value: this.document.getText(handle).toString()
+                            });
+                        })
+
+                        // Reset fields we did update
+                        toUpdate = []
+
+                    })
+                    break;
+            }
+        })
     }
 
     getFieldsetType(handle) {
@@ -260,7 +260,7 @@ export default class Workspace {
     initializeStatusBar() {
         Statamic.component('CollaborationStatusBar', StatusBar);
 
-        this.container.pushComponent('CollaborationStatusBar', { });
+        this.container.pushComponent('CollaborationStatusBar', {});
     }
 
     initializeFocus() {
@@ -277,10 +277,6 @@ export default class Workspace {
 
     initialObserveStoreFocus() {
         //
-    }
-
-    workspaceStarted() {
-        this.started = true
     }
 
     dirty() {
