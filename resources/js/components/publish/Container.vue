@@ -115,6 +115,7 @@ export default {
                     isRoot: initial.isRoot,
                     preloadedAssets: [],
                     users: [],
+                    autosaveInterval: null,
                 },
                 mutations: {
                     setFieldValue(state, payload) {
@@ -186,6 +187,14 @@ export default {
                     },
                     removeUser(state, removedUser) {
                         state.users = state.users.filter(user => user.id !== removedUser.id);
+                    setAutosaveInterval(state, interval) {
+                        if (state.autosaveInterval) {
+                            clearInterval(state.autosaveInterval);
+                        }
+                        state.autosaveInterval = interval;
+                    },
+                    clearAutosaveInterval(state) {
+                        clearInterval(state.autosaveInterval);
                     }
                 },
                 actions: {
