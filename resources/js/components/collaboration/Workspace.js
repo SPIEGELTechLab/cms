@@ -210,7 +210,7 @@ export default class Workspace {
     observeYChanges() {
         this.fieldsets.forEach(field => {
 
-            switch (field.collabobrationType) {
+            switch (field.collaborationType) {
                 case 'text':
                     this.document.getText(field.handle).observe(event => {
                         console.debug('observed ', event)
