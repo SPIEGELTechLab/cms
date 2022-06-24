@@ -17,7 +17,6 @@ class Collaboration {
     start(container) {
         if (!container.reference) return;
 
-        console.log('START WORKSPACE');
         const workspace = new Workspace(container);
         this.workspaces[container.name] = workspace;
 
