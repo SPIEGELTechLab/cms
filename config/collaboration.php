@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'enabled' => env('COLLABORATION_ENABLED', true),
+    'enabled' => env('COLLABORATION_ENABLED', false),
 
     'websocket' => [
         'url' => env('COLLABORATION_WS_URL', 'wss://demos.yjs.dev'),
