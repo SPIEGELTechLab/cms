@@ -8,6 +8,8 @@ class Slug extends Text
 
     protected $selectableInForms = false;
 
+    protected $collaborationType = 'text';
+
     protected function configFieldItems(): array
     {
         return [

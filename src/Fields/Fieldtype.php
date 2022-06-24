@@ -32,7 +32,7 @@ abstract class Fieldtype implements Arrayable
     protected $extraRules = [];
     protected $defaultValue;
     protected $configFields = [];
-    protected $collaborationType = null;
+    protected $collaborationType = 'undefined';
     protected static $extraConfigFields = [];
     protected $icon;
 
@@ -113,7 +113,7 @@ abstract class Fieldtype implements Arrayable
         return $this->categories;
     }
 
-    public function collaborationType(): ?string
+    public function collaborationType(): string
     {
         return $this->collaborationType;
     }
@@ -188,18 +188,24 @@ abstract class Fieldtype implements Arrayable
     {
         $fields = collect($this->configFieldItems())
             ->merge($this->extraConfigFieldItems())
-            ->put('collaboration', [
-                'handle' => 'collaboration_type',
-                'display' => __('Collaboration Type'),
-                'read_only' => true,
-                'type' => 'text',
-                'width' => 50,
-            ])
+            ->put('collaboration', $this->createCollaborationField())
             ->map(function ($field, $handle) {
                 return compact('handle', 'field');
             });
 
         return new ConfigFields($fields);
+    }
+
+    public function createCollaborationField(): array {
+        return [
+            'handle' => 'collaboration_type',
+            'display' => __('Collaboration Type'),
+            'instructions' => 'Defines which syncing type we use under the hood.',
+            'read_only' => true,
+            'type' => 'text',
+            'default' => $this->collaborationType(),
+            'width' => 50,
+        ];
     }
 
     protected function configFieldItems(): array

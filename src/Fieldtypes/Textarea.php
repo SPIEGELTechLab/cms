@@ -9,6 +9,7 @@ class Textarea extends Fieldtype
 {
     protected $categories = ['text'];
     protected $selectableInForms = true;
+    protected $collaborationType = 'text';
 
     protected function configFieldItems(): array
     {

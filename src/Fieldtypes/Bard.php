@@ -22,6 +22,7 @@ class Bard extends Replicator
     use Concerns\ResolvesStatamicUrls;
 
     protected $categories = ['text', 'structured'];
+    protected $collaborationType = 'bard';
     protected $defaultValue = '[]';
     protected $rules = [];
 

@@ -155,6 +155,7 @@ export default class Workspace {
             section.fields.forEach(field => {
                 this.fieldsets.push({
                     handle: field.handle,
+                    collaborationType: field.collaboration,
                     type: field.type,
                 });
             })
@@ -164,10 +165,8 @@ export default class Workspace {
     initializeWebsocket() {
         this.fieldsets.forEach(field => {
 
-            switch (field.type) {
+            switch (field.collaborationType) {
                 case 'text':
-                case 'slug':
-                case 'textarea':
                     if (this.users.length > 1) {
                         console.log('get from websocket')
                         // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
@@ -217,12 +216,8 @@ export default class Workspace {
     observeYChanges() {
         this.fieldsets.forEach(field => {
 
-            console.log('observe')
-
-            switch (field.type) {
+            switch (field.collabobrationType) {
                 case 'text':
-                case 'slug':
-                case 'textarea':
                     this.document.getText(field.handle).observe(event => {
                         console.log('observed ', event)
 
