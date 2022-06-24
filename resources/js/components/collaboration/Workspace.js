@@ -25,7 +25,6 @@ export default class Workspace {
     }
 
     start() {
-        console.log('start workspace');
         if (this.started) return;
 
         this.started = true;
@@ -33,8 +32,6 @@ export default class Workspace {
 
         this.mainProvider.on('status', event => {
             if (event.status === 'connected' && !this.synced) {
-                console.log('CONNECTED WORKSPACE');
-                // TODO: reset websocket in case one users opens the document.
                 this.initializeAwareness();
                 this.initializeBlueprint();
                 this.initializeDirtyState();
@@ -45,7 +42,6 @@ export default class Workspace {
         this.mainProvider.on('synced', event => {
             if (!event || this.synced) return;
             this.synced = true;
-            console.log('SYNCED WORKSPACE');
             this.initializeWebsocket();
             this.syncLocalChanges();
             this.observeYChanges();
@@ -168,7 +164,6 @@ export default class Workspace {
             switch (field.collaborationType) {
                 case 'text':
                     if (this.users.length > 1) {
-                        console.log('get from websocket')
                         // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
                         Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
                             handle: field.handle,
@@ -176,16 +171,13 @@ export default class Workspace {
                             value: this.document.getText(field.handle).toString() ?? ''
                         });
                     } else {
-                        console.log('reset websocket')
                         // In case only one user has been logged in, we want to reset the websocket.                        
                         this.document.transact(() => {
                             // Delete websocket data in case some data does exist.
                             if (this.document.getText(field.handle).length > 0) {
-                                console.log('deletes with length of', this.document.getText(field.handle).length)
                                 this.document.getText(field.handle).delete(0, this.document.getText(field.handle).length)
                             }
                             // Initialize the websocket
-                            console.log('insert the init data ', this.container.values[field.handle])
                             this.document.getText(field.handle).insert(0, this.container.values[field.handle]);
                         })
                     }
@@ -203,6 +195,8 @@ export default class Workspace {
             // Ignore bard fields for now. We need a better approach
             if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
 
+            // TODO: Check for collaboration type and sync accordingly
+
             textUpdate(
                 this.document.getText(mutation.payload.handle),
                 mutation.payload.value,
@@ -219,7 +213,7 @@ export default class Workspace {
             switch (field.collabobrationType) {
                 case 'text':
                     this.document.getText(field.handle).observe(event => {
-                        console.log('observed ', event)
+                        console.debug('observed ', event)
 
                         let toUpdate = [];
 
