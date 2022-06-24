@@ -188,7 +188,9 @@ abstract class Fieldtype implements Arrayable
     {
         $fields = collect($this->configFieldItems())
             ->merge($this->extraConfigFieldItems())
-            ->put('collaboration', $this->createCollaborationField())
+            ->when(config('statamic.collaboration.enabled'), function($collection, $value) {
+                return $collection->put('collaboration', $this->createCollaborationField());
+            })
             ->map(function ($field, $handle) {
                 return compact('handle', 'field');
             });
