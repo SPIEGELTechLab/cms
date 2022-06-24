@@ -271,9 +271,7 @@ abstract class Fieldtype implements Arrayable
 
     public function preload()
     {
-        return [
-            'collaboration' => 'heeeee',
-        ];
+        //
     }
 
     public static function preloadable()
