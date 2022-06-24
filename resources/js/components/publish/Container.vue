@@ -187,6 +187,7 @@ export default {
                     },
                     removeUser(state, removedUser) {
                         state.users = state.users.filter(user => user.id !== removedUser.id);
+                    },
                     setAutosaveInterval(state, interval) {
                         if (state.autosaveInterval) {
                             clearInterval(state.autosaveInterval);
