@@ -8,7 +8,7 @@
                 :class="classes"
                 :id="id"
                 :name="name"
-                :value="value"
+                :value="textValue(value)"
                 :type="type"
                 :step="step"
                 :disabled="disabled"
@@ -58,6 +58,16 @@ export default {
         }
         if (this.focus) {
             this.$refs.input.focus();
+        }
+    },
+
+    methods: {
+        textValue(value) {
+            if (Statamic.user.cursor && Statamic.user.cursor.handle === this.name) {
+                this.$nextTick(() => this.$refs.input.setSelectionRange(Statamic.user.cursor.position.start, Statamic.user.cursor.position.end));
+            }
+
+            return value
         }
     }
 }
