@@ -32,6 +32,7 @@ abstract class Fieldtype implements Arrayable
     protected $extraRules = [];
     protected $defaultValue;
     protected $configFields = [];
+    protected $collaborationType = null;
     protected static $extraConfigFields = [];
     protected $icon;
 
@@ -112,6 +113,11 @@ abstract class Fieldtype implements Arrayable
         return $this->categories;
     }
 
+    public function collaborationType(): ?string
+    {
+        return $this->collaborationType;
+    }
+
     public function filter()
     {
         return new FieldtypeFilter($this);
@@ -182,6 +188,13 @@ abstract class Fieldtype implements Arrayable
     {
         $fields = collect($this->configFieldItems())
             ->merge($this->extraConfigFieldItems())
+            ->put('collaboration', [
+                'handle' => 'collaboration_type',
+                'display' => __('Collaboration Type'),
+                'read_only' => true,
+                'type' => 'text',
+                'width' => 50,
+            ])
             ->map(function ($field, $handle) {
                 return compact('handle', 'field');
             });
@@ -258,7 +271,9 @@ abstract class Fieldtype implements Arrayable
 
     public function preload()
     {
-        //
+        return [
+            'collaboration' => 'heeeee',
+        ];
     }
 
     public static function preloadable()
