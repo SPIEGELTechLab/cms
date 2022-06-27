@@ -1,29 +1,29 @@
 import diff from "fast-diff";
 
-export function textUpdate(YText, newValue, oldValue, position) {
+export function textUpdate(handle, YText, newValue, oldValue, initPosition) {
     const selections = {
         oldRange: {
-            index: position - Math.max(0, newValue.length - oldValue.length),
+            index: initPosition - Math.max(0, newValue.length - oldValue.length),
             length: Math.max(0, oldValue.length - newValue.length),
         },
-        newRange: { index: position, length: 0 },
+        newRange: { index: initPosition, length: 0 },
     };
 
     const changes = diff(oldValue, newValue, selections);
 
-    let pos = 0;
+    let position = 0;
 
     for (const [type, substring] of changes) {
         switch (type) {
             case diff.EQUAL:
-                pos += substring.length;
+                position += substring.length;
                 break;
             case diff.DELETE:
-                YText.delete(pos, substring.length);
+                YText.delete(position, substring.length);
                 break;
             case diff.INSERT:
-                YText.insert(pos, substring);
-                pos += substring.length;
+                YText.insert(position, substring);
+                position += substring.length;
                 break;
         }
     }

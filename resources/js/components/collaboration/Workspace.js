@@ -6,6 +6,7 @@ import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
 import { textUpdate } from "./text.js"
+import { getCloseAction } from 'pusher-js';
 
 export default class Workspace {
     constructor(container) {
@@ -198,6 +199,7 @@ export default class Workspace {
             // TODO: Check for collaboration type and sync accordingly
 
             textUpdate(
+                mutation.payload.handle,
                 this.document.getText(mutation.payload.handle),
                 mutation.payload.value,
                 this.document.getText(mutation.payload.handle).toString(),
@@ -216,13 +218,35 @@ export default class Workspace {
                         console.debug('observed ', event)
 
                         let toUpdate = [];
+                        let from = 0;
+                        let length = 0;
 
                         // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
                         event.delta.forEach((delta, index) => {
+                            
+                            if (index === 0) {
+                                from = delta.retain
+                            }
+
+                            if (index === 1) {
+                                if (delta.insert) {
+                                    length = delta.insert.length;
+                                } else if (delta.delete) {
+                                    length = delta.delete.length;
+                                }
+                            }
+
                             if (toUpdate.includes(field.handle)) return;
 
                             toUpdate.push(field.handle)
                         })
+
+                        if (Statamic.user.cursor) {
+                            Statamic.user.cursor.move = {
+                                from: from,
+                                length: length,
+                            }
+                        }
 
                         // Working through each field only once.
                         toUpdate.forEach(handle => {

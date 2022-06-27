@@ -64,7 +64,19 @@ export default {
     methods: {
         textValue(value) {
             if (Statamic.user.cursor && Statamic.user.cursor.handle === this.name) {
-                this.$nextTick(() => this.$refs.input.setSelectionRange(Statamic.user.cursor.position.start, Statamic.user.cursor.position.end));
+                let start = Statamic.user.cursor.position.start
+                let end = Statamic.user.cursor.position.end
+
+                if (Statamic.user.cursor.move && Statamic.user.cursor.move.from >= start) {
+                    start += Statamic.user.cursor.move.length
+                    end += Statamic.user.cursor.move.length
+                }
+
+                console.log("RANGE ", start, end)
+                // TODO: Test
+                // TODO: Reset move information
+
+                this.$nextTick(() => this.$refs.input.setSelectionRange(start, end));
             }
 
             return value
