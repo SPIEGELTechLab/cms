@@ -67,21 +67,19 @@ export default {
                 let start = Statamic.user.cursor.position.start
                 let end = Statamic.user.cursor.position.end
 
-                console.debug('INIT POSITION', start, end)
-
-                if (Statamic.user.cursor.move && Statamic.user.cursor.move.from >= start) {
-                    console.debug('UPDATED POSITION', start, end)
-                    console.debug('MOVE / LENGTH', Statamic.user.cursor.move)
-
+                if (Statamic.user.cursor.move && start >= Statamic.user.cursor.move.from) {
                     start += Statamic.user.cursor.move.length
                     end += Statamic.user.cursor.move.length
                 }
 
-                console.debug("RANGE ", start, end)
-                // TODO: Test
                 // TODO: Reset move information
 
                 this.$nextTick(() => this.$refs.input.setSelectionRange(start, end));
+
+                Statamic.user.cursor.position = {
+                    start: start,
+                    end: end,
+                }
             }
 
             return value

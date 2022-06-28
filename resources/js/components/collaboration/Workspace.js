@@ -6,7 +6,6 @@ import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
 import { textUpdate } from "./text.js"
-import { getCloseAction } from 'pusher-js';
 
 export default class Workspace {
     constructor(container) {
@@ -215,27 +214,24 @@ export default class Workspace {
             switch (field.collaborationType) {
                 case 'text':
                     this.document.getText(field.handle).observe(event => {
-                        console.debug('observed ', event)
+                        console.debug('EVENT', event)
 
                         let toUpdate = [];
                         let from = 0;
-                        let length = 0;
+                        let length = 0; // Fallback
 
-                        // Sometimes multiple deltas will be fired at once. To avoid workload, we'll remeber those.
-                        event.delta.forEach((delta, index) => {
-                            
-                            if (index === 0) {
-                                from = delta.retain
+                        event.delta.forEach((delta) => {
+
+                            if (delta.retain) {
+                                from = delta.retain;
+                            } else if (delta.insert) {
+                                length += delta.insert.length; // Get length as its a string
+                            } else if (delta.delete) {
+                                length -= delta.delete; // Will return the deleted characters as int
                             }
 
-                            if (index === 1) {
-                                if (delta.insert) {
-                                    length = delta.insert.length;
-                                } else if (delta.delete) {
-                                    length = delta.delete.length;
-                                }
-                            }
-
+                            // Sometimes multiple deltas will be fired at once. 
+                            // To avoid workload, we'll remeber those so we can make a single update after fetching alle changes.
                             if (toUpdate.includes(field.handle)) return;
 
                             toUpdate.push(field.handle)
