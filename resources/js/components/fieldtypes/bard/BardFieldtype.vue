@@ -497,8 +497,8 @@ export default {
         },
 
         valueToYjsDoc(value) {
-            // Load the value as soon after the mainProvider synced
-            Statamic.$collaboration.workspaces[this.storeName].mainProvider.on('synced', () => {
+            // Load the value as soon after the provider synced
+            Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.on('synced', () => {
 
                 // online offline support: value is already formatted for prosemirror
                 if (typeof value === 'string')  {
@@ -622,7 +622,7 @@ export default {
                     }),
 
                     CollaborationCursor.configure({
-                        provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
+                        provider: Statamic.$collaboration.workspaces[this.storeName].providerManager.provider,
                         user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
                     }),
                 );
