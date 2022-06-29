@@ -23,6 +23,7 @@
 
 <script>
 export default {
+    props: ['initialUsers'],
 
     data() {
         return {
@@ -34,6 +35,10 @@ export default {
         this.$events.$on('users-updated', this.updateUser);
         window.addEventListener('online', () => this.updateConnectionStatus(true));
         window.addEventListener('offline', () => this.updateConnectionStatus(false));
+    },
+
+    mounted() {
+        this.updateUser(this.initialUsers);
     },
 
     beforeDestroy() {

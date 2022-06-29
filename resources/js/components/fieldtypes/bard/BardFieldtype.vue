@@ -623,10 +623,9 @@ export default {
 
                     CollaborationCursor.configure({
                         provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
-                        user: Statamic.$collaboration.workspaces[this.storeName].loggedInUser(),
+                        user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
                     }),
                 );
-
 
                 // watch XML fragment to update meta data (set meta and previews)
                 // otherwise there are display errors with other users
