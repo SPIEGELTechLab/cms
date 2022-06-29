@@ -1,135 +1,105 @@
-import { textUpdate } from "./text.js"
+import Text  from "./syncing-types/Text.js"
 
 export default class SyncManager {
     constructor(workspace) {
         this.workspace = workspace;
         this.fieldtypes = [];
     }
-
+ 
+   /*
+    * Get the Blueprint and fetch those fields, so we know how to sync them.
+    */
     defineFieldsets() {
         this.workspace.container.blueprint.sections.forEach(section => {
             section.fields.forEach(field => {
                 this.fieldtypes.push({
                     handle: field.handle,
-                    collaborationType: field.collaboration,
+                    syncingType: field.collaboration,
                     type: field.type,
                 });
             })
         });
     }
 
+   /*
+    * Depending if one ore more users are present, different actions 
+    * on how to sync to or from the Yjs provider are taken.
+    */
     syncWebsocket() {
         this.fieldtypes.forEach(field => {
 
-            switch (field.collaborationType) {
-                case 'text':
-                    if (this.workspace.awarenessManager.users.length > 1) {
-                        // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
-                        Statamic.$store.dispatch(`publish/${this.workspace.container.name}/setCollaborationFieldValue`, {
-                            handle: field.handle,
-                            user: Statamic.user.id,
-                            value: this.workspace.document.getText(field.handle).toString() ?? ''
-                        });
-                    } else {
-                        // In case only one user has been logged in, we want to reset the websocket.                        
-                        this.workspace.document.transact(() => {
-                            // Delete websocket data in case some data does exist.
-                            if (this.workspace.document.getText(field.handle).length > 0) {
-                                this.workspace.document.getText(field.handle).delete(0, this.workspace.document.getText(field.handle).length)
-                            }
-                            // Initialize the websocket
-                            this.workspace.document.getText(field.handle).insert(0, this.workspace.container.values[field.handle]);
-                        })
-                    }
-                    break;
-                default:
-                    console.debug('The field', field.handle, 'will not be synced via YJS.')
+            if (this.workspace.awarenessManager.users.length > 1) {
+                /*
+                 * In case more than two users are present, 
+                 * fetch the Yjs data and sync it locally. 
+                 * 
+                 * Yjs Provider -> Local
+                 */
+                switch (field.syncingType) {
+                    case 'text':
+                        Text.fetchFromYjs(this.workspace, field);
+                        break;
+                }
+            } else {
+                /*
+                 * If only one user is present, we want to reset the websocket.
+                 * Fetch the local data and push it to the Yjs provider. 
+                 * 
+                 * Yjs Provider <- Local
+                 */
+                switch (field.syncingType) {
+                    case 'text':
+                        Text.pushToYjs(this.workspace, field);
+                        break;
+                }
             }
         })
     }
 
+   /*
+    * By listening to the `setFieldValue` event from the Vuex store, we can listen to all changes.
+    * Those made changes will be pushed to the Yjs provider so all collaborators get synced.
+    */
     pushLocalChanges() {
         Statamic.$store.subscribe((mutation, state) => {
+            // Only listen to setFieldValue events.
             if (mutation.type !== `publish/${this.workspace.container.name}/setFieldValue`) return;
 
-            // Ignore bard fields for now. We need a better approach
-            if (this.getFieldsetType(mutation.payload.handle) === 'bard') return;
-
-            // TODO: Check for collaboration type and sync accordingly
-
-            textUpdate(
-                mutation.payload.handle,
-                this.workspace.document.getText(mutation.payload.handle),
-                mutation.payload.value,
-                this.workspace.document.getText(mutation.payload.handle).toString(),
-                mutation.payload.position,
-            )
+            switch (this.getSyncingType(mutation.payload.handle)) {
+                case 'text':
+                    Text.pushLocalChange(
+                        mutation.payload.handle,
+                        this.workspace.document.getText(mutation.payload.handle),
+                        mutation.payload.value,
+                        mutation.payload.position,
+                    )
+                    break;
+            }
         });
     }
 
+   /*
+    * To receive all made changes from the Yjs provider, we need to observe those changes.
+    * Those changes will be synced back to the local Vuex store with the named
+    * `setCollaborationFieldValue` event which you could listen to as well,
+    * in case you wanna do some crazy manipulative stuff. Just saying.
+    */
     observeRemoteChanges() {
         this.fieldtypes.forEach(field => {
 
-            switch (field.collaborationType) {
-                case 'text': // TODO: Create syncingType
-                    this.workspace.document.getText(field.handle).observe(event => {
-                        console.debug('EVENT', event)
-
-                        let toUpdate = [];
-                        let from = 0;
-                        let length = 0; // Fallback
-
-                        event.delta.forEach((delta) => {
-
-                            if (delta.retain) {
-                                from = delta.retain;
-                            } else if (delta.insert) {
-                                length += delta.insert.length; // Get length as its a string
-                            } else if (delta.delete) {
-                                length -= delta.delete; // Will return the deleted characters as int
-                            }
-
-                            // Sometimes multiple deltas will be fired at once. 
-                            // To avoid workload, we'll remeber those so we can make a single update after fetching alle changes.
-                            if (toUpdate.includes(field.handle)) return;
-
-                            toUpdate.push(field.handle)
-                        })
-
-                        if (Statamic.user.cursor) {
-                            Statamic.user.cursor.move = {
-                                from: from,
-                                length: length,
-                            }
-                        }
-
-                        // Working through each field only once.
-
-                        // If it's a local change, we don't need to fire the collaboration field value command. 
-                        // This does prevent a race condition as well.
-                        if (!event.transaction.local) {
-
-                            toUpdate.forEach(handle => {
-                                Statamic.$store.dispatch(`publish/${this.workspace.container.name}/setCollaborationFieldValue`, {
-                                    handle: handle,
-                                    user: Statamic.user.id,
-                                    value: this.workspace.document.getText(handle).toString()
-                                });
-                            })
-
-                        }
-
-                        // Reset fields we did update
-                        toUpdate = []
-
-                    })
+            switch (field.syncingType) {
+                case 'text':
+                    Text.observeRemoteChanges(this.workspace, field);
                     break;
             }
         })
 
     }
 
-    getFieldsetType(handle) {
-        return this.fieldtypes.find(fieldset => fieldset.handle === handle).type;
+    /*
+    * Get the syncing type from the field handle.
+    */
+    getSyncingType(handle) {
+        return this.fieldtypes.find(fieldset => fieldset.handle === handle).syncingType;
     }
 }
