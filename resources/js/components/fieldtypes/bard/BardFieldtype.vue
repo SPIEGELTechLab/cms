@@ -621,10 +621,10 @@ export default {
                         fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
-                    // CollaborationCursor.configure({
-                    //     provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
-                    //     user: Statamic.$collaboration.workspaces[this.storeName].loggedInUser(),
-                    // }),
+                    CollaborationCursor.configure({
+                        provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
+                        user: Statamic.$collaboration.workspaces[this.storeName].loggedInUser(),
+                    }),
                 );
 
 
