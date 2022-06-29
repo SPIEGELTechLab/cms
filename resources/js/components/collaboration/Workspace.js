@@ -1,16 +1,16 @@
 import * as Y from 'yjs';
 import * as yProsemirror from 'y-prosemirror';
-import StatusBar from './StatusBar.vue';
 import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
-import { textUpdate } from "./text.js"
+import { textUpdate } from "./text.js";
+import AwarenessManager from "./AwarenessManager";
+
 
 // Todo: Add information what a Workspace is, why needed etc.
 export default class Workspace {
     constructor(container) {
-        this.awareness = null;
         this.container = container;
         this.started = false;
         this.synced = false;
@@ -20,9 +20,9 @@ export default class Workspace {
         this.mainProvider = null;
         this.roomName = this.container.reference;
         this.dirtyState = null;
-        this.users;
         this.Y = Y;
         this.yProsemirror = yProsemirror;
+        this.awarenessManager = {};
     }
 
     start() {
@@ -30,13 +30,14 @@ export default class Workspace {
 
         this.started = true;
         this.initializeSharedDocument();
+        this.awarenessManager = new AwarenessManager(this.mainProvider?.awareness);
 
         this.mainProvider.on('status', event => {
             if (event.status === 'connected' && !this.synced) {
-                this.initializeAwareness();
+                this.awarenessManager.start(this.container);
+
                 this.initializeBlueprint();
                 this.initializeDirtyState();
-                this.initializeStatusBar();
             }
         });
 
@@ -105,54 +106,6 @@ export default class Workspace {
         })
     }
 
-    // TODO: Move into AwarenessManager
-    initializeAwareness() {
-        this.awareness = this.mainProvider.awareness;
-
-        this.awareness.setLocalStateField('user', this.loggedInUser());
-
-        this.users = this.awarenessStatesToArray(this.awareness.states);
-
-        this.awareness.on('update', () => {
-            this.users = this.awarenessStatesToArray(this.awareness.states);
-            Statamic.$events.$emit('users-updated', this.users);
-        });
-    }
-
-    // TODO: Move into AwarenessManager
-    loggedInUser() {
-        return {
-            id: Statamic.user.id,
-            name: Statamic.user.name,
-            initials: Statamic.user.initials,
-            avatar: Statamic.user.avatar?.permalink,
-            color: this.generateRandomLightColorHex(),
-        }
-    }
-
-    // TODO: Move into AwarenessManager
-    generateRandomLightColorHex() {
-        let color = "#";
-
-        for (let i = 0; i < 3; i++)
-            color += ("0" + Math.floor(((1 + Math.random()) * Math.pow(16, 2)) / 2).toString(16)).slice(-2);
-        return color;
-    }
-
-    // TODO: Move into AwarenessManager
-    awarenessStatesToArray(states) {
-        return Array.from(states.entries()).map(([key, value]) => {
-            return {
-                clientId: key,
-                user: {
-                    ...value.user,
-                    current: this.awareness.clientID === key,
-                    online: navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
-                },
-            }
-        });
-    }
-
     // TODO: Move into SyncManager
     initializeBlueprint() {
         this.container.blueprint.sections.forEach(section => {
@@ -172,7 +125,7 @@ export default class Workspace {
 
             switch (field.collaborationType) {
                 case 'text':
-                    if (this.users.length > 1) {
+                    if (this.awarenessManager.users.length > 1) {
                         // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
                         Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
                             handle: field.handle,
@@ -268,7 +221,7 @@ export default class Workspace {
                                     value: this.document.getText(handle).toString()
                                 });
                             })
-                            
+
                         }
 
                         // Reset fields we did update
@@ -283,13 +236,6 @@ export default class Workspace {
     // ??
     getFieldsetType(handle) {
         return this.fieldsets.find(fieldset => fieldset.handle === handle).type;
-    }
-
-    // TODO: Move into AwarenessManager
-    initializeStatusBar() {
-        Statamic.component('CollaborationStatusBar', StatusBar);
-
-        this.container.pushComponent('CollaborationStatusBar', {});
     }
 
     // Todo: Add DirtyStateManager
