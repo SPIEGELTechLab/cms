@@ -25,6 +25,22 @@ export default {
         fieldPathPrefix: String,
     },
 
+    data() {
+        return {
+            updateDebounce: {
+                type: Number,
+                default: 150,
+            }
+        }
+    },
+
+    mounted() {
+        if (Statamic.$config.get('collaboration.enabled')) {
+            // Debounce is a bad idea in combination collaboration.
+            this.updateDebounce = 0;
+        }
+    },
+
     methods: {
 
         update(input) {
@@ -34,7 +50,7 @@ export default {
 
         updateDebounced: _.debounce(function (input) {
             this.update(input);
-        }, 150),
+        }, this.updateDebounce),
 
         updateMeta(value) {
             this.$emit('meta-updated', value);
