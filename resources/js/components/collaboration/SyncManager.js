@@ -3,20 +3,49 @@ import { textUpdate } from "./text.js"
 export default class SyncManager {
     constructor(workspace) {
         this.workspace = workspace;
-        // this.fieldsets = [];
+        this.fieldtypes = [];
     }
 
-    initialize() {
-        console.log(this.workspace.container.blueprint.sections)
+    defineFieldsets() {
         this.workspace.container.blueprint.sections.forEach(section => {
             section.fields.forEach(field => {
-                this.workspace.fieldsets.push({
+                this.fieldtypes.push({
                     handle: field.handle,
                     collaborationType: field.collaboration,
                     type: field.type,
                 });
             })
         });
+    }
+
+    syncWebsocket() {
+        this.fieldtypes.forEach(field => {
+
+            switch (field.collaborationType) {
+                case 'text':
+                    if (this.workspace.awarenessManager.users.length > 1) {
+                        // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
+                        Statamic.$store.dispatch(`publish/${this.workspace.container.name}/setCollaborationFieldValue`, {
+                            handle: field.handle,
+                            user: Statamic.user.id,
+                            value: this.workspace.document.getText(field.handle).toString() ?? ''
+                        });
+                    } else {
+                        // In case only one user has been logged in, we want to reset the websocket.                        
+                        this.workspace.document.transact(() => {
+                            // Delete websocket data in case some data does exist.
+                            if (this.workspace.document.getText(field.handle).length > 0) {
+                                this.workspace.document.getText(field.handle).delete(0, this.workspace.document.getText(field.handle).length)
+                            }
+                            // Initialize the websocket
+                            this.workspace.document.getText(field.handle).insert(0, this.workspace.container.values[field.handle]);
+                        })
+                    }
+                    break;
+                default:
+                    console.debug('The field', field.handle, 'will not be synced via YJS.')
+            }
+        })
     }
 
     pushLocalChanges() {
@@ -39,7 +68,7 @@ export default class SyncManager {
     }
 
     observeRemoteChanges() {
-        this.workspace.fieldsets.forEach(field => {
+        this.fieldtypes.forEach(field => {
 
             switch (field.collaborationType) {
                 case 'text': // TODO: Create syncingType
@@ -101,6 +130,6 @@ export default class SyncManager {
     }
 
     getFieldsetType(handle) {
-        return this.workspace.fieldsets.find(fieldset => fieldset.handle === handle).type;
+        return this.fieldtypes.find(fieldset => fieldset.handle === handle).type;
     }
 }
