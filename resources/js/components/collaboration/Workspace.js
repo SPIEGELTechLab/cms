@@ -2,7 +2,6 @@ import * as Y from 'yjs';
 import * as yProsemirror from 'y-prosemirror';
 import AwarenessManager from "./AwarenessManager";
 import ProviderManager from "./ProviderManager";
-import { textUpdate } from "./text.js"
 import DirtyStateManager from './DirtyStateManager';
 import SyncManager from './SyncManager';
 
