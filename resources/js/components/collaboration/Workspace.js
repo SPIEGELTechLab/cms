@@ -245,13 +245,20 @@ export default class Workspace {
                         }
 
                         // Working through each field only once.
-                        toUpdate.forEach(handle => {
-                            Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
-                                handle: handle,
-                                user: Statamic.user.id,
-                                value: this.document.getText(handle).toString()
-                            });
-                        })
+
+                        // If it's a local change, we don't need to fire the collaboration field value command. 
+                        // This does prevent a race condition as well.
+                        if (!event.transaction.local) {
+
+                            toUpdate.forEach(handle => {
+                                Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
+                                    handle: handle,
+                                    user: Statamic.user.id,
+                                    value: this.document.getText(handle).toString()
+                                });
+                            })
+                            
+                        }
 
                         // Reset fields we did update
                         toUpdate = []

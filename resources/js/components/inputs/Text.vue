@@ -63,17 +63,25 @@ export default {
 
     methods: {
         textValue(value) {
-            if (Statamic.user.cursor && Statamic.user.cursor.handle === this.name) {
-                let start = Statamic.user.cursor.position.start
-                let end = Statamic.user.cursor.position.end
 
-                if (Statamic.user.cursor.move && start >= Statamic.user.cursor.move.from) {
-                    start += Statamic.user.cursor.move.length
-                    end += Statamic.user.cursor.move.length
+            console.debug('Update value and set cursor position. Value: ', value)
+
+            let cursor = Statamic.user.cursor ?? null;
+
+            // Only update the cursor position a cursor has been set (the actual user is inside any field)
+            // and if the cursor handle does match with the current field handle.
+            if (cursor && cursor.handle === this.name) {
+                let start = cursor.position.start
+                let end = cursor.position.end
+
+                if (cursor.move && start >= cursor.move.from) {
+                    start += cursor.move.length
+                    end += cursor.move.length
                 }
 
-                // TODO: Reset move information
+                // TODO: What's the best way to remove our move information?
 
+                // Update cursor position
                 this.$nextTick(() => this.$refs.input.setSelectionRange(start, end));
 
                 Statamic.user.cursor.position = {
