@@ -7,6 +7,7 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
 import { textUpdate } from "./text.js"
 
+// Todo: Add information what a Workspace is, why needed etc.
 export default class Workspace {
     constructor(container) {
         this.awareness = null;
@@ -53,6 +54,7 @@ export default class Workspace {
         window.removeEventListener('offline');
     }
 
+    // TODO: Move into ProviderManager
     initializeSharedDocument() {
         this.document = new Y.Doc()
 
@@ -78,6 +80,7 @@ export default class Workspace {
         this.mainProvider = this.providers[0]
     }
 
+    // Todo: Add DirtyStateManager
     initializeDirtyState() {
         this.dirtyState = this.document.getArray('_dirtyState');
         this.clearDirtyState(); // initialize the dirty state.
@@ -102,6 +105,7 @@ export default class Workspace {
         })
     }
 
+    // TODO: Move into AwarenessManager
     initializeAwareness() {
         this.awareness = this.mainProvider.awareness;
 
@@ -115,6 +119,7 @@ export default class Workspace {
         });
     }
 
+    // TODO: Move into AwarenessManager
     loggedInUser() {
         return {
             id: Statamic.user.id,
@@ -125,6 +130,7 @@ export default class Workspace {
         }
     }
 
+    // TODO: Move into AwarenessManager
     generateRandomLightColorHex() {
         let color = "#";
 
@@ -133,6 +139,7 @@ export default class Workspace {
         return color;
     }
 
+    // TODO: Move into AwarenessManager
     awarenessStatesToArray(states) {
         return Array.from(states.entries()).map(([key, value]) => {
             return {
@@ -146,6 +153,7 @@ export default class Workspace {
         });
     }
 
+    // TODO: Move into SyncManager
     initializeBlueprint() {
         this.container.blueprint.sections.forEach(section => {
             section.fields.forEach(field => {
@@ -158,6 +166,7 @@ export default class Workspace {
         });
     }
 
+    // TODO: Move into ProviderManager
     initializeWebsocket() {
         this.fieldsets.forEach(field => {
 
@@ -188,6 +197,7 @@ export default class Workspace {
         })
     }
 
+    // TODO: Move into SyncManager
     syncLocalChanges() {
         Statamic.$store.subscribe((mutation, state) => {
             if (mutation.type !== `publish/${this.container.name}/setFieldValue`) return;
@@ -208,11 +218,12 @@ export default class Workspace {
 
     }
 
+    // TODO: Move into SyncManager
     observeYChanges() {
         this.fieldsets.forEach(field => {
 
             switch (field.collaborationType) {
-                case 'text':
+                case 'text': // TODO: Create syncingType
                     this.document.getText(field.handle).observe(event => {
                         console.debug('EVENT', event)
 
@@ -269,32 +280,19 @@ export default class Workspace {
         })
     }
 
+    // ??
     getFieldsetType(handle) {
         return this.fieldsets.find(fieldset => fieldset.handle === handle).type;
     }
 
+    // TODO: Move into AwarenessManager
     initializeStatusBar() {
         Statamic.component('CollaborationStatusBar', StatusBar);
 
         this.container.pushComponent('CollaborationStatusBar', {});
     }
 
-    initializeFocus() {
-        // this.container.$on('focus', handle => {
-        //     const user = window.awareness.getStates()?.get(window.awareness.clientID).user
-        //     this.store.focus[handle] = user
-        // });
-        // this.container.$on('blur', handle => {
-        //     if (this.store.focus[handle]) {
-        //         delete this.store.focus[handle];
-        //     }
-        // });
-    }
-
-    initialObserveStoreFocus() {
-        //
-    }
-
+    // Todo: Add DirtyStateManager
     dirty() {
         if (this.dirtyState.get(0) === true) return;
 
@@ -311,6 +309,7 @@ export default class Workspace {
         })
     }
 
+    // Todo: Add DirtyStateManager
     clearDirtyState() {
         if (this.dirtyState.get(0) === false) return;
 

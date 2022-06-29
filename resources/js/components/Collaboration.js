@@ -26,7 +26,6 @@ class Collaboration {
     destroy(container) {
         if (!this.workspaces[container.name]) return;
 
-        console.log('DESTROY WORKSPACE');
         this.workspaces[container.name].destroy();
         delete this.workspaces[container.name];
     }

@@ -27,6 +27,7 @@ const vm = new Vue({
             if (this.names.indexOf(name) == -1) {
                 this.names.push(name);
 
+                // TODO: Add information
                 if (Statamic.$config.get('collaboration.enabled')) {
                     Statamic.$collaboration.workspaces[name].dirty();
                 }
@@ -37,6 +38,7 @@ const vm = new Vue({
             const i = this.names.indexOf(name);
             this.names.splice(i, 1);
 
+            // TODO: Add information
             if (Statamic.$config.get('collaboration.enabled')) {
                 Statamic.$collaboration.workspaces[name].clearDirtyState();
             }
