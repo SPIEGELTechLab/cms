@@ -4,14 +4,15 @@ import { WebrtcProvider } from 'y-webrtc'
 import { WebsocketProvider } from 'y-websocket'
 import { IndexeddbPersistence } from 'y-indexeddb';
 import Statamic from '../Statamic';
-import { textUpdate } from "./text.js";
 import AwarenessManager from "./AwarenessManager";
-
+import { textUpdate } from "./text.js"
+import DirtyStateManager from './DirtyStateManager';
 
 // Todo: Add information what a Workspace is, why needed etc.
 export default class Workspace {
     constructor(container) {
         this.container = container;
+        this.dirtyState = null;
         this.started = false;
         this.synced = false;
         this.document = null;
@@ -20,6 +21,7 @@ export default class Workspace {
         this.mainProvider = null;
         this.roomName = this.container.reference;
         this.dirtyState = null;
+        this.users;
         this.Y = Y;
         this.yProsemirror = yProsemirror;
         this.awarenessManager = {};
@@ -27,8 +29,8 @@ export default class Workspace {
 
     start() {
         if (this.started) return;
-
         this.started = true;
+
         this.initializeSharedDocument();
         this.awarenessManager = new AwarenessManager(this.mainProvider?.awareness);
 
@@ -81,29 +83,9 @@ export default class Workspace {
         this.mainProvider = this.providers[0]
     }
 
-    // Todo: Add DirtyStateManager
     initializeDirtyState() {
-        this.dirtyState = this.document.getArray('_dirtyState');
-        this.clearDirtyState(); // initialize the dirty state.
-
-        // Listen to any changes of the dirty state
-        this.dirtyState.observe(event => {
-            // Sync the observed dirty state back to the actual document.
-            let SyncedDirtyState = this.dirtyState.get(0)
-
-            // If the Yjs and local state are the same. Do nothing.
-            if (SyncedDirtyState === Statamic.$dirty.has(this.container.name)) return;
-
-            if (SyncedDirtyState === true) {
-
-                Statamic.$dirty.add(this.container.name) // Add the dirty state locally.
-
-            } else if (Statamic.$dirty.has(this.container.name)) {
-
-                Statamic.$dirty.remove(this.container.name); // Only remove the dirty state if it has been set.
-
-            }
-        })
+        this.dirtyState = new DirtyStateManager(this);
+        this.dirtyState.initialize();
     }
 
     // TODO: Move into SyncManager
@@ -238,32 +220,15 @@ export default class Workspace {
         return this.fieldsets.find(fieldset => fieldset.handle === handle).type;
     }
 
-    // Todo: Add DirtyStateManager
     dirty() {
-        if (this.dirtyState.get(0) === true) return;
+        if (!this.dirtyState) return;
 
-        this.document.transact(() => {
-            // if (this.dirtyState.length > 0) {
-            //     this.dirtyState.forEach((value, index) => {
-            //         this.dirtyState.delete(index)
-            //     })
-            // }
-            if (this.dirtyState.get(0)) {
-                this.dirtyState.delete(0, this.dirtyState.length)
-            }
-            this.dirtyState.insert(0, [true]);
-        })
+        this.dirtyState.dirty();
     }
 
-    // Todo: Add DirtyStateManager
     clearDirtyState() {
-        if (this.dirtyState.get(0) === false) return;
+        if (!this.dirtyState) return;
 
-        this.document.transact(() => {
-            if (this.dirtyState.get(0)) {
-                this.dirtyState.delete(0, this.dirtyState.length)
-            }
-            this.dirtyState.insert(0, [false]);
-        })
+        this.dirtyState.clear();
     }
 }
