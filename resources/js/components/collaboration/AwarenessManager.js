@@ -2,17 +2,16 @@ import StatusBar from './StatusBar.vue';
 
 // Propagating awareness information such as presence & cursor locations
 class AwarenessManager {
-    constructor(awareness) {
-        this.awareness = awareness;
+    constructor() {
         this.users = [];
     }
 
-    start(container) {
+    start(container, awareness) {
         // Propagate relevant user information to awareness "user" field
-        this.awareness.setLocalStateField('user', this.getCurrentUser());
+        awareness.setLocalStateField('user', this.getCurrentUser());
 
         // Transform awareness user states into a readable array 
-        this.users = this.awarenessStatesToArray(this.awareness.states);
+        this.users = this.awarenessStatesToArray(awareness);
 
         // Initialize status bar
         Statamic.component('StatusBar', StatusBar);
@@ -20,8 +19,8 @@ class AwarenessManager {
 
         // Listen to remote and local awareness changes. This event is called even when the awareness state
         // doesn't change but is only updated to notify other users that this client is still online.
-        this.awareness.on('update', () => {
-            this.users = this.awarenessStatesToArray(this.awareness.states);
+        awareness.on('update', () => {
+            this.users = this.awarenessStatesToArray(awareness);
 
             container.$events.$emit('users-updated', this.users);
         });
@@ -46,12 +45,12 @@ class AwarenessManager {
         return color;
     }
 
-    awarenessStatesToArray(states) {
-        return Array.from(states.entries()).map(([key, value]) => ({
+    awarenessStatesToArray(awareness) {
+        return Array.from(awareness.states.entries()).map(([key, value]) => ({
             clientId: key,
             user: {
                 ...value.user,
-                current: this.awareness.clientID === key,
+                current: awareness.clientID === key,
                 online: navigator && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
             },
         }));

@@ -623,7 +623,7 @@ export default {
 
                     CollaborationCursor.configure({
                         provider: Statamic.$collaboration.workspaces[this.storeName].mainProvider,
-                        user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
+                        user: Statamic.$collaboration.workspaces[this.storeName].awareness.getCurrentUser()
                     }),
                 );
 

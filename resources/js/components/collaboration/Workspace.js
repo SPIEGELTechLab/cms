@@ -24,7 +24,7 @@ export default class Workspace {
         this.users;
         this.Y = Y;
         this.yProsemirror = yProsemirror;
-        this.awarenessManager = {};
+        this.awareness = {};
     }
 
     start() {
@@ -32,12 +32,11 @@ export default class Workspace {
         this.started = true;
 
         this.initializeSharedDocument();
-        this.awarenessManager = new AwarenessManager(this.mainProvider?.awareness);
+        this.awareness = new AwarenessManager();
 
         this.mainProvider.on('status', event => {
             if (event.status === 'connected' && !this.synced) {
-                this.awarenessManager.start(this.container);
-
+                this.awareness.start(this.container, this.mainProvider?.awareness);
                 this.initializeBlueprint();
                 this.initializeDirtyState();
             }
@@ -107,7 +106,7 @@ export default class Workspace {
 
             switch (field.collaborationType) {
                 case 'text':
-                    if (this.awarenessManager.users.length > 1) {
+                    if (this.awareness.users.length > 1) {
                         // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
                         Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
                             handle: field.handle,
