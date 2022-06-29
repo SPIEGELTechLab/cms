@@ -1,10 +1,7 @@
 import * as Y from 'yjs';
 import * as yProsemirror from 'y-prosemirror';
-import { WebrtcProvider } from 'y-webrtc'
-import { WebsocketProvider } from 'y-websocket'
-import { IndexeddbPersistence } from 'y-indexeddb';
-import Statamic from '../Statamic';
 import AwarenessManager from "./AwarenessManager";
+import ProviderManager from "./ProviderManager";
 import { textUpdate } from "./text.js"
 import DirtyStateManager from './DirtyStateManager';
 
@@ -16,33 +13,30 @@ export default class Workspace {
         this.started = false;
         this.synced = false;
         this.document = null;
-        this.providers = [];
         this.fieldsets = [];
-        this.mainProvider = null;
-        this.roomName = this.container.reference;
-        this.dirtyState = null;
-        this.users;
         this.Y = Y;
         this.yProsemirror = yProsemirror;
-        this.awareness = {};
+        this.awarenessManager = {};
+        this.providerManager = {};
     }
 
     start() {
         if (this.started) return;
         this.started = true;
 
-        this.initializeSharedDocument();
-        this.awareness = new AwarenessManager();
+        this.document = new Y.Doc();
+        this.initializeProviderSetup();
+        this.awarenessManager = new AwarenessManager();
 
-        this.mainProvider.on('status', event => {
+        this.providerManager.provider.on('status', event => {
             if (event.status === 'connected' && !this.synced) {
-                this.awareness.start(this.container, this.mainProvider?.awareness);
+                this.awarenessManager.start(this.container, this.providerManager.provider?.awareness);
                 this.initializeBlueprint();
                 this.initializeDirtyState();
             }
         });
 
-        this.mainProvider.on('synced', event => {
+        this.providerManager.provider.on('synced', event => {
             if (!event || this.synced) return;
             this.synced = true;
             this.initializeWebsocket();
@@ -56,30 +50,9 @@ export default class Workspace {
         window.removeEventListener('offline');
     }
 
-    // TODO: Move into ProviderManager
-    initializeSharedDocument() {
-        this.document = new Y.Doc()
-
-        if (this.providers.length === 0) { // Return if no provider have been provided
-
-            this.providers.push(new WebsocketProvider(
-                Statamic.$config.get('collaboration.websocket.url'), this.roomName, this.document
-            ));
-
-            this.providers.push(new WebrtcProvider(this.roomName, this.document));
-        } else {
-            // TODO: make provider setting customizable
-            this.providers.forEach((providerCallback) => {
-                providerCallback({ container: this.roomName, document: this.document });
-            });
-        }
-
-        // offline support
-        this.providers.push(new IndexeddbPersistence(this.roomName, this.document));
-
-        if (!this.providers || this.providers.length === 0) throw "Collaboration needs at least one provider to sync changes and to work properly."
-
-        this.mainProvider = this.providers[0]
+    initializeProviderSetup() {
+        this.providerManager = new ProviderManager();
+        this.providerManager.start(this.container.reference, this.document);
     }
 
     initializeDirtyState() {
@@ -106,7 +79,7 @@ export default class Workspace {
 
             switch (field.collaborationType) {
                 case 'text':
-                    if (this.awareness.users.length > 1) {
+                    if (this.awarenessManager.users.length > 1) {
                         // If there are more than two users in the document, fetch the YJS data and publish it to the form.    
                         Statamic.$store.dispatch(`publish/${this.container.name}/setCollaborationFieldValue`, {
                             handle: field.handle,
