@@ -626,10 +626,10 @@ export default {
                         fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
-                    CollaborationCursor.configure({
+                   /*  CollaborationCursor.configure({
                         provider: Statamic.$collaboration.workspaces[this.storeName].providerManager.provider,
                         user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
-                    }),
+                    }), */
                 );
 
                 // watch XML fragment to update meta data (set meta and previews)
