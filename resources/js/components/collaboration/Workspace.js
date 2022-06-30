@@ -5,7 +5,19 @@ import ProviderManager from "./ProviderManager";
 import DirtyStateManager from './DirtyStateManager';
 import SyncManager from './SyncManager';
 
-// Todo: Add information what a Workspace is, why needed etc.
+/**
+ * It's important to define what a Workspace is to understand how collaboration works.
+ * One collaboration workspace does respond to one Yjs document. Simply said: Every
+ * workspace get synced via it's dedicated Yjs document via a Yjs provider.
+ * 
+ * If a single entry will be opened, a new workspace will be created.
+ * Everyone in this workspace will receive live document updates.
+ * 
+ * It's possible to open multiple workspaces at once, in case
+ * you open another entry in a Statamic stack. Even if only
+ * opened as a stack, this stack will get fully synced
+ * if somebody else is editing it in the same time.
+ */
 export default class Workspace {
     constructor(container) {
         this.yProsemirror = yProsemirror;
@@ -66,22 +78,23 @@ export default class Workspace {
         }
 
         let counter = 0;
-        // y-webrtc does not throw a 'synced' event, so the part has to be implemented via an interval first
-        // if syncing takes place before, the values are written twice into the fields
+
+        // y-webrtc does not throw a 'synced' event, so the part has to be implemented via an interval 
+        // first if syncing takes place before, the values are written twice into the fields.
         const connectingInterval = setInterval(() => {
-            // Cancel interval after 3 attempts
+            // Cancel interval after 3 attempts.
             if (counter > 3) {
                 clearInterval(connectingInterval);
                 return;
             }
 
-            // Update counter if provider cannot connect
+            // Update counter if provider cannot connect.
             if (!this.providerManager.provider.connected) {
                 counter++;
                 return;
             }
 
-            // Provider is connected and values has been synchronized
+            // Provider is connected and values have been synchronized.
             if (this.providerManager.provider.connected && this.synced) {
                 clearInterval(connectingInterval);
                 return;
