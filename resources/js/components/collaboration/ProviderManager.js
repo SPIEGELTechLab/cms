@@ -3,25 +3,98 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 
 class ProviderManager {
-    constructor() {
+    constructor(workspace) {
+        this.providerType = Statamic.$config.get('collaboration.provider.type');
+        this.url = Statamic.$config.get('collaboration.provider.url');
+        this.connectedKeyword = Statamic.$config.get('collaboration.provider.connected_keyword');
+        this.syncedKeyword = Statamic.$config.get('collaboration.provider.synced_keyword');
+        this.roomName = workspace.container.reference
+        this.document = workspace.document
+        this.workspace = workspace;
         this.provider = null;
+        this.synced = false;
+        this.booted = false;
+        this.connected = false;
     }
 
-    start(roomName, document) {
-        if (Statamic.$config.get('collaboration.provider.type') === 'websocket') {
-            // Add websocket provider
-            this.provider = new WebsocketProvider(
-                Statamic.$config.get('collaboration.provider.url'), roomName, document
-            );
-        } else {
-            // Add default webrtc (peer-to-peer) provider
-            this.provider = new WebrtcProvider(roomName, document, { signaling: [Statamic.$config.get('collaboration.provider.url')] });
+    boot() {
+        return new Promise((resolve, reject) => {
+            try {
+                switch (this.providerType) {
+                    case 'peer_to_peer':
+                        this.provider = new WebrtcProvider(
+                            this.roomName, this.document, { signaling: [this.url] }
+                        )
+                        break;
+                    case 'websocket':
+                        this.provider = new WebsocketProvider(
+                            this.url, this.roomName, this.document
+                        );
+                        break;
+                    default:
+                        console.error(`The Collaboration provider could not be booted, as the provider "${this.providerType}" is not supported.`)
+                }
+
+                // Store the Y document in the browser for offline support
+                new IndexeddbPersistence(this.roomName, this.document);
+
+            } catch (error) {
+                reject();
+            }
+
+            resolve();
+        })
+    }
+
+    connect() {
+        return new Promise((resolve, reject) => {
+            let maxTries = 15;
+    
+            const connectingInterval = setInterval(() => {
+                if (this.provider[this.connectedKeyword]) {
+                    clearInterval(connectingInterval);
+                    resolve();
+                }
+    
+                if (maxTries <= 0) {
+                    clearInterval(connectingInterval);
+                    reject();
+                }
+    
+                maxTries--;
+            }, 333)
+        }).catch((error) => {
+            console.error('Connection Error: ', error)
+        })
+    }
+
+    syncProvider() {    
+        // ConnectedSynced will be null if the provider does not have a synced status.
+        if (this.provider[this.syncedKeyword] === null) {
+            return true;
         }
 
-        // Store the Y document in the browser (offline support)
-        new IndexeddbPersistence(roomName, document);
-    }
+        // Wait until the provider is synced.
+        return new Promise((resolve, reject) => {
+            let maxTries = 20;
 
+            const connectingInterval = setInterval(() => {
+                if (this.provider[this.syncedKeyword]) {
+                    clearInterval(connectingInterval);
+                    resolve();
+                }
+
+                if (maxTries <= 0) {
+                    clearInterval(connectingInterval);
+                    reject();
+                }
+
+                maxTries--;
+            }, 500)
+        }).catch(() => {
+            console.error('A connection could not be established to the collaboration provider');
+        })
+    }
 }
 
 export default ProviderManager;

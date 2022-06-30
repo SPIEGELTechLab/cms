@@ -18,11 +18,15 @@ class CollaborationServiceProvider extends ServiceProvider
 
     protected function variables()
     {
+        $provider = config('statamic.collaboration.default');
+
         return [
             'enabled' => true,
             'provider' => [
                 'type' => config('statamic.collaboration.default'),
-                'url' => config('statamic.collaboration.providers')[config('statamic.collaboration.default')]['url']
+                'url' => config('statamic.collaboration.providers')[$provider]['url'],
+                'connected_keyword' => config('statamic.collaboration.providers')[$provider]['connected_keyword'],
+                'synced_keyword' => config('statamic.collaboration.providers')[$provider]['synced_keyword'],
             ],
         ];
     }

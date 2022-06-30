@@ -53,10 +53,14 @@ return [
 
         'peer_to_peer' => [
             'url' => env('STATAMIC_COLLABORATION_URL', 'wss://signaling.yjs.dev'),
+            'connected_keyword' => 'connected',
+            'synced_keyword' => null,
         ],
 
         'websocket' => [
             'url' => env('STATAMIC_COLLABORATION_URL', 'wss://demos.yjs.dev'),
+            'connected_keyword' => 'wsconnected',
+            'synced_keyword' => 'synced',
         ],
 
     ],

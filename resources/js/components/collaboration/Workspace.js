@@ -28,7 +28,6 @@ export default class Workspace {
         this.syncManager = {};
         this.document = null;
         this.started = false;
-        this.synced = false;
         this.Y = Y;
     }
 
@@ -38,72 +37,23 @@ export default class Workspace {
 
         this.document = new Y.Doc();
 
-        this.providerManager = new ProviderManager();
-        this.providerManager.start(this.container.reference, this.document);
-
+        this.providerManager = new ProviderManager(this);
         this.awarenessManager = new AwarenessManager();
 
-        if (Statamic.$config.get('collaboration').provider.type === 'websocket') {
-            this.initializeWebsocketProvider();
-        } else {
-            this.initializeWebrtcProvider();
-        }
+        this.providerManager.boot()
+            .then(() => this.initializeDirtyStateManager())
+            .then(() => this.startAwareness())
+            .then(() => this.providerManager.connect())
+            .then(() => this.providerManager.syncProvider())
+            .then(() => this.initializeSyncManager())
+            .catch((error) => {
+                console.error(`An error occured starting the collaboration provider: ${error}`);
+            })
     }
 
     beforeDestroy() {
         window.removeEventListener('online');
         window.removeEventListener('offline');
-    }
-
-    initializeWebsocketProvider() {
-        this.providerManager.provider.on('status', event => {
-            if (event.status === 'connected' && !this.synced) {
-                this.initializeDirtyStateManager();
-                this.startAwareness();
-            }
-        });
-
-        this.providerManager.provider.on('synced', event => {
-            if (!event || this.synced) return;
-
-            this.synced = true;
-            this.initializeSyncManager();
-        });
-    }
-
-    initializeWebrtcProvider() {
-        if (!this.synced) {
-            this.initializeDirtyStateManager();
-            this.startAwareness();
-        }
-
-        let counter = 0;
-
-        // y-webrtc does not throw a 'synced' event, so the part has to be implemented via an interval 
-        // first if syncing takes place before, the values are written twice into the fields.
-        const connectingInterval = setInterval(() => {
-            // Cancel interval after 3 attempts.
-            if (counter > 3) {
-                clearInterval(connectingInterval);
-                return;
-            }
-
-            // Update counter if provider cannot connect.
-            if (!this.providerManager.provider.connected) {
-                counter++;
-                return;
-            }
-
-            // Provider is connected and values have been synchronized.
-            if (this.providerManager.provider.connected && this.synced) {
-                clearInterval(connectingInterval);
-                return;
-            }
-
-            this.synced = true;
-            this.initializeSyncManager();
-
-        }, 250);
     }
 
     initializeDirtyStateManager() {
