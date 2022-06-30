@@ -497,6 +497,11 @@ export default {
         },
 
         valueToYjsDoc(value) {
+            // Does a workspace exist? It won't if creating a new entry.
+            if (!Statamic.$collaboration.workspaces[this.storeName]) {
+                return;
+            }
+
             // Load the value as soon after the provider synced
             Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.on('synced', () => {
 
