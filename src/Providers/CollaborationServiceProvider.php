@@ -10,15 +10,24 @@ class CollaborationServiceProvider extends ServiceProvider
 {
     public function boot()
     {
-        Statamic::provideToScript(['collaboration' => [
-            'enabled' => $this->isCollaborationEnabled(),
-            'websocket' => [
-                'url' => config('statamic.collaboration.websocket.url'),
-            ]
-        ]]);
+        $this->app->booted(function () {
+            $variables = $this->enabled() ? $this->variables() : ['enabled' => false];
+            Statamic::provideToScript(['collaboration' => $variables]);
+        });
     }
 
-    private function isCollaborationEnabled(): bool
+    protected function variables()
+    {
+        return [
+            'enabled' => true,
+            'provider' => [
+                'type' => config('statamic.collaboration.default'),
+                'url' => config('statamic.collaboration.providers')[config('statamic.collaboration.default')]['url']
+            ],
+        ];
+    }
+
+    protected function enabled(): bool
     {
         if (! Statamic::pro()) {
             return false;

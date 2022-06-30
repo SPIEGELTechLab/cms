@@ -16,10 +16,17 @@ return [
     |
     */
 
-    'enabled' => env('COLLABORATION_ENABLED', false),
+    'enabled' => env('STATAMIC_COLLABORATION_ENABLED', false),
 
-    'websocket' => [
-        'url' => env('COLLABORATION_WS_URL', 'wss://demos.yjs.dev'),
-    ],
+    'default' => env('STATAMIC_COLLABORATION_PROVIDER', 'peer_to_peer'),
+
+    'providers' => [
+        'peer_to_peer' => [
+            'url' => env('STATAMIC_COLLABORATION_URL', 'wss://signaling.yjs.dev'),
+        ],
+        'websocket' => [
+            'url' => env('STATAMIC_COLLABORATION_URL', 'wss://demos.yjs.dev'),
+        ]
+    ]
 
 ];

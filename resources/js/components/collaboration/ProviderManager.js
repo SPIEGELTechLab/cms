@@ -5,29 +5,21 @@ import { WebsocketProvider } from 'y-websocket';
 class ProviderManager {
     constructor() {
         this.provider = null;
-        // hold an array with all providers
-        this.providers = [];
     }
 
     start(roomName, document) {
-        // Add websocket provider
-        this.providers.push(new WebsocketProvider(
-            Statamic.$config.get('collaboration.websocket.url'), roomName, document
-        ));
-
-        // Add webrtc provider
-        this.providers.push(new WebrtcProvider(roomName, document));
-
-        // Add offline support
-        this.providers.push(new IndexeddbPersistence(roomName, document));
-
-        if (!this.providers || (Array.isArray(this.providers) && !this.providers.length)) {
-            console.error('Collaboration needs at least one provider to sync changes and to work properly.');
-            return;
+        if (Statamic.$config.get('collaboration.provider.type') === 'websocket') {
+            // Add websocket provider
+            this.provider = new WebsocketProvider(
+                Statamic.$config.get('collaboration.provider.url'), roomName, document
+            );
+        } else {
+            // Add default webrtc (peer-to-peer) provider
+            this.provider = new WebrtcProvider(roomName, document, { signaling: [Statamic.$config.get('collaboration.provider.url')] });
         }
 
-        // First provider is used for awareness informations and the yjs document
-        this.provider = this.providers[0];
+        // Store the Y document in the browser (offline support)
+        new IndexeddbPersistence(roomName, document);
     }
 
 }
