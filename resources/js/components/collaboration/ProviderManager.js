@@ -12,9 +12,6 @@ class ProviderManager {
         this.document = workspace.document
         this.workspace = workspace;
         this.provider = null;
-        this.synced = false;
-        this.booted = false;
-        this.connected = false;
     }
 
     boot() {
