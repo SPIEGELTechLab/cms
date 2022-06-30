@@ -1,7 +1,7 @@
 <script>
 export default {
 
-     watch: {
+     methods: {
 
         /**
          * Watching the value is important, so the cursor position can be kept or manipulated.
@@ -12,7 +12,7 @@ export default {
          * The last position will be fetched on every text update.
          * @see /components/collaboration/mixins/Text.vue
          */
-        value(value) {
+        textValueWithCursor(value) {
             /**
              * Return early in case collaboration is disabled.
              */

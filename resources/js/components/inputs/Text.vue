@@ -8,7 +8,7 @@
                 :class="classes"
                 :id="id"
                 :name="name"
-                :value="value"
+                :value="textValueWithCursor(value)"
                 :type="type"
                 :step="step"
                 :disabled="disabled"
@@ -32,11 +32,11 @@
 </template>
 
 <script>
-import UpdateTextSelection from '../collaboration/mixins/UpdateTextSelection.vue';
+import TextValueWithCursor from '../collaboration/mixins/TextValueWithCursor.vue';
 import LengthLimiter from '../LengthLimiter.vue'
 
 export default {
-    mixins: [LengthLimiter, UpdateTextSelection],
+    mixins: [LengthLimiter, TextValueWithCursor],
     props: {
         name: {},
         disabled: { default: false },
