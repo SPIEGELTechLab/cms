@@ -497,6 +497,11 @@ export default {
         },
 
         valueToYjsDoc(value) {
+            // Does a workspace exist? It won't if creating a new entry.
+            if (!Statamic.$collaboration.workspaces[this.storeName]) {
+                return;
+            }
+
             // Load the value as soon after the provider synced
             Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.on('synced', () => {
 
@@ -621,10 +626,10 @@ export default {
                         fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
-                    CollaborationCursor.configure({
+                   /*  CollaborationCursor.configure({
                         provider: Statamic.$collaboration.workspaces[this.storeName].providerManager.provider,
                         user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
-                    }),
+                    }), */
                 );
 
                 // watch XML fragment to update meta data (set meta and previews)
