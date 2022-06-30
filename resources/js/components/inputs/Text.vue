@@ -8,7 +8,7 @@
                 :class="classes"
                 :id="id"
                 :name="name"
-                :value="textValue(value)"
+                :value="value"
                 :type="type"
                 :step="step"
                 :disabled="disabled"
@@ -32,10 +32,11 @@
 </template>
 
 <script>
+import UpdateTextSelection from '../collaboration/mixins/UpdateTextSelection.vue';
 import LengthLimiter from '../LengthLimiter.vue'
 
 export default {
-    mixins: [LengthLimiter],
+    mixins: [LengthLimiter, UpdateTextSelection],
     props: {
         name: {},
         disabled: { default: false },
@@ -60,38 +61,5 @@ export default {
             this.$refs.input.focus();
         }
     },
-
-    methods: {
-        textValue(value) {
-
-            console.debug('Update value and set cursor position. Value: ', value)
-
-            let cursor = Statamic.user.cursor ?? null;
-
-            // Only update the cursor position a cursor has been set (the actual user is inside any field)
-            // and if the cursor handle does match with the current field handle.
-            if (cursor && cursor.handle === this.name) {
-                let start = cursor.position.start
-                let end = cursor.position.end
-
-                if (cursor.move && start >= cursor.move.from) {
-                    start += cursor.move.length
-                    end += cursor.move.length
-                }
-
-                // TODO: What's the best way to remove our move information?
-
-                // Update cursor position
-                this.$nextTick(() => this.$refs.input.setSelectionRange(start, end));
-
-                Statamic.user.cursor.position = {
-                    start: start,
-                    end: end,
-                }
-            }
-
-            return value
-        }
-    }
 }
 </script>
