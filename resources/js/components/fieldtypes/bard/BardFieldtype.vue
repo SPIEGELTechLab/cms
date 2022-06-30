@@ -85,7 +85,7 @@ import Underline from '@tiptap/extension-underline';
 import BardSource from './Source.vue';
 import Document from './Document';
 import { Set } from './Set';
-import Commands from './Commands';
+import SetCommand from './SetCommand';
 import SetSuggestion from './SetSuggestion';
 import { Small } from './Small';
 import { Image } from './Image';
@@ -562,7 +562,6 @@ export default {
             let exts = [
                 Document,
                 HardBreak,
-                History,
                 Paragraph,
                 Set.configure({ bard: this }),
                 Text
@@ -570,7 +569,7 @@ export default {
 
             if (this.config.sets.length > 0) {
                 exts.push(
-                    Commands.configure({
+                    SetCommand.configure({
                         suggestion: {...SetSuggestion, items: () => { return this.config.sets } },
                     }),
                     Placeholder.configure({
@@ -616,6 +615,11 @@ export default {
                 );
             }
 
+            // The Collaboration extension comes with its own history handling
+            if (!Statamic.$config.get('collaboration.enabled')) {
+                exts.push(History)
+            }
+
             if (
                 Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
                 && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
@@ -626,11 +630,12 @@ export default {
                         fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
-                   /*  CollaborationCursor.configure({
+                    CollaborationCursor.configure({
                         provider: Statamic.$collaboration.workspaces[this.storeName].providerManager.provider,
                         user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
-                    }), */
+                    }),
                 );
+
 
                 // watch XML fragment to update meta data (set meta and previews)
                 // otherwise there are display errors with other users
