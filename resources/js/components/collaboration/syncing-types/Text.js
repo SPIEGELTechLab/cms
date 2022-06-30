@@ -2,7 +2,13 @@ import diff from "fast-diff";
 
 class Text {
 
-    static fetchFromYjs(workspace, field) {
+    /**
+     * This is one of two methods to sync the workspace / document.
+     * This method does write the actual Yjs value into the Vuex store.
+     * 
+     * Yjs Provider -> Local
+     */
+    static fetchInitialFromYjs(workspace, field) {
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
             handle: field.handle,
             user: Statamic.user.id,
@@ -10,17 +16,28 @@ class Text {
         });
     }
 
-    static pushToYjs(workspace, field) {
+    /**
+     * This is one of two methods to sync the workspace / document.
+     * This method does reset the Yjs provider and will send the server
+     * state to the Yjs afterwards so the Yjs server does get a fresh document.
+     * 
+     * Yjs Provider <- Local
+     */
+    static pushInitialToYjs(workspace, field) {
         workspace.document.transact(() => {
             // Delete websocket data in case some data does exist.
             if (workspace.document.getText(field.handle).length > 0) {
                 workspace.document.getText(field.handle).delete(0, workspace.document.getText(field.handle).length)
             }
-            // Initialize the websocket
+            // Push the initial value to the Yjs provider.
             workspace.document.getText(field.handle).insert(0, workspace.container.values[field.handle]);
         })
     }
 
+    /**
+     * Push local text changes to the Yjs provider, so those can be synced to all collaborators.
+     * With Yjs we won't send the complete text, only the diff and belonging start position.
+     */
     static pushLocalChange(handle, YText, newValue, initPosition) {
         const oldValue = YText.toString();
 
@@ -39,44 +56,74 @@ class Text {
         for (const [type, substring] of changes) {
             switch (type) {
                 case diff.EQUAL:
+                    /**
+                     * No change, the diff is eual. Do nothing.
+                     */
                     position += substring.length;
                     break;
                 case diff.DELETE:
+                    /**
+                     * Send a delete update to Yjs.
+                     */
                     YText.delete(position, substring.length);
                     break;
                 case diff.INSERT:
+                    /**
+                     * Send a insert update to Yjs.
+                     */
                     YText.insert(position, substring);
-                    position += substring.length;
                     break;
             }
         }
     }
 
+     /**
+     * Observe remote text changes from Yjs the Yjs provider, so those can be merged with the local state.
+     * Yjs will only send the text diff with the belonging position. Such changes are called delta in Yjs.
+     */
     static observeRemoteChanges(workspace, field) {
         workspace.document.getText(field.handle).observe(event => {
-            console.debug('EVENT', event)
 
             let toUpdate = [];
             let from = 0;
-            let length = 0; // Fallback
+            let length = 0; // If inserting on position 0, no retain delta will be sent, so we need to set 0 as a default value.
 
             event.delta.forEach((delta) => {
 
                 if (delta.retain) {
+                   /**
+                    * Retain does define which chracters to keep and does not come alone
+                    * and does define the start position of the change.
+                    */
                     from = delta.retain;
                 } else if (delta.insert) {
-                    length += delta.insert.length; // Get length as its a string
+                   /**
+                    * A insert delta will send the characters as a string to update.
+                    */
+                    length += delta.insert.length;
                 } else if (delta.delete) {
-                    length -= delta.delete; // Will return the deleted characters as int
+                    /**
+                    * A delete delta will send an int, defining how many characters to delete.
+                    */
+                    length -= delta.delete;
                 }
 
-                // Sometimes multiple deltas will be fired at once. 
-                // To avoid workload, we'll remeber those so we can make a single update after fetching alle changes.
-                if (toUpdate.includes(field.handle)) return;
-
-                toUpdate.push(field.handle)
+               /**
+                * It may happen, that multiple deltas will be received at once.
+                * To avoid workload, we'll make a single update after fetching alle changes.
+                */
+                if (!toUpdate.includes(field.handle)) {
+                    toUpdate.push(field.handle)
+                }
             })
 
+            /**
+             * This is a funny one :-)
+             * If updating a textfield via javascript, the cursor position inside that field will be reset.
+             * To make we can reset the last cursor position correctly, we do save the actual position
+             * before applying any changes to the store. The cursor position itself will get reset
+             * inside the Text.vue component, as we can't change the cursor position from here.
+             */
             if (Statamic.user.cursor) {
                 Statamic.user.cursor.move = {
                     from: from,
@@ -84,10 +131,10 @@ class Text {
                 }
             }
 
-            // Working through each field only once.
-
-            // If it's a local change, we don't need to fire the collaboration field value command. 
-            // This does prevent a race condition as well.
+            /**
+             * If it's a local change, we don't need to fire the collaboration field value command.
+             * A local change will be written into the Vuex via the `setFieldValue` event already.
+             */
             if (!event.transaction.local) {
 
                 toUpdate.forEach(handle => {
@@ -100,7 +147,9 @@ class Text {
 
             }
 
-            // Reset fields we did update
+            /**
+             * Reset Fields after the update.
+             */
             toUpdate = []
 
         })

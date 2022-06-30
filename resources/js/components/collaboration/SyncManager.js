@@ -6,7 +6,7 @@ export default class SyncManager {
         this.fieldtypes = [];
     }
  
-   /*
+   /**
     * Get the Blueprint and fetch those fields, so we know how to sync them.
     */
     defineFieldsets() {
@@ -21,7 +21,7 @@ export default class SyncManager {
         });
     }
 
-   /*
+   /**
     * Depending if one ore more users are present, different actions 
     * on how to sync to or from the Yjs provider are taken.
     */
@@ -29,7 +29,7 @@ export default class SyncManager {
         this.fieldtypes.forEach(field => {
 
             if (this.workspace.awarenessManager.users.length > 1) {
-                /*
+                /**
                  * In case more than two users are present, 
                  * fetch the Yjs data and sync it locally. 
                  * 
@@ -37,11 +37,11 @@ export default class SyncManager {
                  */
                 switch (field.syncingType) {
                     case 'text':
-                        Text.fetchFromYjs(this.workspace, field);
+                        Text.fetchInitialFromYjs(this.workspace, field);
                         break;
                 }
             } else {
-                /*
+                /**
                  * If only one user is present, we want to reset the websocket.
                  * Fetch the local data and push it to the Yjs provider. 
                  * 
@@ -49,14 +49,14 @@ export default class SyncManager {
                  */
                 switch (field.syncingType) {
                     case 'text':
-                        Text.pushToYjs(this.workspace, field);
+                        Text.pushInitialToYjs(this.workspace, field);
                         break;
                 }
             }
         })
     }
 
-   /*
+   /**
     * By listening to the `setFieldValue` event from the Vuex store, we can listen to all changes.
     * Those made changes will be pushed to the Yjs provider so all collaborators get synced.
     */
@@ -78,7 +78,7 @@ export default class SyncManager {
         });
     }
 
-   /*
+   /**
     * To receive all made changes from the Yjs provider, we need to observe those changes.
     * Those changes will be synced back to the local Vuex store with the named
     * `setCollaborationFieldValue` event which you could listen to as well,
@@ -96,7 +96,7 @@ export default class SyncManager {
 
     }
 
-    /*
+    /**
     * Get the syncing type from the field handle.
     */
     getSyncingType(handle) {
