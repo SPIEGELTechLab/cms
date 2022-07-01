@@ -27,10 +27,15 @@ const vm = new Vue({
             if (this.names.indexOf(name) == -1) {
                 this.names.push(name);
 
-                // TODO: Add information
-                if (Statamic.$config.get('collaboration.enabled')) {
-                    Statamic.$collaboration.workspaces[name].dirty();
-                }
+                if (this.isCollaborationDisabled || this.isWorkspaceUnavailable) return;
+
+                /**
+                 * If using collaboration, the dirty state will be synchronized between
+                 * all active collaboratiors in that workspace. 
+                 * 
+                 * @see /components/collaboration/DirtyStateManager.js
+                 */
+                Statamic.$collaboration.workspaces[name].dirty();
             }
         },
 
@@ -38,10 +43,16 @@ const vm = new Vue({
             const i = this.names.indexOf(name);
             this.names.splice(i, 1);
 
-            // TODO: Add information
-            if (Statamic.$config.get('collaboration.enabled')) {
-                Statamic.$collaboration.workspaces[name].clearDirtyState();
-            }
+            if (this.isCollaborationDisabled || this.isWorkspaceUnavailable) return;
+            
+            /**
+             * If using collaboration, the dirty state will be synchronized between
+             * all active collaboratiors in that workspace. 
+             * 
+             * @see /components/collaboration/DirtyStateManager.js
+             */
+            Statamic.$collaboration.workspaces[name].clearDirtyState();
+
         },
 
         enableWarning() {
@@ -52,7 +63,15 @@ const vm = new Vue({
 
         disableWarning() {
             window.onbeforeunload = null;
-        }
+        },
+
+        isCollaborationDisabled() {
+            return ! Statamic.$config.get('collaboration.enabled');
+        },
+
+        isWorkspaceUnavailable(name) {
+            return ! Statamic.$collaboration.workspaces[name];
+        },
 
     }
 
