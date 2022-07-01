@@ -8,9 +8,8 @@ class ProviderManager {
         this.url = Statamic.$config.get('collaboration.provider.url');
         this.connectedKeyword = Statamic.$config.get('collaboration.provider.connected_keyword');
         this.syncedKeyword = Statamic.$config.get('collaboration.provider.synced_keyword');
-        this.roomName = workspace.container.reference
-        this.document = workspace.document
-        this.workspace = workspace;
+        this.roomName = workspace.container.reference;
+        this.document = workspace.document;
         this.provider = null;
     }
 
@@ -46,18 +45,18 @@ class ProviderManager {
     connect() {
         return new Promise((resolve, reject) => {
             let maxTries = 15;
-    
+
             const connectingInterval = setInterval(() => {
                 if (this.provider[this.connectedKeyword]) {
                     clearInterval(connectingInterval);
                     resolve();
                 }
-    
+
                 if (maxTries <= 0) {
                     clearInterval(connectingInterval);
                     reject();
                 }
-    
+
                 maxTries--;
             }, 333)
         }).catch((error) => {
@@ -65,24 +64,24 @@ class ProviderManager {
         })
     }
 
-    syncProvider() {    
+    sync() {
         // ConnectedSynced will be null if the provider does not have a synced status.
-        if (this.provider[this.syncedKeyword] === null) {
-            return true;
+        if (!this.provider[this.syncedKeyword]) {
+            return Promise.resolve();
         }
 
         // Wait until the provider is synced.
         return new Promise((resolve, reject) => {
             let maxTries = 20;
 
-            const connectingInterval = setInterval(() => {
+            const syncingInterval = setInterval(() => {
                 if (this.provider[this.syncedKeyword]) {
-                    clearInterval(connectingInterval);
+                    clearInterval(syncingInterval);
                     resolve();
                 }
 
                 if (maxTries <= 0) {
-                    clearInterval(connectingInterval);
+                    clearInterval(syncingInterval);
                     reject();
                 }
 

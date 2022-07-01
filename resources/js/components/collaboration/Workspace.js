@@ -44,7 +44,7 @@ export default class Workspace {
             .then(() => this.initializeDirtyStateManager())
             .then(() => this.startAwareness())
             .then(() => this.providerManager.connect())
-            .then(() => this.providerManager.syncProvider())
+            .then(() => this.providerManager.sync())
             .then(() => this.initializeSyncManager())
             .catch((error) => {
                 console.error(`An error occured starting the collaboration provider: ${error}`);
