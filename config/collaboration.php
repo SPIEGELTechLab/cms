@@ -47,6 +47,9 @@ return [
     |
     | Here are each of the provider connections setup for your application.
     |
+    | The `connected` and `synced` keywords are defined by the provider.
+    | Those should normally never change to not break collaboration.
+    |
     */
 
     'providers' => [
