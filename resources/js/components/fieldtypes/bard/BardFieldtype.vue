@@ -99,6 +99,7 @@ import javascript from 'highlight.js/lib/languages/javascript'
 import css from 'highlight.js/lib/languages/css'
 import hljs from 'highlight.js/lib/highlight';
 import 'highlight.js/styles/github.css';
+import { prosemirrorJSONToYXmlFragment } from 'y-prosemirror';
 
 export default {
 
@@ -503,8 +504,7 @@ export default {
             }
 
             // Load the value as soon after the provider synced
-            Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.on('synced', () => {
-
+            this.$events.$on('collaboration-provider-synced', () => {
                 // online offline support: value is already formatted for prosemirror
                 if (typeof value === 'string')  {
                     value = this.valueToContent(value);
@@ -522,30 +522,30 @@ export default {
                 }
 
                 const bardFragment = workspace.document.getXmlFragment(this.handle);
-                if (bardFragment.length > 0) return;
 
                 // TODO: This may be done via the Workspace, so there is only one place where we reset the complete YJS dcoument
                 // Remove the state from the XMLFragment for the first user to show only the stored values
-                if (workspace.users.length === 1) {
+                if (workspace.awarenessManager.users.length === 1 && bardFragment.length > 0) {
                    bardFragment.delete(0, bardFragment.length);
                 }
+
+                if (bardFragment.length > 0) return;
 
                 const Y = workspace.Y;
                 // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
                 const temporaryYDoc = new Y.Doc();
                 const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
 
-                workspace.yProsemirror.prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
+                prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
 
                 // Encode the temporary state as a binary buffer
                 let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
 
                 // Apply saved values for single user
-                if (workspace.users.length === 1) {
+                if (workspace.awarenessManager.users.length === 1) {
                    Y.applyUpdate(workspace.document, temporaryEncodedDoc);
                    return;
                 }
-
             });
         },
 

@@ -10,6 +10,7 @@ class ProviderManager {
         this.syncedKeyword = Statamic.$config.get('collaboration.provider.synced_keyword');
         this.roomName = workspace.container.reference;
         this.document = workspace.document;
+        this.container = workspace.container;
         this.provider = null;
     }
 
@@ -48,6 +49,7 @@ class ProviderManager {
 
             const connectingInterval = setInterval(() => {
                 if (this.provider[this.connectedKeyword]) {
+                    this.container.$events.$emit('collaboration-provider-connected');
                     clearInterval(connectingInterval);
                     resolve();
                 }
@@ -67,6 +69,7 @@ class ProviderManager {
     sync() {
         // ConnectedSynced will be null if the provider does not have a synced status.
         if (!this.provider[this.syncedKeyword]) {
+            this.container.$events.$emit('collaboration-provider-synced');
             return Promise.resolve();
         }
 
@@ -76,6 +79,7 @@ class ProviderManager {
 
             const syncingInterval = setInterval(() => {
                 if (this.provider[this.syncedKeyword]) {
+                    this.container.$events.$emit('collaboration-provider-synced');
                     clearInterval(syncingInterval);
                     resolve();
                 }

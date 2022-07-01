@@ -1,5 +1,4 @@
 import * as Y from 'yjs';
-import * as yProsemirror from 'y-prosemirror';
 import AwarenessManager from "./AwarenessManager";
 import ProviderManager from "./ProviderManager";
 import DirtyStateManager from './DirtyStateManager';
@@ -20,7 +19,6 @@ import SyncManager from './SyncManager';
  */
 export default class Workspace {
     constructor(container) {
-        this.yProsemirror = yProsemirror;
         this.container = container;
         this.awarenessManager = {};
         this.providerManager = {};
