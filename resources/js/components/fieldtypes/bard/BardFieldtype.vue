@@ -523,13 +523,13 @@ export default {
 
                 const bardFragment = workspace.document.getXmlFragment(this.handle);
 
+                if (workspace.awarenessManager.users.length > 1 && bardFragment.length > 0) return;
+
                 // TODO: This may be done via the Workspace, so there is only one place where we reset the complete YJS dcoument
                 // Remove the state from the XMLFragment for the first user to show only the stored values
                 if (workspace.awarenessManager.users.length === 1 && bardFragment.length > 0) {
                    bardFragment.delete(0, bardFragment.length);
                 }
-
-                if (bardFragment.length > 0) return;
 
                 const Y = workspace.Y;
                 // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
