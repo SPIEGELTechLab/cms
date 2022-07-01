@@ -18,7 +18,7 @@
         <div class="flex-1">
 
             <!-- URL text input -->
-            <text-input v-if="option === 'url'" v-model="urlValue" />
+            <text-input v-if="option === 'url'" :value="urlValue" @input="setUrlValue" />
 
             <!-- Entry select -->
             <relationship-fieldtype
@@ -108,12 +108,6 @@ export default {
             }
         },
 
-        urlValue(url) {
-            if (this.metaChanging) return;
-
-            this.update(url);
-        },
-
         meta(meta) {
             this.metaChanging = true;
             this.urlValue = meta.initialUrl;
@@ -126,6 +120,12 @@ export default {
     },
 
     methods: {
+        
+        setUrlValue(value) {
+            this.urlValue = value.target.value;
+
+            this.update(this.urlValue);
+        },
 
         initialOptions() {
             return [

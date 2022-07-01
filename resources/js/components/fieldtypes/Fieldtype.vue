@@ -58,15 +58,15 @@ export default {
         },
 
         isInputEvent(input) {
-            return typeof input === "object" && input.constructor.name === "InputEvent";
+            return typeof input === "object" && input?.constructor?.name === "InputEvent";
         },
 
         isPointerEvent(input) {
-            return typeof input === "object" && input.constructor.name === "PointerEvent";
+            return typeof input === "object" && input?.constructor?.name === "PointerEvent";
         },
 
         isKeyboardEvent(input) {
-            return typeof input === "object" && input.constructor.name === "KeyboardEvent";
+            return typeof input === "object" && input?.constructor?.name === "KeyboardEvent";
         },
 
     },
