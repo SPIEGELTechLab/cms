@@ -34,6 +34,7 @@ class AugmentedUser extends AbstractAugmented
             'is_user',
             'last_login',
             'avatar',
+            'thumbnail',
             'api_url',
             'preferred_locale',
         ];
@@ -106,5 +107,10 @@ class AugmentedUser extends AbstractAugmented
     protected function preferredLocale()
     {
         return $this->data->preferredLocale();
+    }
+
+    protected function thumbnail() 
+    {
+        return $this->data->hasAvatarField() ? $this->data->avatar() : $this->data->gravatarUrl();
     }
 }

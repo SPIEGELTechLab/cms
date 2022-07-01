@@ -7,7 +7,7 @@
             v-tooltip="user.name"
             :style="`background-color: ${user.color}`"
         >
-            <img v-if="user.avatar" :src="user.avatar" :alt="user.name" class="h-7 w-7 rounded-full" />
+            <img v-if="user.avatar" :src="user.avatar" :alt="user.name" class="h-8 w-8 rounded-full" />
             <span v-else class="absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%)">{{
                 user.initials
             }}</span>
