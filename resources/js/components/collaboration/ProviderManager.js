@@ -2,6 +2,10 @@ import { IndexeddbPersistence } from 'y-indexeddb';
 import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 
+/**
+ * The provider manager is responsible to boot the correct Yjs providers, 
+ * check if they are connected and synced before proceeding.
+ */
 class ProviderManager {
     constructor(workspace) {
         this.providerType = Statamic.$config.get('collaboration.provider.type');
@@ -14,6 +18,10 @@ class ProviderManager {
         this.provider = null;
     }
 
+    /**
+     * As our first step, depending on the selected provider type, the provider gets booted.
+     * To enable offline support, the `IndexdbPersistence` provider will be booted as well.
+     */
     boot() {
         return new Promise((resolve, reject) => {
             try {
@@ -32,7 +40,6 @@ class ProviderManager {
                         console.error(`The Collaboration provider could not be booted, as the provider "${this.providerType}" is not supported.`)
                 }
 
-                // Store the Y document in the browser for offline support
                 new IndexeddbPersistence(this.roomName, this.document);
 
             } catch (error) {
@@ -43,9 +50,17 @@ class ProviderManager {
         })
     }
 
+    /**
+     * The Workspace will first boot the providers. Before continuing, we need to make sure that the 
+     * Yjs Provider is connected. In case the connection is not established, we wait and try again.
+     * 
+     * Providers do use a different wording to check if they are connected. To keep it general, 
+     * the `connectedKeyword` will be read from the config to check against that keyword.
+     */
     connect() {
         return new Promise((resolve, reject) => {
             let maxTries = 15;
+            const interval = 333;
 
             const connectingInterval = setInterval(() => {
                 if (this.provider[this.connectedKeyword]) {
@@ -60,22 +75,31 @@ class ProviderManager {
                 }
 
                 maxTries--;
-            }, 333)
+            }, interval)
         }).catch((error) => {
             console.error('Connection Error: ', error)
         })
     }
 
+    /**
+     * We need to make sure that the Providers did sync, which is especially important for the Websocket
+     * provider. In case the provider has not synced, we wait and try again after a few milliseconds.
+     * This is important, as we first can pull the latest values from the websocket after the sync.
+     * 
+     * Providers do use a different wording to check if they are synchronized. To keep it general, 
+     * the `syncedKeyword` will be read from the config to check against that keyword. If a
+     * provider does not offer to check against synchronization like the WebRTC provider,
+     * this step will be skipped. In that case, the `syncedKeyword` will return `null`.
+     */
     sync() {
-        // ConnectedSynced will be null if the provider does not have a synced status.
         if (!this.provider[this.syncedKeyword]) {
             this.container.$events.$emit('collaboration-provider-synced');
             return Promise.resolve();
         }
 
-        // Wait until the provider is synced.
         return new Promise((resolve, reject) => {
             let maxTries = 20;
+            const interval = 500;
 
             const syncingInterval = setInterval(() => {
                 if (this.provider[this.syncedKeyword]) {
@@ -90,7 +114,7 @@ class ProviderManager {
                 }
 
                 maxTries--;
-            }, 500)
+            }, interval)
         }).catch(() => {
             console.error('A connection could not be established to the collaboration provider');
         })
