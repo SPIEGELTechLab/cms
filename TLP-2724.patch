@@ -1,0 +1,81 @@
+diff --git a/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue b/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
+index cc69fc3ca..c7ad74128 100644
+--- a/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
++++ b/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
+@@ -21,6 +21,8 @@
+         :form-component-props="formComponentProps"
+         :status-icons="statusIcons"
+         :columns="columns"
++        :initial-sort-column="initialSortColumn"
++        :initial-sort-direction="initialSortDirection"
+         :search="canSearch"
+         :read-only="isReadOnly"
+         :taggable="taggable"
+@@ -61,6 +63,14 @@ export default {
+             return this.meta.columns;
+         },
+ 
++        initialSortColumn() {
++            return this.config.initial_sort_column || 'title';
++        },
++
++        initialSortDirection() {
++            return this.config.initial_sort_direction || 'asc';
++        },
++
+         itemComponent() {
+             return this.meta.itemComponent;
+         },
+diff --git a/resources/js/components/inputs/relationship/RelationshipInput.vue b/resources/js/components/inputs/relationship/RelationshipInput.vue
+index 237687f4c..e6716c876 100644
+--- a/resources/js/components/inputs/relationship/RelationshipInput.vue
++++ b/resources/js/components/inputs/relationship/RelationshipInput.vue
+@@ -68,8 +68,8 @@
+                     :selections-url="selectionsUrl"
+                     :site="site"
+                     :initial-columns="columns"
+-                    initial-sort-column="title"
+-                    initial-sort-direction="asc"
++                    :initial-sort-column="initialSortColumn"
++                    :initial-sort-direction="initialSortDirection"
+                     :initial-selections="value"
+                     :max-selections="maxItems"
+                     :search="search"
+@@ -126,7 +126,9 @@ export default {
+         columns: {
+             type: Array,
+             default: () => []
+-        }
++        },
++        initialSortColumn: String,
++        initialSortDirection: String
+     },
+ 
+     components: {
+diff --git a/src/Fieldtypes/Relationship.php b/src/Fieldtypes/Relationship.php
+index 5447b68af..ab55806df 100644
+--- a/src/Fieldtypes/Relationship.php
++++ b/src/Fieldtypes/Relationship.php
+@@ -49,6 +49,22 @@ abstract class Relationship extends Fieldtype
+                 ],
+                 'width' => 50,
+             ],
++            'initial_sort_column' => [
++                'display' => __('Columns'),
++                'type' => 'text',
++                'default' => 'title',
++                'width' => 50,
++            ],
++            'initial_sort_direction' => [
++                'display' => __('Sort Direction'),
++                'instructions' => __('statamic::messages.collections_sort_direction_instructions'),
++                'type' => 'select',
++                'options' => [
++                    'asc' => __('Ascending'),
++                    'desc' => __('Descending'),
++                ],
++                'default' => 'asc',
++            ],
+         ];
+     }
+ 
