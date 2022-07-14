@@ -49,6 +49,22 @@ abstract class Relationship extends Fieldtype
                 ],
                 'width' => 50,
             ],
+            'initial_sort_column' => [
+                'display' => __('Columns'),
+                'type' => 'text',
+                'default' => 'title',
+                'width' => 50,
+            ],
+            'initial_sort_direction' => [
+                'display' => __('Sort Direction'),
+                'instructions' => __('statamic::messages.collections_sort_direction_instructions'),
+                'type' => 'select',
+                'options' => [
+                    'asc' => __('Ascending'),
+                    'desc' => __('Descending'),
+                ],
+                'default' => 'asc',
+            ],
         ];
     }
 
