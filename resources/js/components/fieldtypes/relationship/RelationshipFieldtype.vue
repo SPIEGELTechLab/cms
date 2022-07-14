@@ -21,6 +21,8 @@
         :form-component-props="formComponentProps"
         :status-icons="statusIcons"
         :columns="columns"
+        :initial-sort-column="initialSortColumn"
+        :initial-sort-direction="initialSortDirection"
         :search="canSearch"
         :read-only="isReadOnly"
         :taggable="taggable"
@@ -59,6 +61,14 @@ export default {
 
         columns() {
             return this.meta.columns;
+        },
+
+        initialSortColumn() {
+            return this.config.initial_sort_column || 'title';
+        },
+
+        initialSortDirection() {
+            return this.config.initial_sort_direction || 'asc';
         },
 
         itemComponent() {
