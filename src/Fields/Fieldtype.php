@@ -32,7 +32,7 @@ abstract class Fieldtype implements Arrayable
     protected $extraRules = [];
     protected $defaultValue;
     protected $configFields = [];
-    protected $collaborationType = 'undefined';
+    protected $collaborationType;
     protected static $extraConfigFields = [];
     protected $icon;
 
@@ -115,7 +115,7 @@ abstract class Fieldtype implements Arrayable
 
     public function collaborationType(): string
     {
-        return $this->collaborationType;
+        return $this->collaborationType ?? 'undefined';
     }
 
     public function filter()
