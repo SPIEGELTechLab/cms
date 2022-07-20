@@ -60,12 +60,14 @@ return [
             'synced_keyword' => null,
         ],
 
+        /**
+         * Those settings are only required if you want to use the websocket.
+         */
         'websocket' => [
             'url' => env('STATAMIC_COLLABORATION_URL', 'wss://demos.yjs.dev'),
             'connected_keyword' => 'wsconnected',
             'synced_keyword' => 'synced',
         ],
-
     ],
 
 ];
