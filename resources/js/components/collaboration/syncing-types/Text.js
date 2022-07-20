@@ -29,8 +29,11 @@ class Text {
             if (workspace.document.getText(field.handle).length > 0) {
                 workspace.document.getText(field.handle).delete(0, workspace.document.getText(field.handle).length)
             }
+
             // Push the initial value to the Yjs provider.
-            workspace.document.getText(field.handle).insert(0, workspace.container.values[field.handle]);
+            if (workspace.container.values[field.handle]) {
+                workspace.document.getText(field.handle).insert(0, workspace.container.values[field.handle]);
+            }
         })
     }
 
