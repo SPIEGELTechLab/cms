@@ -28,7 +28,7 @@ export default {
     methods: {
 
         update(input) {
-            this.$emit("input", this.isInputEvent(input) ? input.target.value : input);
+            this.$emit("input", this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input);
             this.updateCursorPosition(input);
         },
 
@@ -55,6 +55,10 @@ export default {
                     end: input.target.selectionEnd,
                 }
             }
+        },
+
+        isGeneralEvent(input) {
+            return typeof input === "object" && input?.constructor?.name === "Event";
         },
 
         isInputEvent(input) {

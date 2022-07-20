@@ -113,9 +113,9 @@ abstract class Fieldtype implements Arrayable
         return $this->categories;
     }
 
-    public function collaborationType(): string
+    public function collaborationType(): ?string
     {
-        return $this->collaborationType ?? 'undefined';
+        return $this->collaborationType;
     }
 
     public function filter()

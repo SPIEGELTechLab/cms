@@ -11,6 +11,8 @@ class Floatval extends Fieldtype
     protected $rules = ['numeric'];
     protected static $handle = 'float';
 
+    protected $collaborationType = 'text';
+
     protected function configFieldItems(): array
     {
         return [

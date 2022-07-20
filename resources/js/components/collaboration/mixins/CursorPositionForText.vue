@@ -18,6 +18,15 @@ export default {
 
             if (newValue === oldValue) return;
 
+            if (this.type === 'number') {
+
+                if (Statamic.user.cursor?.position) {
+                    Statamic.user.cursor.position = null;
+                }
+
+                return; // Number fields can't handle `setSelectionRange`, why we simply reset the cursor.
+            }
+
             let cursor = Statamic.user.cursor ?? null;
 
             /**

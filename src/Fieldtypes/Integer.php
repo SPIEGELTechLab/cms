@@ -9,6 +9,7 @@ class Integer extends Fieldtype
 {
     protected $categories = ['number'];
     protected $selectableInForms = true;
+    protected $collaborationType = 'text';
 
     protected function configFieldItems(): array
     {
