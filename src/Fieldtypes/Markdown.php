@@ -10,6 +10,7 @@ use Statamic\Support\Html;
 class Markdown extends Fieldtype
 {
     protected $categories = ['text'];
+    protected $collaborationType = 'codemirror';
 
     use Concerns\ResolvesStatamicUrls;
 

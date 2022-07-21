@@ -123,6 +123,7 @@
 var CodeMirror = require('codemirror');
 var { marked } = require('marked');
 var PlainTextRenderer = require('marked-plaintext');
+import { CodemirrorBinding } from 'y-codemirror';
 
 require('codemirror/addon/edit/closebrackets');
 require('codemirror/addon/edit/matchbrackets');
@@ -145,10 +146,13 @@ import VueCountable from 'vue-countable'
 
 // Keymaps
 import 'codemirror/keymap/sublime'
+import ModalVue from '../Modal.vue';
 
 export default {
 
     mixins: [Fieldtype],
+
+    inject: ['storeName'],
 
     components: {
         Selector,
@@ -600,6 +604,14 @@ export default {
         });
 
         this.trackHeightUpdates();
+
+        if (!Statamic.$config.get('collaboration.enabled')) return;
+
+        this.$events.$on('collaboration-provider-synced', () => {
+            const ytext = Statamic.$collaboration.workspaces[self.storeName].document.getText(self.handle);
+            const awareness = Statamic.$collaboration.workspaces[self.storeName].providerManager.provider.awareness;
+            const codemirrorBinding = new CodemirrorBinding(ytext, self.codemirror, awareness)
+        });
 
     }
 
