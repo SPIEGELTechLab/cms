@@ -8,6 +8,7 @@ use Statamic\Fields\Fieldtype;
 class Range extends Fieldtype
 {
     protected $categories = ['controls'];
+    protected $collaborationType = 'single-value';
 
     protected function configFieldItems(): array
     {
