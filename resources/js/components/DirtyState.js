@@ -27,7 +27,7 @@ const vm = new Vue({
             if (this.names.indexOf(name) == -1) {
                 this.names.push(name);
 
-                if (this.isCollaborationDisabled || this.isWorkspaceUnavailable) return;
+                if (this.isCollaborationDisabled() || this.isWorkspaceUnavailable(name)) return;
 
                 /**
                  * If using collaboration, the dirty state will be synchronized between
@@ -43,7 +43,7 @@ const vm = new Vue({
             const i = this.names.indexOf(name);
             this.names.splice(i, 1);
 
-            if (this.isCollaborationDisabled || this.isWorkspaceUnavailable) return;
+            if (this.isCollaborationDisabled() || this.isWorkspaceUnavailable(name)) return;
             
             /**
              * If using collaboration, the dirty state will be synchronized between

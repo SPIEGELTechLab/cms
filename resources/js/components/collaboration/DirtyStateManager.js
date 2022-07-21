@@ -5,12 +5,9 @@ export default class DirtyStateManager {
     }
     
     initialize() {
-        this.state = this.workspace.document.getArray('_dirtyState');
+        this.state = this.workspace.document.getMap('_dirtyState');
 
-        // The length will be zero if no state has been set.
-        // TODO: Get in sync with initializing the blueprint.
-        // Right now, there are more values then needed saved.
-        if (this.state.length === 0) {
+        if (this.state.has('_dirtyState')) {
             this.isLocalStateDirty() ? this.dirty() : this.clear();
         }
 
@@ -33,23 +30,13 @@ export default class DirtyStateManager {
     dirty() {
         if (this.isYjsStateDirty()) return;
 
-        this.workspace.document.transact(() => {
-            if (this.isYjsStateDirty()) {
-                this.state.delete(0, this.state.length)
-            }
-            this.state.insert(0, [true]);
-        })
+        this.state.set('_dirtyState', true);
     }
 
     clear() {
         if (! this.isYjsStateDirty()) return;
 
-        this.workspace.document.transact(() => {
-            if (this.isYjsStateDirty()) {
-                this.state.delete(0, this.state.length)
-            }
-            this.state.insert(0, [false]);
-        })
+        this.state.set('_dirtyState', false);
     }
 
     isLocalAndYjsStateEqual() {
@@ -61,11 +48,11 @@ export default class DirtyStateManager {
     }
 
     isYjsStateDirty() {
-        return this.state.get(0) === true;
+        return this.state.get('_dirtyState') === true;
     }
 
     getYjsState() {
-        return this.state.get(0);
+        return this.state.get('_dirtyState');
     }
 
     setLocalStateDirty() {
