@@ -1,4 +1,5 @@
 import Text  from "./syncing-types/Text.js"
+import Toggle from "./syncing-types/Toggle.js";
 
 export default class SyncManager {
     constructor(workspace) {
@@ -39,6 +40,9 @@ export default class SyncManager {
                     case 'text':
                         Text.fetchInitialFromYjs(this.workspace, field);
                         break;
+                    case 'toggle':
+                        Toggle.fetchInitialFromYjs(this.workspace, field);
+                        break;
                 }
             } else {
                 /**
@@ -50,6 +54,9 @@ export default class SyncManager {
                 switch (field.syncingType) {
                     case 'text':
                         Text.pushInitialToYjs(this.workspace, field);
+                        break;
+                    case 'toggle':
+                        Toggle.pushInitialToYjs(this.workspace, field);
                         break;
                 }
             }
@@ -71,7 +78,13 @@ export default class SyncManager {
                         mutation.payload.handle,
                         this.workspace.document.getText(mutation.payload.handle),
                         mutation.payload.value,
-                        mutation.payload.position,
+                    )
+                    break;
+                case 'toggle':
+                    Toggle.pushLocalChange(
+                        mutation.payload.handle,
+                        this.workspace.document.getMap(mutation.payload.handle),
+                        mutation.payload.value
                     )
                     break;
             }
@@ -90,6 +103,9 @@ export default class SyncManager {
             switch (field.syncingType) {
                 case 'text':
                     Text.observeRemoteChanges(this.workspace, field);
+                    break;
+                case 'toggle':
+                    Toggle.observeRemoteChanges(this.workspace, field);
                     break;
             }
         })

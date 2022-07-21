@@ -10,6 +10,7 @@ class Toggle extends Fieldtype
     protected $categories = ['controls'];
     protected $selectableInForms = true;
     protected $defaultValue = false;
+    protected $collaborationType = 'toggle';
 
     protected function configFieldItems(): array
     {
