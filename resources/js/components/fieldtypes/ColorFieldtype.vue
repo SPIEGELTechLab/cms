@@ -11,6 +11,12 @@ export default {
 
     mixins: [Fieldtype],
 
+    data() {
+        return {
+            pickr: null
+        }
+    },
+
     computed: {
 
         replicatorPreview() {
@@ -22,7 +28,7 @@ export default {
     },
 
     mounted() {
-        const pickr = new Pickr ({
+        this.pickr = new Pickr ({
             el: this.$el,
             disabled: this.isReadOnly,
             lockOpacity: this.config.lock_opacity,
@@ -56,7 +62,7 @@ export default {
             theme: this.config.theme || 'classic'
         });
 
-        pickr.on('save', (...args) => {
+        this.pickr.on('save', (...args) => {
             var rep = args[1].getColorRepresentation();
             if (args[0] && rep) {
                 // Dynamically call toHEX(), toRGBA(), etc
@@ -66,6 +72,20 @@ export default {
                 this.update(null);
             }
         });
+    },
+
+     watch: {
+        value(newValue, oldValue) {
+            if (newValue === oldValue) return;
+
+            // Collaboration support
+            // pickr should receive the latest value if it comes from another user
+            const colorRepresentation = this.pickr.getColorRepresentation();
+            const color = this.pickr.getColor()['to' + colorRepresentation]().toString(0);
+            if (color === newValue) return;
+
+            this.pickr.setColor(newValue);
+        },
     }
 
 };
