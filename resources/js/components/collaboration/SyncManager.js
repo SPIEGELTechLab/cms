@@ -1,3 +1,4 @@
+import Object  from "./syncing-types/Object.js"
 import Text  from "./syncing-types/Text.js"
 import SingleValue from "./syncing-types/SingleValue.js";
 import List from "./syncing-types/List.js";
@@ -38,6 +39,9 @@ export default class SyncManager {
                  * Yjs Provider -> Local
                  */
                 switch (field.syncingType) {
+                    case 'object':
+                        Object.fetchInitialFromYjs(this.workspace, field);
+                        break;
                     case 'text':
                         Text.fetchInitialFromYjs(this.workspace, field);
                         break;
@@ -56,6 +60,9 @@ export default class SyncManager {
                  * Yjs Provider <- Local
                  */
                 switch (field.syncingType) {
+                    case 'object':
+                        Object.pushInitialToYjs(this.workspace, field);
+                        break;
                     case 'text':
                         Text.pushInitialToYjs(this.workspace, field);
                         break;
@@ -80,6 +87,15 @@ export default class SyncManager {
             if (mutation.type !== `publish/${this.workspace.container.name}/setFieldValue`) return;
 
             switch (this.getSyncingType(mutation.payload.handle)) {
+                case 'object':
+                    Object.pushLocalChange(
+                        this.workspace,
+                        mutation.payload.handle,
+                        this.workspace.document.getArray(mutation.payload.handle),
+                        mutation.payload.value,
+                        mutation.payload.position,
+                    )
+                    break;
                 case 'text':
                     Text.pushLocalChange(
                         this.workspace,
@@ -120,6 +136,9 @@ export default class SyncManager {
         this.fieldtypes.forEach(field => {
 
             switch (field.syncingType) {
+                case 'object':
+                    Object.observeRemoteChanges(this.workspace, field);
+                    break;
                 case 'text':
                     Text.observeRemoteChanges(this.workspace, field);
                     break;

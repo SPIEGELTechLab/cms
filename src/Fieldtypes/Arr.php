@@ -10,6 +10,7 @@ class Arr extends Fieldtype
 {
     protected $categories = ['structured'];
     protected static $handle = 'array';
+    protected $collaborationType = 'object';
 
     protected function configFieldItems(): array
     {
