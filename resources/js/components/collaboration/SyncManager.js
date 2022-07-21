@@ -1,5 +1,5 @@
 import Text  from "./syncing-types/Text.js"
-import Toggle from "./syncing-types/Toggle.js";
+import SingleValue from "./syncing-types/SingleValue.js";
 import List from "./syncing-types/List.js";
 
 export default class SyncManager {
@@ -41,8 +41,8 @@ export default class SyncManager {
                     case 'text':
                         Text.fetchInitialFromYjs(this.workspace, field);
                         break;
-                    case 'toggle':
-                        Toggle.fetchInitialFromYjs(this.workspace, field);
+                    case 'single-value':
+                        SingleValue.fetchInitialFromYjs(this.workspace, field);
                         break;
                     case 'list':
                         List.fetchInitialFromYjs(this.workspace, field);
@@ -59,8 +59,8 @@ export default class SyncManager {
                     case 'text':
                         Text.pushInitialToYjs(this.workspace, field);
                         break;
-                    case 'toggle':
-                        Toggle.pushInitialToYjs(this.workspace, field);
+                    case 'single-value':
+                        SingleValue.pushInitialToYjs(this.workspace, field);
                         break;
                     case 'list':
                         List.pushInitialToYjs(this.workspace, field);
@@ -89,8 +89,8 @@ export default class SyncManager {
                         mutation.payload.position,
                     )
                     break;
-                case 'toggle':
-                    Toggle.pushLocalChange(
+                case 'single-value':
+                    SingleValue.pushLocalChange(
                         this.workspace,
                         mutation.payload.handle,
                         this.workspace.document.getMap(mutation.payload.handle),
@@ -123,8 +123,8 @@ export default class SyncManager {
                 case 'text':
                     Text.observeRemoteChanges(this.workspace, field);
                     break;
-                case 'toggle':
-                    Toggle.observeRemoteChanges(this.workspace, field);
+                case 'single-value':
+                    SingleValue.observeRemoteChanges(this.workspace, field);
                     break;
                 case 'list':
                     List.observeRemoteChanges(this.workspace, field);

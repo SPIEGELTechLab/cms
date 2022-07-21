@@ -1,4 +1,4 @@
-class Toggle {
+class SingleValue {
 
     /**
      * This is one of two methods to sync the workspace / document.
@@ -88,4 +88,4 @@ class Toggle {
     }
 }
 
-export default Toggle;
+export default SingleValue;

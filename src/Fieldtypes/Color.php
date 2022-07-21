@@ -7,7 +7,7 @@ use Statamic\Fields\Fieldtype;
 class Color extends Fieldtype
 {
     protected $categories = ['special'];
-    protected $collaborationType = 'toggle';
+    protected $collaborationType = 'single-value';
 
     protected function configFieldItems(): array
     {
