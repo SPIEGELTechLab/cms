@@ -7,6 +7,7 @@ use Statamic\Fields\Fieldtype;
 class Video extends Fieldtype
 {
     protected $categories = ['media'];
+    protected $collaborationType = 'text';
 
     protected function configFieldItems(): array
     {
