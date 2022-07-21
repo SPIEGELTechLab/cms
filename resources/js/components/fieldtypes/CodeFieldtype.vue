@@ -7,7 +7,8 @@
 </template>
 
 <script>
-import CodeMirror from 'codemirror'
+import CodeMirror from 'codemirror';
+import { CodemirrorBinding } from 'y-codemirror';
 
 // Addons
 import 'codemirror/addon/edit/matchbrackets'
@@ -42,6 +43,8 @@ import 'codemirror/mode/yaml-frontmatter/yaml-frontmatter'
 export default {
 
     mixins: [Fieldtype],
+
+    inject: ['storeName'],
 
     data() {
         return {
@@ -127,6 +130,14 @@ export default {
 
         // CodeMirror also needs to be manually refreshed when made visible in the DOM
         this.$events.$on('tab-switched', this.refresh);
+
+        if (!Statamic.$config.get('collaboration.enabled')) return;
+        
+        this.$events.$on('collaboration-provider-synced', () => {
+            const ytext = Statamic.$collaboration.workspaces[this.storeName].document.getText(this.handle);
+            const awareness = Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.awareness;
+            const codemirrorBinding = new CodemirrorBinding(ytext, this.codemirror, awareness)
+        });
     },
 
     watch: {
