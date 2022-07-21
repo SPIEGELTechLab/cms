@@ -9,6 +9,7 @@ class Lists extends Fieldtype
 {
     protected $categories = ['structured'];
     protected static $handle = 'list';
+    protected $collaborationType = 'list';
 
     protected function configFieldItems(): array
     {

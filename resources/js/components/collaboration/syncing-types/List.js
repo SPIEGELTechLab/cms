@@ -1,4 +1,6 @@
-class Toggle {
+const diff = require("fast-array-diff");
+
+class List {
 
     /**
      * This is one of two methods to sync the workspace / document.
@@ -10,7 +12,7 @@ class Toggle {
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
             handle: field.handle,
             user: Statamic.user.id,
-            value: workspace.document.getMap(field.handle).get('value')
+            value: workspace.document.getArray(field.handle).toArray() ?? []
         });
     }
 
@@ -23,9 +25,14 @@ class Toggle {
      */
     static pushInitialToYjs(workspace, field) {
         workspace.document.transact(() => {
+            // Delete websocket data in case some data does exist.
+            if (workspace.document.getArray(field.handle).length > 0) {
+                workspace.document.getArray(field.handle).delete(0, workspace.document.getArray(field.handle).length)
+            }
+
+            // Push the initial value to the Yjs provider.
             if (workspace.container.values[field.handle]) {
-                workspace.document.getMap(field.handle).clear();
-                workspace.document.getMap(field.handle).set('value', workspace.container.values[field.handle]);
+                workspace.document.getArray(field.handle).insert(0, workspace.container.values[field.handle]);
             }
         })
     }
@@ -34,8 +41,33 @@ class Toggle {
      * Push local text changes to the Yjs provider, so those can be synced to all collaborators.
      * With Yjs we won't send the complete text, only the diff and belonging start position.
      */
-    static pushLocalChange(workspace, handle, YMap, newValue) {
-        YMap.set('value', newValue);
+    static pushLocalChange(workspace, handle, YArray, newValue, initPosition) {
+        const oldValue = YArray.toArray();
+        
+        /**
+         * Get the array diff between the old and new value.
+         * The output may look something like this:
+         * [
+         *   { type: "remove", oldPos: 0, newPos: 0, items: [1] },
+         *   { type: "add", oldPos: 3, newPos: 2, items: [4] },
+         * ];
+         */
+        let changes = diff.getPatch(oldValue, newValue)
+
+        /**
+         * Loop through the change and make those as a transaction.
+         * The transaction does resolve the problem, that changes
+         * for remote listeners might flash on their end.
+         */
+        workspace.document.transact(() => {
+            changes.forEach(change => {
+                if (change.type === 'add') {
+                    YArray.insert(change.newPos, change.items)
+                } else if (change.type === 'remove') {
+                    YArray.delete(change.newPos, change.items.length)
+                }
+            })
+        })
     }
 
      /**
@@ -43,26 +75,23 @@ class Toggle {
      * Yjs will only send the text diff with the belonging position. Such changes are called delta in Yjs.
      */
     static observeRemoteChanges(workspace, field) {
-        workspace.document.getMap(field.handle).observe(event => {
+        workspace.document.getArray(field.handle).observe(event => {
+
             let toUpdate = [];
 
-            /**
-             * This is a funny one :-)
-             * If updating a textfield via javascript, the cursor position inside that field will be reset.
-             * To make we can reset the last cursor position correctly, we do save the actual position
-             * before applying any changes to the store. The cursor position itself will get reset
-             * inside the Text.vue component, as we can't change the cursor position from here.
-             */
-            if (Statamic.user.cursor) {
-                Statamic.user.cursor = null;
-            }
+            event.delta.forEach((delta) => {
 
-            /**
+               /**
                 * It may happen, that multiple deltas will be received at once.
                 * To avoid workload, we'll make a single update after fetching alle changes.
                 */
-             if (! toUpdate.includes(field.handle)) {
-                toUpdate.push(field.handle)
+                if (!toUpdate.includes(field.handle)) {
+                    toUpdate.push(field.handle)
+                }
+            })
+
+            if (Statamic.user.cursor) {
+                Statamic.user.cursor = null;
             }
 
             /**
@@ -74,7 +103,7 @@ class Toggle {
                     Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
                         handle: handle,
                         user: Statamic.user.id,
-                        value: workspace.document.getMap(handle).get('value')
+                        value: workspace.document.getArray(handle).toArray()
                     });
                 })
 
@@ -83,9 +112,10 @@ class Toggle {
             /**
              * Reset Fields after the update.
              */
-             toUpdate = []
+            toUpdate = []
+
         })
     }
 }
 
-export default Toggle;
+export default List;
