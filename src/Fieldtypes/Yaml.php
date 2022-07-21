@@ -8,6 +8,7 @@ use Statamic\Fields\Fieldtype;
 class Yaml extends Fieldtype
 {
     protected $categories = ['special'];
+    protected $collaborationType = 'codemirror';
 
     protected function configFieldItems(): array
     {

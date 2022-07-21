@@ -6,12 +6,15 @@
 </template>
 
 <script>
-import CodeMirror from 'codemirror'
-import 'codemirror/mode/yaml/yaml'
+import CodeMirror from 'codemirror';
+import 'codemirror/mode/yaml/yaml';
+import { CodemirrorBinding } from 'y-codemirror';
 
 export default {
 
     mixins: [Fieldtype],
+
+    inject: ['storeName'],
 
     data() {
         return {
@@ -43,6 +46,14 @@ export default {
 
         this.codemirror.on('change', (cm) => {
             this.updateDebounced(cm.doc.getValue());
+        });
+
+        if (!Statamic.$config.get('collaboration.enabled')) return;
+        
+        this.$events.$on('collaboration-provider-synced', () => {
+            const ytext = Statamic.$collaboration.workspaces[this.storeName].document.getText(this.handle);
+            const awareness = Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.awareness;
+            const codemirrorBinding = new CodemirrorBinding(ytext, this.codemirror, awareness)
         });
     },
 
