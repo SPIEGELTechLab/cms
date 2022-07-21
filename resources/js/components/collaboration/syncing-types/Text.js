@@ -41,7 +41,7 @@ class Text {
      * Push local text changes to the Yjs provider, so those can be synced to all collaborators.
      * With Yjs we won't send the complete text, only the diff and belonging start position.
      */
-    static pushLocalChange(handle, YText, newValue, initPosition) {
+    static pushLocalChange(workspace, handle, YText, newValue, initPosition) {
         const oldValue = YText.toString();
 
         const selections = {

@@ -1,5 +1,6 @@
 import Text  from "./syncing-types/Text.js"
 import Toggle from "./syncing-types/Toggle.js";
+import List from "./syncing-types/List.js";
 
 export default class SyncManager {
     constructor(workspace) {
@@ -43,6 +44,9 @@ export default class SyncManager {
                     case 'toggle':
                         Toggle.fetchInitialFromYjs(this.workspace, field);
                         break;
+                    case 'list':
+                        List.fetchInitialFromYjs(this.workspace, field);
+                        break;
                 }
             } else {
                 /**
@@ -57,6 +61,9 @@ export default class SyncManager {
                         break;
                     case 'toggle':
                         Toggle.pushInitialToYjs(this.workspace, field);
+                        break;
+                    case 'list':
+                        List.pushInitialToYjs(this.workspace, field);
                         break;
                 }
             }
@@ -75,16 +82,28 @@ export default class SyncManager {
             switch (this.getSyncingType(mutation.payload.handle)) {
                 case 'text':
                     Text.pushLocalChange(
+                        this.workspace,
                         mutation.payload.handle,
                         this.workspace.document.getText(mutation.payload.handle),
                         mutation.payload.value,
+                        mutation.payload.position,
                     )
                     break;
                 case 'toggle':
                     Toggle.pushLocalChange(
+                        this.workspace,
                         mutation.payload.handle,
                         this.workspace.document.getMap(mutation.payload.handle),
                         mutation.payload.value
+                    )
+                    break;
+                case 'list':
+                    List.pushLocalChange(
+                        this.workspace,
+                        mutation.payload.handle,
+                        this.workspace.document.getArray(mutation.payload.handle),
+                        mutation.payload.value,
+                        mutation.payload.position,
                     )
                     break;
             }
@@ -106,6 +125,9 @@ export default class SyncManager {
                     break;
                 case 'toggle':
                     Toggle.observeRemoteChanges(this.workspace, field);
+                    break;
+                case 'list':
+                    List.observeRemoteChanges(this.workspace, field);
                     break;
             }
         })
