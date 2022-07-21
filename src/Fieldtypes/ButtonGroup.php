@@ -10,6 +10,7 @@ class ButtonGroup extends Fieldtype
 
     protected $categories = ['controls'];
     protected $indexComponent = 'tags';
+    protected $collaborationType = 'single-value';
 
     protected function configFieldItems(): array
     {
