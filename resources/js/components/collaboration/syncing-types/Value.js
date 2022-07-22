@@ -1,4 +1,4 @@
-class SingleValue {
+class Value {
 
     /**
      * This is one of two methods to sync the workspace / document.
@@ -88,4 +88,4 @@ class SingleValue {
     }
 }
 
-export default SingleValue;
+export default Value;
