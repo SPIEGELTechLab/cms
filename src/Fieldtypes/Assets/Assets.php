@@ -19,6 +19,7 @@ class Assets extends Fieldtype
     protected $categories = ['media', 'relationship'];
     protected $defaultValue = [];
     protected $selectableInForms = true;
+    protected $collaborationType = 'array';
 
     protected function configFieldItems(): array
     {
