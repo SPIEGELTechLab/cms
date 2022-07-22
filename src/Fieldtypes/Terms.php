@@ -32,6 +32,7 @@ class Terms extends Relationship
     protected $taggable = true;
     protected $icon = 'taxonomy';
     protected $formComponent = 'term-publish-form';
+    protected $collaborationType = 'array';
 
     protected $formComponentProps = [
         'initialActions' => 'actions',

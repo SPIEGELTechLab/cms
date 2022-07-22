@@ -14,6 +14,7 @@ class Taxonomies extends Relationship
     protected $canSearch = false;
     protected $statusIcons = false;
     protected $icon = 'taxonomy';
+    protected $collaborationType = 'array';
 
     protected function toItemArray($id, $site = null)
     {
