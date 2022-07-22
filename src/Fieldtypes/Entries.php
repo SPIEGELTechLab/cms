@@ -28,6 +28,7 @@ class Entries extends Relationship
     protected $canSearch = true;
     protected $statusIcons = true;
     protected $formComponent = 'entry-publish-form';
+    protected $collaborationType = 'array';
 
     protected $formComponentProps = [
         'initialActions' => 'actions',

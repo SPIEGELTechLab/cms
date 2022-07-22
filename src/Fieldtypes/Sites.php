@@ -7,6 +7,7 @@ use Statamic\Facades\Site;
 class Sites extends Relationship
 {
     protected $indexComponent = 'text';
+    protected $collaborationType = 'array';
 
     public function toItemArray($id)
     {

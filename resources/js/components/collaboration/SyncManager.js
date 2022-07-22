@@ -1,7 +1,7 @@
+import Array  from "./syncing-types/Array.js"
 import Object  from "./syncing-types/Object.js"
 import Text  from "./syncing-types/Text.js"
 import SingleValue from "./syncing-types/SingleValue.js";
-import List from "./syncing-types/List.js";
 
 export default class SyncManager {
     constructor(workspace) {
@@ -39,6 +39,9 @@ export default class SyncManager {
                  * Yjs Provider -> Local
                  */
                 switch (field.syncingType) {
+                    case 'array':
+                        Array.fetchInitialFromYjs(this.workspace, field);
+                        break;
                     case 'object':
                         Object.fetchInitialFromYjs(this.workspace, field);
                         break;
@@ -47,9 +50,6 @@ export default class SyncManager {
                         break;
                     case 'single-value':
                         SingleValue.fetchInitialFromYjs(this.workspace, field);
-                        break;
-                    case 'list':
-                        List.fetchInitialFromYjs(this.workspace, field);
                         break;
                 }
             } else {
@@ -60,6 +60,9 @@ export default class SyncManager {
                  * Yjs Provider <- Local
                  */
                 switch (field.syncingType) {
+                    case 'array':
+                        Array.pushInitialToYjs(this.workspace, field);
+                        break;
                     case 'object':
                         Object.pushInitialToYjs(this.workspace, field);
                         break;
@@ -68,9 +71,6 @@ export default class SyncManager {
                         break;
                     case 'single-value':
                         SingleValue.pushInitialToYjs(this.workspace, field);
-                        break;
-                    case 'list':
-                        List.pushInitialToYjs(this.workspace, field);
                         break;
                 }
             }
@@ -87,6 +87,15 @@ export default class SyncManager {
             if (mutation.type !== `publish/${this.workspace.container.name}/setFieldValue`) return;
 
             switch (this.getSyncingType(mutation.payload.handle)) {
+                case 'array':
+                    Array.pushLocalChange(
+                        this.workspace,
+                        mutation.payload.handle,
+                        this.workspace.document.getArray(mutation.payload.handle),
+                        mutation.payload.value,
+                        mutation.payload.position,
+                    )
+                    break;
                 case 'object':
                     Object.pushLocalChange(
                         this.workspace,
@@ -113,15 +122,6 @@ export default class SyncManager {
                         mutation.payload.value
                     )
                     break;
-                case 'list':
-                    List.pushLocalChange(
-                        this.workspace,
-                        mutation.payload.handle,
-                        this.workspace.document.getArray(mutation.payload.handle),
-                        mutation.payload.value,
-                        mutation.payload.position,
-                    )
-                    break;
             }
         });
     }
@@ -136,6 +136,9 @@ export default class SyncManager {
         this.fieldtypes.forEach(field => {
 
             switch (field.syncingType) {
+                case 'array':
+                    Array.observeRemoteChanges(this.workspace, field);
+                    break;
                 case 'object':
                     Object.observeRemoteChanges(this.workspace, field);
                     break;
@@ -144,9 +147,6 @@ export default class SyncManager {
                     break;
                 case 'single-value':
                     SingleValue.observeRemoteChanges(this.workspace, field);
-                    break;
-                case 'list':
-                    List.observeRemoteChanges(this.workspace, field);
                     break;
             }
         })

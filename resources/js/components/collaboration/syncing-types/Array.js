@@ -1,6 +1,6 @@
 const diff = require("fast-array-diff");
 
-class List {
+class Array {
 
     /**
      * This is one of two methods to sync the workspace / document.
@@ -118,4 +118,4 @@ class List {
     }
 }
 
-export default List;
+export default Array;
