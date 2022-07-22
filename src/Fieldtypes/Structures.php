@@ -11,6 +11,7 @@ class Structures extends Relationship
     protected $canEdit = false;
     protected $canCreate = false;
     protected $statusIcons = false;
+    protected $collaborationType = 'array';
 
     protected function toItemArray($id)
     {
