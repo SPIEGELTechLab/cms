@@ -10,6 +10,7 @@ class Taggable extends Fieldtype
     protected $categories = ['structured'];
     protected $component = 'tags';
     protected $icon = 'tags';
+    protected $collaborationType = 'array';
 
     protected function configFieldItems(): array
     {
