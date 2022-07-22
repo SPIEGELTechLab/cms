@@ -15,6 +15,7 @@ class Fieldtype extends Relationship
     protected $canCreate = false;
     protected $canEdit = false;
     protected $canSearch = false;
+    protected $collaborationType = 'array';
 
     protected function configFieldItems(): array
     {
