@@ -11,7 +11,7 @@ class Checkboxes extends Fieldtype
     protected $categories = ['controls'];
     protected $selectableInForms = true;
     protected $indexComponent = 'tags';
-    protected $collaborationType = 'single-value';
+    protected $collaborationType = 'array';
 
     protected function configFieldItems(): array
     {
