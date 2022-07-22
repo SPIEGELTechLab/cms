@@ -1,7 +1,7 @@
 import Array  from "./syncing-types/Array.js"
 import Object  from "./syncing-types/Object.js"
 import Text  from "./syncing-types/Text.js"
-import SingleValue from "./syncing-types/SingleValue.js";
+import Value from "./syncing-types/Value.js";
 
 export default class SyncManager {
     constructor(workspace) {
@@ -49,7 +49,7 @@ export default class SyncManager {
                         Text.fetchInitialFromYjs(this.workspace, field);
                         break;
                     case 'single-value':
-                        SingleValue.fetchInitialFromYjs(this.workspace, field);
+                        Value.fetchInitialFromYjs(this.workspace, field);
                         break;
                 }
             } else {
@@ -70,7 +70,7 @@ export default class SyncManager {
                         Text.pushInitialToYjs(this.workspace, field);
                         break;
                     case 'single-value':
-                        SingleValue.pushInitialToYjs(this.workspace, field);
+                        Value.pushInitialToYjs(this.workspace, field);
                         break;
                 }
             }
@@ -115,7 +115,7 @@ export default class SyncManager {
                     )
                     break;
                 case 'single-value':
-                    SingleValue.pushLocalChange(
+                    Value.pushLocalChange(
                         this.workspace,
                         mutation.payload.handle,
                         this.workspace.document.getMap(mutation.payload.handle),
@@ -146,7 +146,7 @@ export default class SyncManager {
                     Text.observeRemoteChanges(this.workspace, field);
                     break;
                 case 'single-value':
-                    SingleValue.observeRemoteChanges(this.workspace, field);
+                    Value.observeRemoteChanges(this.workspace, field);
                     break;
             }
         })
