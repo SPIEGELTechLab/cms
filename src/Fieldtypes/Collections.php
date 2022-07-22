@@ -14,6 +14,7 @@ class Collections extends Relationship
     protected $canCreate = false;
     protected $canSearch = false;
     protected $statusIcons = false;
+    protected $collaborationType = 'array';
 
     protected function toItemArray($id, $site = null)
     {

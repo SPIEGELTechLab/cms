@@ -43,6 +43,8 @@ class Array {
      */
     static pushLocalChange(workspace, handle, YArray, newValue, initPosition) {
         const oldValue = YArray.toArray();
+
+        console.log('array', newValue);
         
         /**
          * Get the array diff between the old and new value.
