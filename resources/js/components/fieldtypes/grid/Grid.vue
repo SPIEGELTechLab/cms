@@ -60,6 +60,7 @@ export default {
         return {
             containerWidth: null,
             focused: false,
+            duplicatedMetaData: null,
         }
     },
 
@@ -139,6 +140,17 @@ export default {
                     this.$emit('blur');
                 }
             }, 1);
+        },
+
+        value(value) {
+            // Add or update meta for each row in the value.
+            value.forEach(row => {
+                if (!this.meta.existing[row._id]) {
+                    const newMeta = this.duplicatedMetaData ? this.duplicatedMetaData : this.meta.new;
+                    this.updateRowMeta(row._id, newMeta)
+                    this.duplicatedMetaData = null;
+                }
+            });
         }
 
     },
@@ -155,7 +167,6 @@ export default {
 
             row._id = id;
 
-            this.updateRowMeta(id, this.meta.new);
             this.update([...this.value, row]);
         },
 
@@ -180,8 +191,7 @@ export default {
             const row = clone(this.value[index]);
             const old_id = row._id;
             row._id = uniqid();
-
-            this.updateRowMeta(row._id, this.meta.existing[old_id]);
+            this.duplicatedMetaData = this.meta.existing[old_id];
 
             this.update([...this.value, row]);
         },
