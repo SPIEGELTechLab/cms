@@ -9,7 +9,7 @@ use Statamic\GraphQL\Types\TableRowType;
 class Table extends Fieldtype
 {
     protected $categories = ['structured'];
-    protected $collaborationType = 'array';
+    protected $collaborationType = 'single-value';
 
     public function toGqlType()
     {
