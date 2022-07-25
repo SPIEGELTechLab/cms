@@ -17,6 +17,7 @@ class Replicator extends Fieldtype
     protected $categories = ['structured'];
     protected $defaultValue = [];
     protected $rules = ['array'];
+    protected $collaborationType = 'array';
 
     protected function configFieldItems(): array
     {
