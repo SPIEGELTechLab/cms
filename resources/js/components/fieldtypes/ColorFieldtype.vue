@@ -74,7 +74,7 @@ export default {
         });
     },
 
-     watch: {
+    watch: {
         value(newValue, oldValue) {
             if (newValue === oldValue) return;
 
@@ -84,7 +84,13 @@ export default {
             const color = this.pickr.getColor()['to' + colorRepresentation]().toString(0);
             if (color === newValue) return;
 
-            this.pickr.setColor(newValue);
+            if (!newValue) {
+                this.pickr.setColor(null);
+                return;
+            }
+
+            this.pickr.setColor(newValue, true);
+            this.pickr.applyColor(true);
         },
     }
 
