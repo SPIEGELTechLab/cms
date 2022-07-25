@@ -143,7 +143,11 @@ export default {
 
         hasError() {
             return this.extension.options.bard.setsWithErrors.includes(this.index);
-        }
+        },
+
+        showFieldPreviews() {
+            return this.options.bard.config.previews;
+        },
 
     },
 
