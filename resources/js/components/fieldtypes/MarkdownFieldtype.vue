@@ -608,6 +608,8 @@ export default {
         if (!Statamic.$config.get('collaboration.enabled')) return;
 
         this.$events.$on('collaboration-provider-synced', () => {
+            if (!Statamic.$collaboration.workspaces[self.storeName]) return;
+
             const ytext = Statamic.$collaboration.workspaces[self.storeName].document.getText(self.handle);
             const awareness = Statamic.$collaboration.workspaces[self.storeName].providerManager.provider.awareness;
             const codemirrorBinding = new CodemirrorBinding(ytext, self.codemirror, awareness)

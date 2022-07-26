@@ -49,6 +49,12 @@ export default class Workspace {
             })
     }
 
+    destroy() {
+        this.awarenessManager.destroy(this.providerManager.provider?.awareness);
+
+        // TODO: destroy sync manager
+    }
+
     beforeDestroy() {
         window.removeEventListener('online');
         window.removeEventListener('offline');

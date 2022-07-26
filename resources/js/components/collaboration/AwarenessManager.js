@@ -27,6 +27,11 @@ class AwarenessManager {
 
     }
 
+    destroy(awareness) {
+        this.users = [];
+        awareness.destroy();
+    }
+
     getCurrentUser() {
         return {
             id: Statamic.user.id,

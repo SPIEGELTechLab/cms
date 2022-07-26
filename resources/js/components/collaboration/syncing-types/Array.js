@@ -8,7 +8,10 @@ class Array {
      * 
      * Yjs Provider -> Local
      */
-    static fetchInitialFromYjs(workspace, field) {
+    static fetchInitialFromYjs(workspace, field) {                    
+        // Workaround for: sync manager destroy()
+        if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
+
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
             handle: field.handle,
             user: Statamic.user.id,
@@ -99,7 +102,10 @@ class Array {
              * A local change will be written into the Vuex via the `setFieldValue` event already.
              */
             if (!event.transaction.local) {
-                toUpdate.forEach(handle => {
+                toUpdate.forEach(handle => {                    
+                    // Workaround for: sync manager destroy()
+                    if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
+            
                     Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
                         handle: handle,
                         user: Statamic.user.id,

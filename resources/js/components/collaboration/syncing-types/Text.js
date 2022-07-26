@@ -8,7 +8,10 @@ class Text {
      * 
      * Yjs Provider -> Local
      */
-    static fetchInitialFromYjs(workspace, field) {
+    static fetchInitialFromYjs(workspace, field) {                    
+        // Workaround for: sync manager destroy()
+        if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
+
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
             handle: field.handle,
             user: Statamic.user.id,
@@ -141,6 +144,9 @@ class Text {
             if (!event.transaction.local) {
 
                 toUpdate.forEach(handle => {
+                    // Workaround for: sync manager destroy()
+                    if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
+
                     Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
                         handle: handle,
                         user: Statamic.user.id,
