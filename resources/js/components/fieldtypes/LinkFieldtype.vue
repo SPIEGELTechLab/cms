@@ -127,10 +127,10 @@ export default {
                 if (option === 'url') this.option = null;
             } else if (value === '@child') {
                 this.option = 'first-child';
-            } else if (value.startsWith('entry::')) {
+            } else if (value && value.startsWith('entry::')) {
                 this.option = 'entry';
                 this.selectedEntries = [value.replace('entry::', '')];
-            } else if (value.startsWith('asset::')) {
+            } else if (value && value.startsWith('asset::')) {
                 this.option = 'asset'
                 this.selectedAssets = [value.replace('asset::', '')];
             } else {
