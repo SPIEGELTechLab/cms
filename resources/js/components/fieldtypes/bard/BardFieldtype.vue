@@ -651,11 +651,6 @@ export default {
                         user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
                     }),
                 );
-
-
-                // watch XML fragment to update meta data (set meta and previews)
-                // otherwise there are display errors with other users
-                this.observeXMLFragment();
             }
 
             this.$bard.extensionCallbacks.forEach((callback) => {
@@ -674,30 +669,6 @@ export default {
             });
 
             return exts;
-        },
-
-        observeXMLFragment() {
-            Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle).observe((yxmlEvent) => {
-                // watch the Xml-Delta Format to calculate the difference to the last observe-event
-                yxmlEvent.changes.delta.forEach((change) => {
-                    if (!Array.isArray(change.insert)) return;
-
-                    change.insert.forEach((yxmlElement) => {
-                        const id = yxmlElement.getAttribute('id');
-                        const handle = yxmlElement.getAttribute('values') ? yxmlElement.getAttribute('values').type : null;
-                        // meta data should only be updated if the set doesn't yet exist
-                        if (id && handle && !Object.keys(this.meta.existing).includes(id)) {
-                            // update previews
-                            let previews = {};
-                            Object.keys(this.meta.defaults[handle]).forEach(key => previews[key] = null);
-                            this.previews = Object.assign({}, this.previews, { [id]: previews });
-
-                            // update set meta
-                            this.updateSetMeta(id, this.meta.new[handle]);
-                        }
-                    });
-                });
-            });
         },
 
         updateSetPreviews(set, previews) {
