@@ -50,8 +50,10 @@ export default class Workspace {
     }
 
     destroy() {
-        this.awarenessManager.destroy(this.providerManager.provider?.awareness);
-
+        this.awarenessManager.destroy(
+            this.container,
+            this.providerManager.provider?.awareness
+        );
         // TODO: destroy sync manager
     }
 

@@ -42,7 +42,6 @@ export default {
     },
 
     beforeDestroy() {
-        this.$events.$off('users-updated');
         window.removeEventListener('online', () => this.updateConnectionStatus);
         window.removeEventListener('offline', () => this.updateConnectionStatus);
     },

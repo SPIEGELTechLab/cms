@@ -27,9 +27,9 @@ class AwarenessManager {
 
     }
 
-    destroy(awareness) {
-        this.users = [];
-        awareness.destroy();
+    destroy(container, awareness) {
+        this.users = this.awarenessStatesToArray(awareness);
+        container.$events.$emit('users-updated', this.users);
     }
 
     getCurrentUser() {
