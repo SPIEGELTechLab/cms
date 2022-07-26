@@ -11,7 +11,7 @@ class Select extends Fieldtype
     protected $categories = ['controls'];
     protected $selectableInForms = true;
     protected $indexComponent = 'tags';
-    protected $collaborationType = 'array';
+    protected $collaborationType = 'single-value';
 
     protected function configFieldItems(): array
     {
