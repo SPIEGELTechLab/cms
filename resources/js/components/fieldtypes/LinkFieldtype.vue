@@ -22,7 +22,7 @@
 
             <!-- Entry select -->
             <relationship-fieldtype
-                v-show="option === 'entry'"
+                v-if="option === 'entry'"
                 ref="entries"
                 handle="entry"
                 :value="selectedEntries"
@@ -34,7 +34,7 @@
 
             <!-- Asset select -->
             <assets-fieldtype
-                v-show="option === 'asset'"
+                v-if="option === 'asset'"
                 ref="assets"
                 handle="asset"
                 :value="selectedAssets"
