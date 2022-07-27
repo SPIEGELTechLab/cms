@@ -294,7 +294,9 @@ export default {
     watch: {
 
         json(json) {
-            if (!this.mounted) return;
+            // nested bard fields trigger an endless value update -> why?
+            // TODO: find a better way to update nested bard fields
+            if (!this.mounted || (this.fieldPathPrefix && Statamic.$config.get('collaboration.enabled'))) return;
 
             // Prosemirror's JSON will include spaces between tags.
             // For example (this is not the actual json)...
@@ -530,14 +532,16 @@ export default {
                 if (!value) return;
 
                 const workspace =  Statamic.$collaboration.workspaces[this.storeName];
+
+                const prefix = this.fieldPathPrefix || this.handle;
                 // Abort if no Workspace has been created.
                 if (!workspace) {
-                    console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as no Workspace has been created.`);
+                    console.error(`(Collaboration) The Bard Fieldtype ${prefix} could not sync, as no Workspace has been created.`);
 
                     return;
                 }
 
-                const bardFragment = workspace.document.getXmlFragment(this.handle);
+                const bardFragment = workspace.document.getXmlFragment(prefix);
 
                 if (workspace.awarenessManager.users.length > 1 && bardFragment.length > 0) return;
 
@@ -550,7 +554,7 @@ export default {
                 const Y = workspace.Y;
                 // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
                 const temporaryYDoc = new Y.Doc();
-                const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
+                const temporaryFragment = temporaryYDoc.getXmlFragment(prefix);
 
                 prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
 
@@ -640,10 +644,11 @@ export default {
                 Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
                 && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
             ) {
+                const prefix = this.fieldPathPrefix || this.handle;
                 exts.push(
                     Collaboration.configure({
                         // TODO: We should do some error handling and clean this up a bit
-                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
+                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(prefix),
                     }),
 
                     CollaborationCursor.configure({
