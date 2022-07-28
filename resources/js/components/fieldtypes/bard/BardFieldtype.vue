@@ -249,7 +249,7 @@ export default {
 
         this.editor = new Editor({
             extensions: this.getExtensions(),
-            content: Statamic.$config.get('collaboration.enabled') ?  this.valueToYjsDoc(clone(this.value)) : this.valueToContent(clone(this.value)),
+            content: Statamic.$config.get('collaboration.enabled') && !this.fieldPathPrefix ? '' : this.valueToContent(clone(this.value)),
             editable: !this.readOnly,
             enableInputRules: this.config.enable_input_rules,
             enablePasteRules: this.config.enable_paste_rules,
@@ -278,6 +278,10 @@ export default {
         this.pageHeader = document.querySelector('.global-header');
 
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
+
+        if (!Statamic.$config.get('collaboration.enabled') || this.fieldPathPrefix) return;
+
+        this.$events.$on('collaboration-provider-synced', this.valueToYjsDoc);
     },
 
     created() {
@@ -294,9 +298,7 @@ export default {
     watch: {
 
         json(json) {
-            // nested bard fields trigger an endless value update -> why?
-            // TODO: find a better way to update nested bard fields
-            if (!this.mounted || (this.fieldPathPrefix && Statamic.$config.get('collaboration.enabled'))) return;
+            if (!this.mounted) return;
 
             // Prosemirror's JSON will include spaces between tags.
             // For example (this is not the actual json)...
@@ -304,7 +306,7 @@ export default {
             // But, Laravel's TrimStrings middleware would remove them.
             // Those spaces need to be there, otherwise it would be rendered as <p>One<b>two</b>three</p>
             // To combat this, we submit the JSON string instead of an object.
-            this.updateDebounced(JSON.stringify(json));
+            Statamic.$config.get('collaboration.enabled') ? this.update(JSON.stringify(json)) : this.updateDebounced(JSON.stringify(json));
         },
 
         value(value, oldValue) {
@@ -515,58 +517,53 @@ export default {
             return buttons.filter(button => this.buttonIsVisible(button));
         },
 
-        valueToYjsDoc(value) {
+        valueToYjsDoc() {
             // Does a workspace exist? It won't if creating a new entry.
             if (!Statamic.$collaboration.workspaces[this.storeName]) {
                 return;
             }
 
-            // Load the value as soon after the provider synced
-            this.$events.$on('collaboration-provider-synced', () => {
-                // online offline support: value is already formatted for prosemirror
-                if (typeof value === 'string')  {
-                    value = this.valueToContent(value);
-                }
+            let value = clone(this.value);
+    
+            // online offline support: value is already formatted for prosemirror
+            if (typeof value === 'string')  {
+                value = this.valueToContent(value);
+            }
 
-                // Don't initialize the value, if no value has been provied.
-                if (!value) return;
+            // Don't initialize the value, if no value has been provied.
+            if (!value) return;
+            const workspace =  Statamic.$collaboration.workspaces[this.storeName];
 
-                const workspace =  Statamic.$collaboration.workspaces[this.storeName];
+            // Abort if no Workspace has been created.
+            if (!workspace) {
+                console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as no Workspace has been created.`);
 
-                const prefix = this.fieldPathPrefix || this.handle;
-                // Abort if no Workspace has been created.
-                if (!workspace) {
-                    console.error(`(Collaboration) The Bard Fieldtype ${prefix} could not sync, as no Workspace has been created.`);
+                return;
+            }
+            const bardFragment = workspace.document.getXmlFragment(this.handle);
 
-                    return;
-                }
+            if (workspace.awarenessManager.users.length > 1 && bardFragment.length > 0) return;
 
-                const bardFragment = workspace.document.getXmlFragment(prefix);
+            // Remove the state from the XMLFragment for the first user to show only the stored values
+            if (workspace.awarenessManager.users.length === 1 && bardFragment.length > 0) {
+                bardFragment.delete(0, bardFragment.length);
+            }
 
-                if (workspace.awarenessManager.users.length > 1 && bardFragment.length > 0) return;
+            const Y = workspace.Y;
+            // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
+            const temporaryYDoc = new Y.Doc();
+            const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
 
-                // TODO: This may be done via the Workspace, so there is only one place where we reset the complete YJS dcoument
-                // Remove the state from the XMLFragment for the first user to show only the stored values
-                if (workspace.awarenessManager.users.length === 1 && bardFragment.length > 0) {
-                   bardFragment.delete(0, bardFragment.length);
-                }
+            prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
 
-                const Y = workspace.Y;
-                // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
-                const temporaryYDoc = new Y.Doc();
-                const temporaryFragment = temporaryYDoc.getXmlFragment(prefix);
+            // Encode the temporary state as a binary buffer
+            let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
 
-                prosemirrorJSONToYXmlFragment(getSchema(this.getExtensions()), value, temporaryFragment);
-
-                // Encode the temporary state as a binary buffer
-                let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
-
-                // Apply saved values for single user
-                if (workspace.awarenessManager.users.length === 1) {
-                   Y.applyUpdate(workspace.document, temporaryEncodedDoc);
-                   return;
-                }
-            });
+            // Apply saved values for single user
+            if (workspace.awarenessManager.users.length === 1) {
+               Y.applyUpdate(workspace.document, temporaryEncodedDoc);
+               return;
+            }
         },
 
         valueToContent(value) {
@@ -643,12 +640,13 @@ export default {
             if (
                 Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
                 && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
+                && !this.fieldPathPrefix
             ) {
-                const prefix = this.fieldPathPrefix || this.handle;
+
                 exts.push(
                     Collaboration.configure({
                         // TODO: We should do some error handling and clean this up a bit
-                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(prefix),
+                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
                     CollaborationCursor.configure({

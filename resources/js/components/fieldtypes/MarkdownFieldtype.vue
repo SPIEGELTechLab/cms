@@ -184,7 +184,7 @@ export default {
     watch: {
 
         data(data) {
-            this.updateDebounced(data);
+            Statamic.$config.get('collaboration.enabled') ? this.update(data) : this.updateDebounced(data);
         },
 
         fullScreenMode: {
@@ -605,7 +605,8 @@ export default {
 
         this.trackHeightUpdates();
 
-        if (!Statamic.$config.get('collaboration.enabled')) return;
+        // Could be included in another element and will then be synchronized in the root element
+        if (!Statamic.$config.get('collaboration.enabled') || this.fieldPathPrefix) return;
 
         this.$events.$on('collaboration-provider-synced', () => {
             if (!Statamic.$collaboration.workspaces[self.storeName]) return;

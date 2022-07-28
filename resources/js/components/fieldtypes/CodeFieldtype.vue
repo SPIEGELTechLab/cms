@@ -117,7 +117,8 @@ export default {
         });
 
         this.codemirror.on('change', (cm) => {
-            this.updateDebounced({code: cm.doc.getValue(), mode: this.mode});
+            const updatedValue = {code: cm.doc.getValue(), mode: this.mode};
+            Statamic.$config.get('collaboration.enabled') ? this.update(updatedValue) : this.updateDebounced(updatedValue);
         });
 
         this.codemirror.on('focus', () => this.$emit('focus'));
@@ -131,11 +132,12 @@ export default {
         // CodeMirror also needs to be manually refreshed when made visible in the DOM
         this.$events.$on('tab-switched', this.refresh);
 
-        if (!Statamic.$config.get('collaboration.enabled')) return;
+        // Could be included in another element and will then be synchronized in the root element
+        if (!Statamic.$config.get('collaboration.enabled') || this.fieldPathPrefix) return;
         
         this.$events.$on('collaboration-provider-synced', () => {
             if (!Statamic.$collaboration.workspaces[this.storeName]) return;
-    
+
             const ytext = Statamic.$collaboration.workspaces[this.storeName].document.getText(this.handle);
             const awareness = Statamic.$collaboration.workspaces[this.storeName].providerManager.provider.awareness;
             const codemirrorBinding = new CodemirrorBinding(ytext, this.codemirror, awareness)
