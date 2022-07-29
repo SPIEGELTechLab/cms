@@ -1,5 +1,4 @@
 import Vue from 'vue'
-import Statamic from './Statamic';
 
 const vm = new Vue({
 
