@@ -6,6 +6,7 @@
                     <div v-for="(item, index) in items" :key="item.handle">
                         <a
                             :class="{ 'bg-blue text-white': index === selectedIndex }"
+                            @mouseover="selectedIndex = index"
                             v-text="item.display || item.handle"
                             @click="selectItem(index)"
                         ></a>
