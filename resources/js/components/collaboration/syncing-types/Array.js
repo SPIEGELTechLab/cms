@@ -44,8 +44,9 @@ class Array {
      * Push local text changes to the Yjs provider, so those can be synced to all collaborators.
      * With Yjs we won't send the complete text, only the diff and belonging start position.
      */
-    static pushLocalChange(workspace, handle, YArray, newValue, initPosition) {
-        const oldValue = YArray.toArray();
+    static pushLocalChange(workspace, handle, YArray, newValue, initPosition) {     
+        const oldValue = workspace.document.getArray(handle) ? workspace.document.getArray(handle).toArray() : YArray.toArray();
+        if (JSON.stringify(oldValue) === JSON.stringify(newValue)) return;
         
         /**
          * Get the array diff between the old and new value.
@@ -55,8 +56,7 @@ class Array {
          *   { type: "add", oldPos: 3, newPos: 2, items: [4] },
          * ];
          */
-        let changes = diff.getPatch(oldValue, newValue)
-
+        let changes = diff.getPatch(oldValue, newValue);
         /**
          * Loop through the change and make those as a transaction.
          * The transaction does resolve the problem, that changes
@@ -79,47 +79,17 @@ class Array {
      */
     static observeRemoteChanges(workspace, field) {
         workspace.document.getArray(field.handle).observe(event => {
-
-            let toUpdate = [];
-
-            event.delta.forEach((delta) => {
-
-               /**
-                * It may happen, that multiple deltas will be received at once.
-                * To avoid workload, we'll make a single update after fetching alle changes.
-                */
-                if (!toUpdate.includes(field.handle)) {
-                    toUpdate.push(field.handle)
-                }
-            })
+            if (event.transaction.local || !Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
             if (Statamic.user.cursor) {
                 Statamic.user.cursor = null;
             }
-
-            /**
-             * If it's a local change, we don't need to fire the collaboration field value command.
-             * A local change will be written into the Vuex via the `setFieldValue` event already.
-             */
-            if (!event.transaction.local) {
-                toUpdate.forEach(handle => {                    
-                    // Workaround for: sync manager destroy()
-                    if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
             
-                    Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
-                        handle: handle,
-                        user: Statamic.user.id,
-                        value: workspace.document.getArray(handle).toArray()
-                    });
-                })
-
-            }
-
-            /**
-             * Reset Fields after the update.
-             */
-            toUpdate = []
-
+            Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
+                handle: field.handle,
+                user: Statamic.user.id,
+                value: workspace.document.getArray(field.handle).toArray()
+            });
         })
     }
 }
