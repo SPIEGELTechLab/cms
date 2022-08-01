@@ -277,6 +277,7 @@
   .CodeMirror-rtl pre { direction: rtl; }
 
   .CodeMirror-code {
+    @apply py-1;
     outline: none;
   }
 
