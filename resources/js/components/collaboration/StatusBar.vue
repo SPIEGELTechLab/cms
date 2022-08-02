@@ -23,7 +23,7 @@
 
 <script>
 export default {
-    props: ['initialUsers'],
+    inject: ['storeName'],
 
     data() {
         return {
@@ -32,13 +32,16 @@ export default {
     },
 
     created() {
-        this.$events.$on('users-updated', this.updateUser);
         window.addEventListener('online', () => this.updateConnectionStatus(true));
-        window.addEventListener('offline', () => this.updateConnectionStatus(false));
+        window.addEventListener('offline', () => this.updateConnectionStatus(false));        
     },
 
     mounted() {
-        this.updateUser(this.initialUsers);
+        this.users = this.getUpdatedUsers();
+
+        this.$collaboration.workspaces[this.storeName].providerManager.provider?.awareness.on('update', () => {
+            this.users = this.getUpdatedUsers();
+        });
     },
 
     beforeDestroy() {
@@ -47,13 +50,16 @@ export default {
     },
 
     methods: {
-        updateUser(newUsers) {
-            this.users = [
+        getUpdatedUsers() {
+            const users = this.$collaboration.workspaces[this.storeName].awarenessManager.getUsers();
+            if (!users) return [];
+
+            return [
                 ...new Map(
-                    newUsers.map((user) => [
+                    users.map((user) => [
                         user.user['id'],
                         {
-                            openTabs: Statamic.user.id === user.user.id ? this.countOpenTabs(newUsers, user.user.id) : null,
+                            openTabs: Statamic.user.id === user.user.id ? this.countOpenTabs(users, user.user.id) : null,
                             ...user.user,
                         },
                     ])

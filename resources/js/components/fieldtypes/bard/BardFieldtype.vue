@@ -542,10 +542,10 @@ export default {
             }
             const bardFragment = workspace.document.getXmlFragment(this.handle);
 
-            if (workspace.awarenessManager.users.length > 1 && bardFragment.length > 0) return;
+            if (workspace.awarenessManager.getUsers().length > 1 && bardFragment.length > 0) return;
 
             // Remove the state from the XMLFragment for the first user to show only the stored values
-            if (workspace.awarenessManager.users.length === 1 && bardFragment.length > 0) {
+            if (workspace.awarenessManager.getUsers().length === 1 && bardFragment.length > 0) {
                 bardFragment.delete(0, bardFragment.length);
             }
 
@@ -560,7 +560,7 @@ export default {
             let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
 
             // Apply saved values for single user
-            if (workspace.awarenessManager.users.length === 1) {
+            if (workspace.awarenessManager.getUsers().length === 1) {
                Y.applyUpdate(workspace.document, temporaryEncodedDoc);
                return;
             }

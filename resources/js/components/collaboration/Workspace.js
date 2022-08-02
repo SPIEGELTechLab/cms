@@ -36,11 +36,11 @@ export default class Workspace {
         this.document = new Y.Doc();
 
         this.providerManager = new ProviderManager(this);
-        this.awarenessManager = new AwarenessManager();
+        this.awarenessManager = new AwarenessManager(this.container, this.providerManager);
 
         this.providerManager.boot()
             .then(() => this.initializeDirtyStateManager())
-            .then(() => this.startAwareness())
+            .then(() => this.awarenessManager.start())
             .then(() => this.providerManager.connect())
             .then(() => this.providerManager.sync())
             .then(() => this.initializeSyncManager())
@@ -50,10 +50,7 @@ export default class Workspace {
     }
 
     destroy() {
-        this.awarenessManager.destroy(
-            this.container,
-            this.providerManager.provider?.awareness
-        );
+        this.awarenessManager.destroy();
         // TODO: destroy sync manager
     }
 
@@ -73,13 +70,6 @@ export default class Workspace {
         this.syncManager.syncWebsocket();
         this.syncManager.pushLocalChanges();
         this.syncManager.observeRemoteChanges();
-    }
-
-    startAwareness() {
-        this.awarenessManager.start(
-            this.container,
-            this.providerManager.provider?.awareness
-        );
     }
 
     dirty() {

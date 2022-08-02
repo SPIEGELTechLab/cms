@@ -32,7 +32,7 @@ export default class SyncManager {
     syncWebsocket() {
         this.fieldtypes.forEach(field => {
 
-            if (this.workspace.awarenessManager.users.length > 1) {
+            if (this.workspace.awarenessManager.getUsers().length > 1) {
 
                 /**
                  * In case more than two users are present, 
