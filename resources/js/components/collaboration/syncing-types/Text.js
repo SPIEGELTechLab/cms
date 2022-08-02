@@ -8,14 +8,14 @@ class Text {
      * 
      * Yjs Provider -> Local
      */
-    static fetchInitialFromYjs(workspace, field) {                    
+    static fetchInitialFromYjs(workspace, handle) {                    
         // Workaround for: sync manager destroy()
         if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
-            handle: field.handle,
+            handle: handle,
             user: Statamic.user.id,
-            value: workspace.document.getText(field.handle).toString() ?? ''
+            value: workspace.document.getText(handle).toString() ?? ''
         });
     }
 
@@ -26,16 +26,16 @@ class Text {
      * 
      * Yjs Provider <- Local
      */
-    static pushInitialToYjs(workspace, field) {
+    static pushInitialToYjs(workspace, handle) {
         workspace.document.transact(() => {
             // Delete websocket data in case some data does exist.
-            if (workspace.document.getText(field.handle).length > 0) {
-                workspace.document.getText(field.handle).delete(0, workspace.document.getText(field.handle).length)
+            if (workspace.document.getText(handle).length > 0) {
+                workspace.document.getText(handle).delete(0, workspace.document.getText(handle).length)
             }
 
             // Push the initial value to the Yjs provider.
-            if (workspace.container.values[field.handle]) {
-                workspace.document.getText(field.handle).insert(0, workspace.container.values[field.handle]);
+            if (workspace.container.values[handle]) {
+                workspace.document.getText(handle).insert(0, workspace.container.values[handle]);
             }
         })
     }
@@ -87,8 +87,8 @@ class Text {
      * Observe remote text changes from Yjs the Yjs provider, so those can be merged with the local state.
      * Yjs will only send the text diff with the belonging position. Such changes are called delta in Yjs.
      */
-    static observeRemoteChanges(workspace, field) {
-        workspace.document.getText(field.handle).observe(event => {
+    static observeRemoteChanges(workspace, handle) {
+        workspace.document.getText(handle).observe(event => {
 
             let toUpdate = [];
             let from = 0;
@@ -118,8 +118,8 @@ class Text {
                 * It may happen, that multiple deltas will be received at once.
                 * To avoid workload, we'll make a single update after fetching alle changes.
                 */
-                if (!toUpdate.includes(field.handle)) {
-                    toUpdate.push(field.handle)
+                if (!toUpdate.includes(handle)) {
+                    toUpdate.push(handle)
                 }
             })
 
@@ -143,14 +143,14 @@ class Text {
              */
             if (!event.transaction.local) {
 
-                toUpdate.forEach(handle => {
+                toUpdate.forEach(toUpdateHandle => {
                     // Workaround for: sync manager destroy()
                     if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
                     Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
-                        handle: handle,
+                        handle: toUpdateHandle,
                         user: Statamic.user.id,
-                        value: workspace.document.getText(handle).toString()
+                        value: workspace.document.getText(toUpdateHandle).toString()
                     });
                 })
 

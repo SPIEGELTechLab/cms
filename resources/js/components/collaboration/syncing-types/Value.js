@@ -6,14 +6,14 @@ class Value {
      * 
      * Yjs Provider -> Local
      */
-    static fetchInitialFromYjs(workspace, field) {                    
+    static fetchInitialFromYjs(workspace, handle) {                    
         // Workaround for: sync manager destroy()
         if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
         Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
-            handle: field.handle,
+            handle: handle,
             user: Statamic.user.id,
-            value: workspace.document.getMap(field.handle).get('value')
+            value: workspace.document.getMap(handle).get('value')
         });
     }
 
@@ -24,11 +24,11 @@ class Value {
      * 
      * Yjs Provider <- Local
      */
-    static pushInitialToYjs(workspace, field) {
+    static pushInitialToYjs(workspace, handle) {
         workspace.document.transact(() => {
-            if (workspace.container.values[field.handle]) {
-                workspace.document.getMap(field.handle).clear();
-                workspace.document.getMap(field.handle).set('value', workspace.container.values[field.handle]);
+            if (workspace.container.values[handle]) {
+                workspace.document.getMap(handle).clear();
+                workspace.document.getMap(handle).set('value', workspace.container.values[handle]);
             }
         })
     }
@@ -45,8 +45,8 @@ class Value {
      * Observe remote text changes from Yjs the Yjs provider, so those can be merged with the local state.
      * Yjs will only send the text diff with the belonging position. Such changes are called delta in Yjs.
      */
-    static observeRemoteChanges(workspace, field) {
-        workspace.document.getMap(field.handle).observe(event => {
+    static observeRemoteChanges(workspace, handle) {
+        workspace.document.getMap(handle).observe(event => {
             let toUpdate = [];
 
             /**
@@ -64,8 +64,8 @@ class Value {
                 * It may happen, that multiple deltas will be received at once.
                 * To avoid workload, we'll make a single update after fetching alle changes.
                 */
-             if (! toUpdate.includes(field.handle)) {
-                toUpdate.push(field.handle)
+             if (! toUpdate.includes(handle)) {
+                toUpdate.push(handle)
             }
 
             /**
@@ -76,11 +76,11 @@ class Value {
                 // Workaround for: sync manager destroy()
                 if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
         
-                toUpdate.forEach(handle => {
+                toUpdate.forEach(toUpdateHandle => {
                     Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
-                        handle: handle,
+                        handle: toUpdateHandle,
                         user: Statamic.user.id,
-                        value: workspace.document.getMap(handle).get('value')
+                        value: workspace.document.getMap(toUpdateHandle).get('value')
                     });
                 })
 
