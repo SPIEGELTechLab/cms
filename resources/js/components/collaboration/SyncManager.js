@@ -200,7 +200,15 @@ export default class SyncManager {
     * Get the syncing type from the field handle.
     */
      getSyncingType(handle) {
-        return this.fieldtypes.find(fieldset => fieldset.handle === handle).syncingType;
+         let field = this.fieldtypes.find(fieldset => fieldset.handle === handle)
+         
+         if (!field) {
+            console.error(`Collaboration: Syncing Type for field handle '${handle}' not found.`)
+             
+            return null; // Should we simply use `single-value` as default?
+         }
+
+         return field.syncingType;
     }
 
 }
