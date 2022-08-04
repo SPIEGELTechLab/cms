@@ -28,9 +28,30 @@ export default class SyncManager {
                     handle: field.handle,
                     syncingType: field.collaboration,
                     type: field.type,
+                    sets: this.getSets(field),
                 });
             })
         });
+    }
+
+    getSets(field) {
+        if (field.sets === undefined) {
+            return null;
+        }
+
+        let sets = [];
+
+        field.sets.forEach((set, index) => {
+            set.fields.forEach(childField => {
+                sets.push({
+                    handle: `${field.handle}.${index}.${childField.handle}`,
+                    syncingType: childField.collaboration,
+                    type: childField.type,  
+                })
+            })
+        })
+
+        return sets;
     }
 
    /**
