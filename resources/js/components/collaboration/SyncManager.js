@@ -8,6 +8,14 @@ export default class SyncManager {
     constructor(workspace) {
         this.workspace = workspace;
         this.fieldtypes = [];
+
+        this.syncTypes = [
+            { type: 'array',  class: Array, sharedType: 'Y.Array' },
+            { type: 'object', class: Object, sharedType: 'Y.Array' },
+            { type: 'replicator', class: Replicator, sharedType: 'Y.Array' },
+            { type: 'single-value', class: Value, sharedType: 'Y.Map' },
+            { type: 'text', class: Text, sharedType: 'Y.Text' }
+        ]
     }
  
    /**
@@ -32,7 +40,7 @@ export default class SyncManager {
     syncWebsocket() {
         this.fieldtypes.forEach(field => {
 
-            if (this.workspace.awarenessManager.users.length > 1) {
+            if (this.workspace.awarenessManager.getUsers().length > 1) {
 
                 /**
                  * In case more than two users are present, 
@@ -91,20 +99,10 @@ export default class SyncManager {
     * Yjs Provider -> Local
     */
     fetchInitialFromYjs(workspace, handle, syncingType) {
-        switch (syncingType) {
-            case 'array':
-                Array.fetchInitialFromYjs(workspace, handle);
-                break;
-            case 'object':
-                Object.fetchInitialFromYjs(workspace, handle);
-                break;
-            case 'text':
-                Text.fetchInitialFromYjs(workspace, handle);
-                break;
-            case 'single-value':
-                Value.fetchInitialFromYjs(workspace, handle);
-                break;
-        }
+        const syncingImport = this.getSyncingImport(syncingType);
+        if (!syncingImport) return;
+
+        syncingImport.class.fetchInitialFromYjs(workspace, handle);
     }
 
    /**
@@ -112,103 +110,63 @@ export default class SyncManager {
     */
     // pushInitialToYjs(workspace, handle, value, syncingType) TODO: Should we add value as well, so it's alligned with `pushLocalChangesToYjs`
     pushInitialToYjs(workspace, handle, syncingType) {
-        switch (syncingType) {
-            case 'array':
-                Array.pushInitialToYjs(workspace, handle);
-                break;
-            case 'object':
-                Object.pushInitialToYjs(workspace, handle);
-                break;
-            case 'text':
-                Text.pushInitialToYjs(workspace, handle);
-                break;
-            case 'single-value':
-                Value.pushInitialToYjs(workspace, handle);
-                break;
-        }
+        const syncingImport = this.getSyncingImport(syncingType);
+        if (!syncingImport) return;
+
+        syncingImport.class.pushInitialToYjs(workspace, handle);
     }
 
     pushLocalChangesToYjs(workspace, handle, value, position) {
-        switch (this.getSyncingType(handle)) {
-            case 'array':
-                Array.pushLocalChange(
-                    workspace,
-                    handle,
-                    workspace.document.getArray(handle),
-                    value,
-                    position,
-                )
-                break;
-            case 'object':
-                Object.pushLocalChange(
-                    workspace,
-                    handle,
-                    workspace.document.getArray(handle),
-                    value,
-                    position,
-                )
-                break;
-            case 'replicator':
-                Replicator.pushLocalChange(
-                    workspace,
-                    handle,
-                    workspace.document.getArray(handle),
-                    value,
-                    position,
-                )
-                break;
-            case 'text':
-                Text.pushLocalChange(
-                    workspace,
-                    handle,
-                    workspace.document.getText(handle),
-                    value,
-                    position,
-                )
-                break;
-            case 'single-value':
-                Value.pushLocalChange(
-                    workspace,
-                    handle,
-                    workspace.document.getMap(handle),
-                    value
-                )
-        }
+        const syncingType = this.getSyncingType(handle);
+        const syncingImport = this.getSyncingImport(syncingType);
+        if (!syncingImport) return;
+
+        syncingImport.class.pushLocalChange(
+            workspace,
+            handle,
+            this.getYjsSyncValue(workspace, syncingImport.sharedType, handle),
+            value,
+            position
+        );
     }
 
     observeRemoteYjsChanges(workspace, handle, syncingType) {
-        switch (syncingType) {
-            case 'array':
-                Array.observeRemoteChanges(workspace, handle);
-                break;
-            case 'object':
-                Object.observeRemoteChanges(workspace, handle);
-                break;
-            case 'replicator':
-                Replicator.observeRemoteChanges(workspace, handle);
-                break;
-            case 'text':
-                Text.observeRemoteChanges(workspace, handle);
-                break;
-            case 'single-value':
-                Value.observeRemoteChanges(workspace, handle);
-                break;
-        }
+        const syncingImport = this.getSyncingImport(syncingType);
+        if (!syncingImport) return;
+
+        syncingImport.class.observeRemoteChanges(workspace, handle);
     }
 
     /**
     * Get the syncing type from the field handle.
     */
-     getSyncingType(handle) {
-         let field = this.fieldtypes.find(fieldset => fieldset.handle === handle)
+    getSyncingType(handle) {
+        let field = this.fieldtypes.find(fieldset => fieldset.handle === handle)
          
-         if (!field) {
+        if (!field) {
             console.error(`Collaboration: Syncing Type for field handle '${handle}' not found.`)
              
             return null; // Should we simply use `single-value` as default?
-         }
+        }
 
-         return field.syncingType;
+        return field.syncingType;
+    }
+
+    getSyncingImport(syncingType) {
+        return this.syncTypes.find((syncType) => syncType.type === syncingType);
+    }
+
+    getYjsSyncValue(workspace, sharedType, handle) {
+        switch (sharedType) {
+            case 'Y.Array':
+                return workspace.document.getArray(handle);
+            case 'Y.Map':
+                return workspace.document.getMap(handle);
+            case 'Y.Text':
+                return workspace.document.getText(handle);
+            case 'Y.XmlFragment':
+                return workspace.document.getXmlFragment(handle);
+        }
     }
 
 }
