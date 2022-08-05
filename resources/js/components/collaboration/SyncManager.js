@@ -54,9 +54,30 @@ export default class SyncManager {
                     handle: field.handle,
                     syncingType: field.collaboration,
                     type: field.type,
+                    sets: this.getSets(field),
                 });
             })
         });
+    }
+
+    getSets(field) {
+        if (field.sets === undefined) {
+            return null;
+        }
+
+        let sets = [];
+
+        field.sets.forEach((set, index) => {
+            set.fields.forEach(childField => {
+                sets.push({
+                    handle: `${field.handle}.${index}.${childField.handle}`,
+                    syncingType: childField.collaboration,
+                    type: childField.type,  
+                })
+            })
+        })
+
+        return sets;
     }
 
    /**
@@ -167,7 +188,15 @@ export default class SyncManager {
     * Get the syncing type from the field handle.
     */
     getSyncingType(handle) {
-        return this.fieldtypes.find(fieldset => fieldset.handle === handle).syncingType;
+        let field = this.fieldtypes.find(fieldset => fieldset.handle === handle)
+         
+        if (!field) {
+            console.error(`Collaboration: Syncing Type for field handle '${handle}' not found.`)
+             
+            return null; // Should we simply use `single-value` as default?
+        }
+
+        return field.syncingType;
     }
 
     getSyncingImport(syncingType) {

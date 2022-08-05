@@ -261,12 +261,16 @@ export default {
         value(value) {
             // Add or update meta for each set in the value.
             value.forEach(set => {
-                if (!this.meta.existing[set._id]) this.updateSetMeta(set._id, this.meta.new[set.type]);
+                if (!this.meta.existing[set._id]) {
+                    // The timeout is needed so it will work with collaboration. Without it, 
+                    // the meta will not be loaded corrected if fetching data from a YJS provider.
+                    setTimeout(() => this.updateSetMeta(set._id, this.meta.new[set.type]), 1);
+                }
             });
 
             // Remove any meta for sets that are no longer in the value.
             Object.keys(this.meta.existing).forEach(id => {
-                if (!value.find(v => v._id === id)) this.removeSetMeta(id);
+                if (!value.find(v => v._id === id)) this.removeSetMeta(id);   
             });
         }
 

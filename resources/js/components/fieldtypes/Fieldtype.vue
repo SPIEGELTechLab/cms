@@ -25,10 +25,20 @@ export default {
         fieldPathPrefix: String,
     },
 
+    inject: {
+        publishContainer: {
+            default: () => null
+        },
+    },
+
     methods: {
 
-        update(input) {
-            this.$emit("input", this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input);
+        update(input) {            
+            this.publishContainer.setFieldValue(
+                this.fieldPathPrefix || this.handle,
+                this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input
+            );
+
             this.updateCursorPosition(input);
         },
 
