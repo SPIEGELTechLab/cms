@@ -8,7 +8,7 @@ use Statamic\Query\Scopes\Filters\Fields\Template as TemplateFilter;
 class Template extends Fieldtype
 {
     protected $categories = ['special'];
-    protected $collaborationType = 'single-value';
+    protected $collaborationType = 'value';
 
     protected function configFieldItems(): array
     {

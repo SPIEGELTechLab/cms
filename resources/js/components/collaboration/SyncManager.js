@@ -1,21 +1,47 @@
-import Array  from "./syncing-types/Array.js"
-import Object  from "./syncing-types/Object.js"
-import Replicator from "./syncing-types/Replicator.js";
-import Text  from "./syncing-types/Text.js"
-import Value from "./syncing-types/Value.js";
+import ArraySyncType from "./syncing-types/Array.js"
+import ObjectSyncType  from "./syncing-types/Object.js"
+import ReplicatorSyncType from "./syncing-types/Replicator.js";
+import TextSyncType  from "./syncing-types/Text.js"
+import ValueSyncType from "./syncing-types/Value.js";
 
 export default class SyncManager {
     constructor(workspace) {
         this.workspace = workspace;
         this.fieldtypes = [];
 
+       /**
+        * Defines the available shared types
+        * name: identical to the defined 'collaborationType'
+        * sharedType: Matching the yjs shared types https://github.com/yjs/yjs/blob/master/README.md#shared-types
+        * class: defines the involved class
+        */
         this.syncTypes = [
-            { type: 'array',  class: Array, sharedType: 'Y.Array' },
-            { type: 'object', class: Object, sharedType: 'Y.Array' },
-            { type: 'replicator', class: Replicator, sharedType: 'Y.Array' },
-            { type: 'single-value', class: Value, sharedType: 'Y.Map' },
-            { type: 'text', class: Text, sharedType: 'Y.Text' }
-        ]
+            { name: 'array', sharedType: 'Y.Array', class: ArraySyncType },
+            { name: 'object', sharedType: 'Y.Array', class: ObjectSyncType },
+            { name: 'replicator', sharedType: 'Y.Array', class: ReplicatorSyncType },
+            { name: 'value', sharedType: 'Y.Map', class: ValueSyncType },
+            { name: 'text', sharedType: 'Y.Text', class: TextSyncType }
+        ];
+
+       /**
+        * Extend sync types
+        */
+        Statamic.$collaboration.syncTypeCallbacks.forEach((callback) => {
+            this.syncTypes = this.syncTypes.concat(
+                Array.isArray(callback()) ? callback() : [callback()]
+            );
+        });
+
+       /**
+        * Replace existing sync types
+        */
+        Statamic.$collaboration.syncTypeReplacementCallbacks.forEach(({ callback, name }) => {
+            let index = this.syncTypes.findIndex(type => type.name === name);
+            if (index === -1) return;
+
+            let newSyncType = callback();
+            this.syncTypes[index] = newSyncType; 
+        });
     }
  
    /**
@@ -124,7 +150,7 @@ export default class SyncManager {
         syncingImport.class.pushLocalChange(
             workspace,
             handle,
-            this.getYjsSyncValue(workspace, syncingImport.sharedType, handle),
+            this.getYjsSharedType(syncingImport.sharedType, workspace, handle),
             value,
             position
         );
@@ -145,10 +171,10 @@ export default class SyncManager {
     }
 
     getSyncingImport(syncingType) {
-        return this.syncTypes.find((syncType) => syncType.type === syncingType);
+        return this.syncTypes.find((syncType) => syncType.name === syncingType);
     }
 
-    getYjsSyncValue(workspace, sharedType, handle) {
+    getYjsSharedType(sharedType, workspace, handle) {
         switch (sharedType) {
             case 'Y.Array':
                 return workspace.document.getArray(handle);

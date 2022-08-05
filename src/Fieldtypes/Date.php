@@ -16,7 +16,7 @@ use Statamic\Support\DateFormat;
 class Date extends Fieldtype
 {
     protected $categories = ['special'];
-    protected $collaborationType = 'single-value';
+    protected $collaborationType = 'value';
 
     const DEFAULT_DATE_FORMAT = 'Y-m-d';
     const DEFAULT_DATETIME_FORMAT = 'Y-m-d H:i';

@@ -7,7 +7,7 @@ use Statamic\Fields\Fieldtype;
 class Time extends Fieldtype
 {
     protected $categories = ['special'];
-    protected $collaborationType = 'single-value';
+    protected $collaborationType = 'value';
 
     protected function configFieldItems(): array
     {

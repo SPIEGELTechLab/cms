@@ -3,6 +3,8 @@ import Workspace from "./collaboration/Workspace";
 class Collaboration {
     constructor() {
         this.workspaces = {};
+        this.syncTypeCallbacks = [];
+        this.syncTypeReplacementCallbacks = [];
     }
 
     boot() {
@@ -28,6 +30,14 @@ class Collaboration {
 
         this.workspaces[container.name].destroy();
         delete this.workspaces[container.name];
+    }
+
+    addSyncType(callback) {
+        this.syncTypeCallbacks.push(callback);
+    }
+
+    replaceSyncType(name, callback) {
+        this.syncTypeReplacementCallbacks.push({ name, callback });
     }
 
 }
