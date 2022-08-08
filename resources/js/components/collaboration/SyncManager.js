@@ -7,7 +7,8 @@ import ValueSyncType from "./syncing-types/Value.js";
 export default class SyncManager {
     constructor(workspace) {
         this.workspace = workspace;
-        this.fieldtypes = [];
+        // 'published' doesn't exist as a field in the blueprint and must be added manually
+        this.fieldtypes = [{ handle: 'published', syncingType: 'value', type: 'toggle' }];
 
        /**
         * Defines the available shared types
@@ -189,11 +190,9 @@ export default class SyncManager {
     */
     getSyncingType(handle) {
         let field = this.fieldtypes.find(fieldset => fieldset.handle === handle)
-         
         if (!field) {
-            console.error(`Collaboration: Syncing Type for field handle '${handle}' not found.`)
-             
-            return null; // Should we simply use `single-value` as default?
+            console.debug(`Collaboration: Syncing Type for field handle '${handle}' not found.`)
+            return null;
         }
 
         return field.syncingType;
