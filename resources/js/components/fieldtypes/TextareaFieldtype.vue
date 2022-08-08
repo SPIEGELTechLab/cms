@@ -6,9 +6,12 @@
         :placeholder="config.placeholder"
         :value="value"
         :id="fieldId"
-        @blur="$emit('blur')"
+        @blur="blurEvent"
         @focus="$emit('focus')"
-        @input="updateDebounced" />
+        @input="updateDebounced"
+        @click="updateCursorPosition"
+        @keyup.up.down="updateCursorPosition"
+        @keyup.left.right="updateCursorPosition" />
 </template>
 
 <script>

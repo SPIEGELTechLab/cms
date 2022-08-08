@@ -9,7 +9,10 @@
             :readonly="isReadOnly"
             :placeholder="placeholder"
             :autofocus="focus"
-            @input="$emit('input', $event.target.value)"
+            @input="$emit('input', $event)"
+            @click="$emit('click', $event)"
+            @keydown="$emit('keydown', $event)"
+            @keyup="$emit('keyup', $event)"
             @focus="$emit('focus')"
             @blur="$emit('blur')"
         />
@@ -23,11 +26,13 @@
 <script>
 import LengthLimiter from '../LengthLimiter.vue'
 import autosize from 'autosize';
+import CursorPositionForText from '../collaboration/mixins/CursorPositionForText.vue';
 
 export default {
-    mixins: [LengthLimiter],
+    mixins: [LengthLimiter, CursorPositionForText],
 
     props: {
+        name: {},
         disabled: { default: false },
         isReadOnly: { type: Boolean, default: false },
         placeholder: { required: false },

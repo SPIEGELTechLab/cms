@@ -18,7 +18,7 @@
         @keyup.up.down="updateCursorPosition"
         @keyup.left.right="updateCursorPosition"
         @focus="$emit('focus')"
-        @blur="this.blurEvent"
+        @blur="blurEvent"
     />
 </template>
 

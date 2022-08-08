@@ -9,6 +9,7 @@ export default {
          *
          * The last position will be fetched on every text update.
          * @see /components/collaboration/mixins/Text.vue
+         * @see /components/collaboration/mixins/Textarea.vue
          */
         value(newValue, oldValue) {
             /**
@@ -28,7 +29,7 @@ export default {
             }
 
             let cursor = Statamic.user.cursor ?? null;
-
+            
             /**
              * Only update the cursor position if a cursor has been set and if
              * the cursor handle does match with the current field handle.
@@ -44,9 +45,18 @@ export default {
             }
 
             /**
-             * Set cursor position in the input field, so it won't get lost.
+             * Set cursor position in the input or textarea field, so it won't get lost.
              */
-            this.$nextTick(() => this.$refs.input.setSelectionRange(start, end));
+            this.$nextTick(() => {
+                if (this.$refs.input) {
+                    this.$refs.input.setSelectionRange(start, end);
+                }
+                
+                if  (this.$refs.textarea) {
+                    this.$refs.textarea.setSelectionRange(start, end);
+                }
+                
+            });
 
             /**
              * Update the old cursor position.
