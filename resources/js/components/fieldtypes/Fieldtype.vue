@@ -23,6 +23,7 @@ export default {
         },
         namePrefix: String,
         fieldPathPrefix: String,
+        fieldPathPlaceholder: String,
     },
 
     inject: {
