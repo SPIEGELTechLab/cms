@@ -36,7 +36,7 @@ export default {
 
         update(input) {            
             this.publishContainer.setFieldValue(
-                this.fieldPathPrefix || this.handle,
+                this.fieldPathPlaceholder || this.handle,
                 this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input
             );
 

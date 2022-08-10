@@ -1,5 +1,6 @@
 import ArraySyncType from "./syncing-types/Array.js"
 import ObjectSyncType  from "./syncing-types/Object.js"
+import Replicator from "./syncing-types/Replicator.js";
 import ReplicatorSyncType from "./syncing-types/Replicator.js";
 import TextSyncType  from "./syncing-types/Text.js"
 import ValueSyncType from "./syncing-types/Value.js";
@@ -68,17 +69,31 @@ export default class SyncManager {
 
         let sets = [];
 
-        field.sets.forEach((set, index) => {
+        field.sets.forEach(set => {
+            let fields = [];
+
             set.fields.forEach(childField => {
-                sets.push({
-                    handle: `${field.handle}.${index}.${childField.handle}`,
+                fields.push({
+                    handle: childField.handle,
                     syncingType: childField.collaboration,
                     type: childField.type,  
                 })
             })
+
+            sets.push({
+                handle: set.handle,
+                id: set.id,
+                fields: fields,
+            });
         })
 
         return sets;
+    }
+
+    getFieldId(handle, index) {
+        // TODO: Add better error handling.
+
+        return this.workspace.container.values[handle][index]._id;
     }
 
    /**

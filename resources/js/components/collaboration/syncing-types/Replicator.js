@@ -9,15 +9,7 @@ class Replicator {
      * Yjs Provider -> Local
      */
     static fetchInitialFromYjs(workspace, handle) {
-        let sets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
-
-        workspace.document.transact(() => {
-            sets.forEach(set => {
-                workspace.syncManager.fieldtypes.push(set) // Push to fieldtypes so the syncing type can be found. TODO: Add a better solution
-                workspace.syncManager.fetchInitialFromYjs(workspace, set.handle, set.syncingType)
-                workspace.syncManager.observeRemoteYjsChanges(workspace, set.handle, set.syncingType)
-            });
-        })
+        this.registerChildFields(workspace, handle, 'fetchInitialFromYjs');
 
         // Workaround for: sync manager destroy()
         if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
@@ -37,8 +29,6 @@ class Replicator {
      * Yjs Provider <- Local
      */
     static pushInitialToYjs(workspace, handle) {
-        let sets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
-
         // Delete websocket data in case some data does exist.
         if (workspace.document.getArray(handle).length > 0) {
             workspace.document.getArray(handle).delete(0, workspace.document.getArray(handle).length)
@@ -49,12 +39,34 @@ class Replicator {
             workspace.document.getArray(handle).insert(0, workspace.container.values[handle]);
         }
         
-        // Sync children fields of Replicator.
+        this.registerChildFields(workspace, handle, 'pushInitialToYjs');
+    }
+
+    static registerChildFields(workspace, handle, type) {
+        let createdSets = workspace.container.values[handle]
+        let defaultSets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
+
         workspace.document.transact(() => {
-            sets.forEach(set => {
-                workspace.syncManager.fieldtypes.push(set) // Push to fieldtypes so the syncing type can be found. Is there a better solution?
-                workspace.syncManager.pushInitialToYjs(workspace, set.handle, set.syncingType)
-                workspace.syncManager.observeRemoteYjsChanges(workspace, set.handle, set.syncingType)
+            createdSets.forEach(set => {
+                let setFields = defaultSets.find(defaultSet => set.type === defaultSet.handle).fields;
+
+                setFields.forEach(field => {
+                    let fieldPathPlaceholder = `${handle}.{replicator:${set._id}}.${field.handle}`;
+
+                    workspace.syncManager.fieldtypes.push({
+                        handle: fieldPathPlaceholder,
+                        syncingType: field.syncingType,
+                        type: set.type,
+                    })
+
+                    if (type === 'pushInitialToYjs') {
+                        workspace.syncManager.pushInitialToYjs(workspace, fieldPathPlaceholder, field.syncingType);
+                    } else if (type === 'fetchInitialFromYjs') {
+                        workspace.syncManager.fetchInitialFromYjs(workspace, set.handle, set.syncingType)
+                    }
+                    
+                    workspace.syncManager.observeRemoteYjsChanges(workspace, fieldPathPlaceholder, field.syncingType);
+                })
             });
         })
     }
@@ -75,7 +87,9 @@ class Replicator {
         });
 
         function compareSets(one, two) { // TODO: Refactor
-            return _.isEqual(one, two);
+            return one._id === two._id
+                && one.type === two.type
+                && one.enabled === two.enabled;
         }
 
         /**
@@ -101,12 +115,30 @@ class Replicator {
         workspace.document.getArray(handle).observe(event => {
             if (event.transaction.local || !Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
-            // TODO: On remote change, we need to add new fields so they will be synced via yjs.
+            let oldValues = workspace.container.values[handle];
+            let newValues = workspace.document.getArray(handle).toArray();
+
+            event.delta.forEach(delta => {
+                if (delta.insert !== undefined) {
+                    let id = delta.insert[0]._id
+                    let fieldValues = oldValues.find(field => field._id === id)
+
+                    if (!fieldValues) return; 
+
+                    for (const [key, value] of Object.entries(fieldValues)) {
+                        if (['_id', 'type', 'enabled'].includes(key)) continue;
+
+                        let index = newValues.findIndex(field => field._id === id)
+
+                        newValues[index][key] = value;                      
+                    }
+                }
+            });
             
             Statamic.$store.dispatch(`publish/${workspace.container.name}/setCollaborationFieldValue`, {
                 handle: handle,
                 user: Statamic.user.id,
-                value: workspace.document.getArray(handle).toArray(),
+                value: newValues,
             });
         })
     }
@@ -118,7 +150,6 @@ class Replicator {
     */
     static pushReplicatorChanges(workspace, YArray, changes) {
         workspace.document.transact(() => {
-            console.log('pushReplicatorChanges', changes, YArray.toArray())
             changes.forEach(change => {
                 if (change.type === 'add') {
                     YArray.insert(change.newPos, change.items)
@@ -127,6 +158,11 @@ class Replicator {
                 }
             })
         })
+    }
+
+    static setHasBeenMoved(changes) {
+        return changes.length === 2
+            && changes[0]._id === changes[1]._id;
     }
 }
 
