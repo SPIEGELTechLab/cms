@@ -1,3 +1,4 @@
+import * as Y from 'yjs';
 import Workspace from "./collaboration/Workspace";
 
 class Collaboration {
@@ -38,6 +39,10 @@ class Collaboration {
 
     replaceSyncType(name, callback) {
         this.syncTypeReplacementCallbacks.push({ name, callback });
+    }
+
+    get yjs() {
+        return Y;
     }
 
 }

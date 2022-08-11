@@ -249,7 +249,7 @@ export default {
 
         this.editor = new Editor({
             extensions: this.getExtensions(),
-            content: Statamic.$config.get('collaboration.enabled') && !this.fieldPathPrefix ? '' : this.valueToContent(clone(this.value)),
+            content: this.$config.get('collaboration.enabled') && !this.fieldPathPrefix ? '' : this.valueToContent(clone(this.value)),
             editable: !this.readOnly,
             enableInputRules: this.config.enable_input_rules,
             enablePasteRules: this.config.enable_paste_rules,
@@ -279,7 +279,7 @@ export default {
 
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
 
-        if (!Statamic.$config.get('collaboration.enabled') || this.fieldPathPrefix) return;
+        if (!this.$config.get('collaboration.enabled') || this.fieldPathPrefix) return;
 
         this.$events.$on('collaboration-provider-synced', this.valueToYjsDoc);
     },
@@ -306,7 +306,7 @@ export default {
             // But, Laravel's TrimStrings middleware would remove them.
             // Those spaces need to be there, otherwise it would be rendered as <p>One<b>two</b>three</p>
             // To combat this, we submit the JSON string instead of an object.
-            Statamic.$config.get('collaboration.enabled') ? this.update(JSON.stringify(json)) : this.updateDebounced(JSON.stringify(json));
+            this.$config.get('collaboration.enabled') ? this.update(JSON.stringify(json)) : this.updateDebounced(JSON.stringify(json));
         },
 
         value(value, oldValue) {
@@ -519,7 +519,7 @@ export default {
 
         valueToYjsDoc() {
             // Does a workspace exist? It won't if creating a new entry.
-            if (!Statamic.$collaboration.workspaces[this.storeName]) {
+            if (!this.$collaboration.workspaces[this.storeName]) {
                 return;
             }
 
@@ -532,7 +532,7 @@ export default {
 
             // Don't initialize the value, if no value has been provied.
             if (!value) return;
-            const workspace =  Statamic.$collaboration.workspaces[this.storeName];
+            const workspace =  this.$collaboration.workspaces[this.storeName];
 
             // Abort if no Workspace has been created.
             if (!workspace) {
@@ -549,7 +549,7 @@ export default {
                 bardFragment.delete(0, bardFragment.length);
             }
 
-            const Y = workspace.Y;
+            const Y = this.$collaboration.yjs;
             // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
             const temporaryYDoc = new Y.Doc();
             const temporaryFragment = temporaryYDoc.getXmlFragment(this.handle);
@@ -633,25 +633,25 @@ export default {
             }
 
             // The Collaboration extension comes with its own history handling
-            if (!Statamic.$config.get('collaboration.enabled')) {
+            if (!this.$config.get('collaboration.enabled')) {
                 exts.push(History)
             }
 
             if (
-                Statamic.$config.get('collaboration.enabled') // Is collaboration enabled
-                && Statamic.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
+                this.$config.get('collaboration.enabled') // Is collaboration enabled
+                && this.$collaboration.workspaces[this.storeName] // Does a workspace exist? It won't if creating a new entry.
                 && !this.fieldPathPrefix
             ) {
 
                 exts.push(
                     Collaboration.configure({
                         // TODO: We should do some error handling and clean this up a bit
-                        fragment: Statamic.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
+                        fragment: this.$collaboration.workspaces[this.storeName].document.getXmlFragment(this.handle),
                     }),
 
                     CollaborationCursor.configure({
-                        provider: Statamic.$collaboration.workspaces[this.storeName].providerManager.provider,
-                        user: Statamic.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
+                        provider: this.$collaboration.workspaces[this.storeName].providerManager.provider,
+                        user: this.$collaboration.workspaces[this.storeName].awarenessManager.getCurrentUser()
                     }),
                 );
             }

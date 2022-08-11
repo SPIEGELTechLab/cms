@@ -1,4 +1,3 @@
-import * as Y from 'yjs';
 import AwarenessManager from "./AwarenessManager";
 import ProviderManager from "./ProviderManager";
 import DirtyStateManager from './DirtyStateManager';
@@ -26,14 +25,13 @@ export default class Workspace {
         this.syncManager = {};
         this.document = null;
         this.started = false;
-        this.Y = Y;
     }
 
     start() {
         if (this.started) return;
         this.started = true;
 
-        this.document = new Y.Doc();
+        this.document = new Statamic.$collaboration.yjs.Doc();
 
         this.providerManager = new ProviderManager(this);
         this.awarenessManager = new AwarenessManager(this.container, this.providerManager);
