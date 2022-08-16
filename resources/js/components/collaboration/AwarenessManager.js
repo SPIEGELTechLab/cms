@@ -39,7 +39,7 @@ class AwarenessManager {
             id: Statamic.user.id,
             name: Statamic.user.name,
             initials: Statamic.user.initials,
-            avatar: Statamic.user.thumbnail,
+            //avatar: Statamic.user.thumbnail,
             color: this.generateRandomLightColorHex(),
         }
     }
