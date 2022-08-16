@@ -34,7 +34,12 @@ export default {
 
     methods: {
 
-        update(input) {            
+        update(input) {      
+            if (!this.publishContainer) {
+                this.$emit("input", this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input);
+                return;
+            }
+       
             this.publishContainer.setFieldValue(
                 this.fieldPathPlaceholder || this.handle,
                 this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input
