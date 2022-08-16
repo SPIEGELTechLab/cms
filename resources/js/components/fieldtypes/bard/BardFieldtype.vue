@@ -134,6 +134,7 @@ export default {
             previews: this.meta.previews,
             mounted: false,
             pageHeader: null,
+            initialValue: clone(this.value)
         }
     },
 
@@ -249,7 +250,7 @@ export default {
 
         this.editor = new Editor({
             extensions: this.getExtensions(),
-            content: this.$config.get('collaboration.enabled') && !this.fieldPathPrefix ? '' : this.valueToContent(clone(this.value)),
+            content: this.$config.get('collaboration.enabled') && !this.fieldPathPrefix ? '' : this.valueToContent(this.initialValue),
             editable: !this.readOnly,
             enableInputRules: this.config.enable_input_rules,
             enablePasteRules: this.config.enable_paste_rules,
@@ -518,36 +519,27 @@ export default {
         },
 
         valueToYjsDoc() {
+            let value = this.initialValue;
+            if (!value) return;
+
             // Does a workspace exist? It won't if creating a new entry.
             if (!this.$collaboration.workspaces[this.storeName]) {
+                console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as no Workspace has been created.`);
+
                 return;
             }
-
-            let value = clone(this.value);
-    
             // online offline support: value is already formatted for prosemirror
             if (typeof value === 'string')  {
                 value = this.valueToContent(value);
             }
 
-            // Don't initialize the value, if no value has been provied.
-            if (!value) return;
             const workspace =  this.$collaboration.workspaces[this.storeName];
-
-            // Abort if no Workspace has been created.
-            if (!workspace) {
-                console.error(`(Collaboration) The Bard Fieldtype ${this.handle} could not sync, as no Workspace has been created.`);
-
-                return;
-            }
             const bardFragment = workspace.document.getXmlFragment(this.handle);
 
-            if (workspace.awarenessManager.getUsers().length > 1 && bardFragment.length > 0) return;
+            if (workspace.awarenessManager.getUsers().length > 1) return;
 
             // Remove the state from the XMLFragment for the first user to show only the stored values
-            if (workspace.awarenessManager.getUsers().length === 1 && bardFragment.length > 0) {
-                bardFragment.delete(0, bardFragment.length);
-            }
+            bardFragment.delete(0, bardFragment.length);
 
             const Y = this.$collaboration.yjs;
             // Create a temporary Ydocument with the persisted value from Statamic (not any Y provider)
@@ -558,12 +550,8 @@ export default {
 
             // Encode the temporary state as a binary buffer
             let temporaryEncodedDoc = Y.encodeStateAsUpdate(temporaryYDoc);
-
             // Apply saved values for single user
-            if (workspace.awarenessManager.getUsers().length === 1) {
-               Y.applyUpdate(workspace.document, temporaryEncodedDoc);
-               return;
-            }
+            Y.applyUpdate(workspace.document, temporaryEncodedDoc);
         },
 
         valueToContent(value) {
