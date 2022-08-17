@@ -1,6 +1,12 @@
 <script>
 export default {
 
+    inject: {
+        publishContainer: {
+            default: () => null
+        },
+    },
+
     props: {
         value: {
             required: true
@@ -26,14 +32,14 @@ export default {
         fieldPathPlaceholder: String,
     },
 
-    inject: {
-        publishContainer: {
-            default: () => null
-        },
+    data() {
+        return {
+            debouncing: this.$config.get('collaboration.enabled') ? 0 : 150
+        }
     },
 
     methods: {
-
+    
         update(input) {  
             // FIXME: find a better solution
             if (!this.publishContainer && this.config.type === 'replicator') {
@@ -47,10 +53,6 @@ export default {
        
             this.updateCursorPosition(input);
         },
-
-        updateDebounced: _.debounce(function (input) {
-            this.update(input);
-        }, 0), // TODO: Add a option for 150 ms debounce.
 
         updateMeta(value) {
             this.$emit('meta-updated', value);
@@ -92,6 +94,10 @@ export default {
     },
 
     computed: {
+
+        updateDebounced(){
+            return _.debounce(this.update, this.debouncing)
+        },
 
         name() {
             if (this.namePrefix) {

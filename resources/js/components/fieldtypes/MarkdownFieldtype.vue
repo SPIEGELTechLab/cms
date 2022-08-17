@@ -184,7 +184,7 @@ export default {
     watch: {
 
         data(data) {
-            Statamic.$config.get('collaboration.enabled') ? this.update(data) : this.updateDebounced(data);
+            this.updateDebounced(data);
         },
 
         fullScreenMode: {

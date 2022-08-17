@@ -45,7 +45,7 @@ export default {
         });
 
         this.codemirror.on('change', (cm) => {
-            Statamic.$config.get('collaboration.enabled') ? this.update(cm.doc.getValue()) : this.updateDebounced(cm.doc.getValue());
+            this.updateDebounced(cm.doc.getValue());
         });
 
         // Could be included in another element and will then be synchronized in the root element

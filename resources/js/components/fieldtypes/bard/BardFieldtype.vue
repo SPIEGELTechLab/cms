@@ -307,7 +307,7 @@ export default {
             // But, Laravel's TrimStrings middleware would remove them.
             // Those spaces need to be there, otherwise it would be rendered as <p>One<b>two</b>three</p>
             // To combat this, we submit the JSON string instead of an object.
-            this.$config.get('collaboration.enabled') ? this.update(JSON.stringify(json)) : this.updateDebounced(JSON.stringify(json));
+            this.updateDebounced(JSON.stringify(json));
         },
 
         value(value, oldValue) {

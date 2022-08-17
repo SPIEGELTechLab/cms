@@ -117,8 +117,7 @@ export default {
         });
 
         this.codemirror.on('change', (cm) => {
-            const updatedValue = {code: cm.doc.getValue(), mode: this.mode};
-            Statamic.$config.get('collaboration.enabled') ? this.update(updatedValue) : this.updateDebounced(updatedValue);
+            this.updateDebounced({code: cm.doc.getValue(), mode: this.mode});
         });
 
         this.codemirror.on('focus', () => this.$emit('focus'));
