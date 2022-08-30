@@ -58,7 +58,7 @@ export default {
 
     data() {
         return {
-            containerWidth: null,
+            containerWidth: 1000,
             focused: false,
         }
     },
