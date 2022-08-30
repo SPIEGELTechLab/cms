@@ -115,7 +115,7 @@ export default {
 
         return {
             active: state.blueprint.sections[0].handle,
-            containerWidth: null,
+            containerWidth: 1000,
             visibleTabs: []
         }
     },

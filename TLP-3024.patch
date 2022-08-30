@@ -1,0 +1,26 @@
+diff --git a/resources/js/components/fieldtypes/grid/Grid.vue b/resources/js/components/fieldtypes/grid/Grid.vue
+index 0125a8b36..91abb659a 100644
+--- a/resources/js/components/fieldtypes/grid/Grid.vue
++++ b/resources/js/components/fieldtypes/grid/Grid.vue
+@@ -58,7 +58,7 @@ export default {
+ 
+     data() {
+         return {
+-            containerWidth: null,
++            containerWidth: 1000,
+             focused: false,
+         }
+     },
+diff --git a/resources/js/components/publish/Sections.vue b/resources/js/components/publish/Sections.vue
+index 653903499..eb33a866a 100644
+--- a/resources/js/components/publish/Sections.vue
++++ b/resources/js/components/publish/Sections.vue
+@@ -115,7 +115,7 @@ export default {
+ 
+         return {
+             active: state.blueprint.sections[0].handle,
+-            containerWidth: null,
++            containerWidth: 1000,
+             visibleTabs: []
+         }
+     },
