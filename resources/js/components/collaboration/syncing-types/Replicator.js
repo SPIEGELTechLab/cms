@@ -1,4 +1,5 @@
 const diff = require("fast-array-diff");
+import resolvePath from './../../publish/FieldPathResolver';
 
 class Replicator {
 
@@ -62,13 +63,15 @@ class Replicator {
                     if (type === 'pushInitialToYjs') {
                         workspace.syncManager.pushInitialToYjs(workspace, fieldPathPlaceholder, field.syncingType);
                     } else if (type === 'fetchInitialFromYjs') {
-                        workspace.syncManager.fetchInitialFromYjs(workspace, set.handle, set.syncingType)
+                        workspace.syncManager.fetchInitialFromYjs(workspace, fieldPathPlaceholder, set.syncingType)
                     }
                     
                     workspace.syncManager.observeRemoteYjsChanges(workspace, fieldPathPlaceholder, field.syncingType);
                 })
             });
         })
+
+        console.log('fieldtypes after registerChildFields', workspace.syncManager.fieldtypes)
     }
 
     /**
@@ -113,25 +116,63 @@ class Replicator {
      */
     static observeRemoteChanges(workspace, handle) {
         workspace.document.getArray(handle).observe(event => {
-            if (event.transaction.local || !Statamic.$collaboration.workspaces[workspace.container.name]) return;
+            if (! Statamic.$collaboration.workspaces[workspace.container.name]) return;
 
             let oldValues = workspace.container.values[handle];
             let newValues = workspace.document.getArray(handle).toArray();
+            console.log('OLD VALUES', oldValues);
 
             event.delta.forEach(delta => {
+
+                console.log('event', event)
+
+                /**
+                 * If an insert event has been defined, check if that ID is present in old values.
+                 * If it is, copy those values to the new field.
+                 */ 
                 if (delta.insert !== undefined) {
+                    console.log('move on insert operations', delta.insert)
                     let id = delta.insert[0]._id
+                    let type = delta.insert[0].type
                     let fieldValues = oldValues.find(field => field._id === id)
 
-                    if (!fieldValues) return; 
+                    /**
+                     * If the set already exists, copy existing values so we won't loose them locally.
+                     */
+                    if (fieldValues) {
+                        for (const [key, value] of Object.entries(fieldValues)) {
+                            if (['_id', 'type', 'enabled'].includes(key)) continue;
 
-                    for (const [key, value] of Object.entries(fieldValues)) {
-                        if (['_id', 'type', 'enabled'].includes(key)) continue;
+                            let index = newValues.findIndex(field => field._id === id)
 
-                        let index = newValues.findIndex(field => field._id === id)
-
-                        newValues[index][key] = value;                      
+                            newValues[index][key] = value;
+                        }
                     }
+
+                    /**
+                     * If the set does not exist, push new fields to YJS and the sync manager.
+                     */
+                    let defaultSets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
+                    let belongingSet = defaultSets.find(set => set.handle === type)
+
+                    belongingSet.fields.forEach(field => {
+                        console.log('push new fields to YJS and sync manager', field)
+                        let fieldPathPlaceholder = `${handle}.{replicator:${id}}.${field.handle}`;
+
+                        // Do nothing if the field is already syncing, as it does exist inside the fieldtypes array.
+                        if (workspace.syncManager.fieldtypes.findIndex(field => field.handle === fieldPathPlaceholder) !== -1) return;
+
+                        workspace.syncManager.fieldtypes.push({
+                            handle: fieldPathPlaceholder,
+                            syncingType: field.syncingType,
+                            type: field.type,
+                        })
+
+                        workspace.syncManager.pushInitialToYjs(workspace, fieldPathPlaceholder, field.syncingType);                        
+                        workspace.syncManager.observeRemoteYjsChanges(workspace, fieldPathPlaceholder, field.syncingType);
+
+                        console.log('fieldsets', workspace.syncManager.fieldtypes);
+                    })
                 }
             });
             
@@ -140,7 +181,69 @@ class Replicator {
                 user: Statamic.user.id,
                 value: newValues,
             });
+
+            /**
+             * DELETING the first FIELD
+             */
+            if (event.delta.length === 1 && event.delta[0].delete !== undefined) {
+                console.log('Remove field / set')
+                let id = oldValues[0]._id;
+                let type = oldValues[0].type;
+                let defaultSets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
+                let belongingSet = defaultSets.find(set => set.handle === type)
+
+                belongingSet.fields.forEach(field => {
+                    let fieldPathPlaceholder = `${handle}.{replicator:${id}}.${field.handle}`;
+
+                    // Do nothing if the field is already syncing, as it does exist inside the fieldtypes array.
+                    let index = workspace.syncManager.fieldtypes.findIndex(field => field.handle === fieldPathPlaceholder)
+
+                    // Delete set from fieldtypes array.
+                    workspace.syncManager.fieldtypes.splice(index, 1)
+                })
+
+                console.log('fieldtypes AFTER', workspace.syncManager.fieldtypes)
+            }
+
+            /**
+             * DELETING any FIELD (not the first one)
+             */
+            if (event.delta.length === 2 && event.delta[0].retain !== undefined && event.delta[1].delete !== undefined) {                
+                console.log('Remove field / set (not first)')
+
+                let setToRemove;
+
+                console.log('fieldtypes BEFORE', workspace.syncManager.fieldtypes)
+
+                // Fetch ids that do not exist anymore as a set
+                workspace.syncManager.fieldtypes.every((set, index) => {
+                    if (!set.handle.includes(`${handle}.{replicator:`)) return true; // continue
+
+                    let matched = false;
+                    let fieldPathPlaceholder;
+
+                    oldValues.forEach(value => {
+                        fieldPathPlaceholder = `${handle}.{replicator:${value._id}}.`;
+
+                        if (set.handle.includes(fieldPathPlaceholder)) {
+                            matched = true;
+                        }
+                    });
+
+                    if (! matched) {
+                        setToRemove = index;
+
+                        return false; // Replicator set found. Stop loop.
+                    }
+
+                    return true; // continue looping
+                });
+
+                // Remove sets from fieldtypes array.
+                workspace.syncManager.fieldtypes.splice(setToRemove, 1);
+            }
         })
+
     }
 
    /**
@@ -158,11 +261,6 @@ class Replicator {
                 }
             })
         })
-    }
-
-    static setHasBeenMoved(changes) {
-        return changes.length === 2
-            && changes[0]._id === changes[1]._id;
     }
 }
 
