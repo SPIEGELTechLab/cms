@@ -42,14 +42,14 @@ export default {
     
         update(input) {  
             // FIXME: find a better solution
-            if (!this.publishContainer && this.config.type === 'replicator') {
+            // if (!this.publishContainer && this.config.type === 'replicator') {
                 this.publishContainer.setFieldValue(
                     this.fieldPathPlaceholder || this.handle,
                     this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input
                 );
-            } else {
-                this.$emit("input", this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input);
-            }
+            // } else {
+            //     this.$emit("input", this.isInputEvent(input) || this.isGeneralEvent(input) ? input.target.value : input);
+            // }
        
             this.updateCursorPosition(input);
         },
