@@ -47,6 +47,8 @@ class Replicator {
         let defaultSets = workspace.syncManager.fieldtypes.find(field => handle === field.handle).sets
 
         workspace.document.transact(() => {
+            if (!createdSets) return;
+
             createdSets.forEach(set => {
                 let setFields = defaultSets.find(defaultSet => set.type === defaultSet.handle).fields;
 
@@ -113,13 +115,14 @@ class Replicator {
      */
     static observeRemoteChanges(workspace, handle) {
         workspace.document.getArray(handle).observe(event => {
-            if (! Statamic.$collaboration.workspaces[workspace.container.name]) return;
+            if (!Statamic.$collaboration.workspaces[workspace.container.name]) return;
+            
+            if (event.transaction.local) return; // Ignore local changes.
 
             let oldValues = workspace.container.values[handle];
             let newValues = workspace.document.getArray(handle).toArray();
 
             event.delta.forEach(delta => {
-
                 /**
                  * If an insert event has been defined, check if that ID is present in old values.
                  * If it is, copy those values to the new field.
@@ -238,6 +241,7 @@ class Replicator {
     static pushReplicatorChanges(workspace, YArray, changes) {
         workspace.document.transact(() => {
             changes.forEach(change => {
+                console.log('change', change)
                 if (change.type === 'add') {
                     YArray.insert(change.newPos, change.items)
                 } else if (change.type === 'remove') {
