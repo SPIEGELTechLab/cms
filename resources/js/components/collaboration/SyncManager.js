@@ -1,6 +1,5 @@
 import ArraySyncType from "./syncing-types/Array.js"
 import ObjectSyncType  from "./syncing-types/Object.js"
-import Replicator from "./syncing-types/Replicator.js";
 import ReplicatorSyncType from "./syncing-types/Replicator.js";
 import TextSyncType  from "./syncing-types/Text.js"
 import ValueSyncType from "./syncing-types/Value.js";
