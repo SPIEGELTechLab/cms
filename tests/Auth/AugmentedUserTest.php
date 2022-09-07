@@ -58,6 +58,8 @@ class AugmentedUserTest extends AugmentedTestCase
 
         $augmented = new AugmentedUser($user);
 
+        // dd($augmented);
+
         $expectations = [
             'id'         => ['type' => 'string', 'value' => 'user-id'],
             'name'       => ['type' => 'string', 'value' => 'John Smith'],
@@ -82,6 +84,7 @@ class AugmentedUserTest extends AugmentedTestCase
             'one'          => ['type' => 'string', 'value' => 'the "one" value on the user'],
             'two'          => ['type' => 'string', 'value' => 'the "two" value on the user and in the blueprint'],
             'three'        => ['type' => 'string', 'value' => 'the "three" value supplemented on the user'],
+            'thumbnail'    => ['type' => 'string', 'value' => null],
             'four'         => ['type' => 'string', 'value' => 'the "four" value supplemented on the user and in the blueprint'],
             'unused_in_bp' => ['type' => 'string', 'value' => null],
         ];

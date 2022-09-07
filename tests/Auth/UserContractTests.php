@@ -365,6 +365,7 @@ trait UserContractTests
             'last_login' => null,
             'api_url' => 'http://localhost/api/users/123',
             'preferred_locale' => 'en',
+            'thumbnail' => null,
         ], $this->additionalToArrayValues()), $arr);
     }
 
