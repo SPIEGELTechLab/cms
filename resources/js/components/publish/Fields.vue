@@ -19,6 +19,8 @@
             @desynced="$emit('desynced', field.handle)"
             @focus="$emit('focus', field.handle)"
             @blur="$emit('blur', field.handle)"
+            @focus-set="$emit('focus-set', {handle: field.handle, id: $event})"
+            @blur-set="$emit('blur-set', {handle: field.handle, id: $event})"
         />
 
     </div>

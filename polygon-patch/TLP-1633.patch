@@ -1,0 +1,277 @@
+# TLP-1633: All sets in the replicators are no longer locked, but only the sets that are also processed
+
+diff --git a/resources/js/components/entries/PublishForm.vue b/resources/js/components/entries/PublishForm.vue
+index 1b7f47ce7..0e031360d 100644
+--- a/resources/js/components/entries/PublishForm.vue
++++ b/resources/js/components/entries/PublishForm.vue
+@@ -95,6 +95,8 @@
+                             @desynced="desyncField"
+                             @focus="container.$emit('focus', $event)"
+                             @blur="container.$emit('blur', $event)"
++                            @focus-set="container.$emit('focus-set', $event)"
++                            @blur-set="container.$emit('blur-set', $event)"
+                         >
+                             <template #actions="{ shouldShowSidebar }">
+ 
+diff --git a/resources/js/components/fieldtypes/replicator/Replicator.vue b/resources/js/components/fieldtypes/replicator/Replicator.vue
+index 3d5f68600..8bd37c606 100644
+--- a/resources/js/components/fieldtypes/replicator/Replicator.vue
++++ b/resources/js/components/fieldtypes/replicator/Replicator.vue
+@@ -26,23 +26,24 @@
+                     :meta="meta.existing[set._id]"
+                     :config="setConfig(set.type)"
+                     :parent-name="name"
+-                    :sortable-item-class="sortableItemClass"
+-                    :sortable-handle-class="sortableHandleClass"
+-                    :is-read-only="isReadOnly"
++                    :sortable-item-class="canReorder ? sortableItemClass : '__not_sortable__'"
++                    :sortable-handle-class="canReorder ? sortableHandleClass : 'hidden'"
++                    :is-read-only="isReadOnly || isSetLocked(set._id)"
+                     :collapsed="collapsed.includes(set._id)"
+                     :field-path-prefix="fieldPathPrefix || handle"
+                     :has-error="setHasError(index)"
+                     :previews="previews[set._id]"
+                     :show-field-previews="config.previews"
+                     :can-add-set="canAddSet"
++                    :locking-user="lockedSets ? lockedSets[set._id] : null"
+                     @collapsed="collapseSet(set._id)"
+                     @expanded="expandSet(set._id)"
+                     @duplicated="duplicateSet(set._id)"
+                     @updated="updated"
+                     @meta-updated="updateSetMeta(set._id, $event)"
+                     @removed="removed(set, index)"
+-                    @focus="focused = true"
+-                    @blur="blurred"
++                    @focus="$emit('focus-set', set._id)"
++                    @blur="$emit('blur-set', set._id)"
+                     @previews-updated="updateSetPreviews(set._id, $event)"
+                 >
+                     <template v-slot:picker v-if="canAddSet">
+@@ -87,7 +88,6 @@ export default {
+ 
+     data() {
+         return {
+-            focused: false,
+             collapsed: clone(this.meta.collapsed),
+         }
+     },
+@@ -100,6 +100,7 @@ export default {
+ 
+         canAddSet() {
+             if (this.isReadOnly) return false;
++            if (this.lockedSets && Object.keys(this.lockedSets).length) return false;
+ 
+             return !this.config.max_sets || this.value.length < this.config.max_sets;
+         },
+@@ -122,11 +123,23 @@ export default {
+ 
+         replicatorPreview() {
+             return `${this.config.display}: ${__n(':count set|:count sets', this.value.length)}`;
+-        }
++        },
++
++        lockedSets() {
++            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
++        },
++
++        canReorder() {
++            return !this.lockedSets || !Object.keys(this.lockedSets).length;
++        },
+     },
+ 
+     methods: {
+ 
++        isSetLocked(id) {
++            return this.lockedSets[id] && this.lockedSets[id].id !== Statamic.user.id;
++        },
++
+         setConfig(handle) {
+             return _.find(this.setConfigs, { handle }) || {};
+         },
+@@ -223,14 +236,6 @@ export default {
+             this.collapsed = [];
+         },
+ 
+-        blurred() {
+-            setTimeout(() => {
+-                if (!this.$el.contains(document.activeElement)) {
+-                    this.focused = false;
+-                }
+-            }, 1);
+-        },
+-
+         setHasError(index) {
+             const prefix = `${this.fieldPathPrefix || this.handle}.${index}.`;
+ 
+@@ -244,18 +249,6 @@ export default {
+ 
+     watch: {
+ 
+-        focused(focused, oldFocused) {
+-            if (focused === oldFocused) return;
+-
+-            if (focused) return this.$emit('focus');
+-
+-            setTimeout(() => {
+-                if (!this.$el.contains(document.activeElement)) {
+-                    this.$emit('blur');
+-                }
+-            }, 1);
+-        },
+-
+         collapsed(collapsed) {
+             this.updateMeta({ ...this.meta, collapsed: clone(collapsed) });
+         },
+diff --git a/resources/js/components/fieldtypes/replicator/Set.vue b/resources/js/components/fieldtypes/replicator/Set.vue
+index faf8c1ca9..3b41b0770 100644
+--- a/resources/js/components/fieldtypes/replicator/Set.vue
++++ b/resources/js/components/fieldtypes/replicator/Set.vue
+@@ -7,7 +7,10 @@
+         <div class="replicator-set-header" :class="{ 'p-1': isReadOnly, 'collapsed': collapsed, 'invalid': isInvalid }">
+             <div class="item-move sortable-handle" :class="sortableHandleClass" v-if="!isReadOnly"></div>
+             <div class="flex-1 p-1 replicator-set-header-inner" :class="{'flex items-center': collapsed}" @dblclick="toggleCollapsedState">
+-                <label v-text="display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
++                <div class="flex">
++                    <label v-text="display || config.handle" class="text-xs whitespace-no-wrap mr-1"/>
++                    <avatar v-if="lockingUser" :user="lockingUser" class="w-4 h-4 mt-px rounded-full" v-tooltip="lockingUser.name" />
++                </div>
+                 <div
+                     v-if="config.instructions"
+                     v-show="!collapsed"
+@@ -127,7 +130,11 @@ export default {
+         previews: Object,
+         showFieldPreviews: {
+             type: Boolean
+-        }
++        },
++        lockingUser: {
++            type: Object,
++            required: false
++        },
+     },
+ 
+     computed: {
+diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
+index 684f4706b..52c17d6c5 100644
+--- a/resources/js/components/publish/Container.vue
++++ b/resources/js/components/publish/Container.vue
+@@ -103,6 +103,7 @@ export default {
+                     localizedFields: initial.localizedFields,
+                     site: initial.site,
+                     fieldLocks: {},
++                    replicatorSetLocks: {},
+                     errors: {},
+                     isRoot: initial.isRoot,
+                     preloadedAssets: [],
+@@ -165,6 +166,20 @@ export default {
+                     unlockField(state, handle) {
+                         Vue.delete(state.fieldLocks, handle);
+                     },
++                    lockReplicatorSet(state, { handle, user, setId }) {
++                        if (!state.replicatorSetLocks[handle]) {
++                            Vue.set(state.replicatorSetLocks, handle, {});
++                        }
++                        Vue.set(state.replicatorSetLocks[handle], setId, user || true);
++                    },
++                    unlockReplicatorSet(state, { handle, setId }) {
++                        if (!state.replicatorSetLocks[handle]) return;
++                        
++                        Vue.delete(state.replicatorSetLocks[handle], setId);
++                        if (!Object.keys(state.replicatorSetLocks[handle]).length) {
++                            Vue.delete(state.replicatorSetLocks, handle);
++                        }
++                    },
+                     initialize(state, payload) {
+                         state.blueprint = payload.blueprint;
+                         state.values = payload.values;
+diff --git a/resources/js/components/publish/Field.vue b/resources/js/components/publish/Field.vue
+index 5a30fd8bb..781146655 100644
+--- a/resources/js/components/publish/Field.vue
++++ b/resources/js/components/publish/Field.vue
+@@ -67,6 +67,8 @@
+                 @meta-updated="$emit('meta-updated', $event)"
+                 @focus="focused"
+                 @blur="blurred"
++                @focus-set="focusedSet"
++                @blur-set="blurredSet"
+             /> <!-- TODO: name prop should include prefixing when used recursively like inside a grid. -->
+         </slot>
+ 
+@@ -218,6 +220,18 @@ export default {
+             }
+         },
+ 
++        focusedSet(id) {
++            if (!this.isLocked) {
++                this.$emit('focus-set', id);
++            }
++        },
++
++        blurredSet(id) {
++            if (!this.isLocked) {
++                this.$emit('blur-set', id);   
++            }     
++        },
++
+         toggleLabel() {
+             if (this.canToggleLabel) {
+                 this.showHandle = ! this.showHandle
+diff --git a/resources/js/components/publish/Fields.vue b/resources/js/components/publish/Fields.vue
+index 3175e12a3..6f3b2bb34 100644
+--- a/resources/js/components/publish/Fields.vue
++++ b/resources/js/components/publish/Fields.vue
+@@ -20,6 +20,8 @@
+             @desynced="$emit('desynced', field.handle)"
+             @focus="$emit('focus', field.handle)"
+             @blur="$emit('blur', field.handle)"
++            @focus-set="$emit('focus-set', {handle: field.handle, id: $event})"
++            @blur-set="$emit('blur-set', {handle: field.handle, id: $event})"
+         />
+ 
+     </publish-fields-container>
+diff --git a/resources/js/components/publish/Sections.vue b/resources/js/components/publish/Sections.vue
+index bd26cc2aa..3e377cd72 100644
+--- a/resources/js/components/publish/Sections.vue
++++ b/resources/js/components/publish/Sections.vue
+@@ -64,6 +64,8 @@
+                         @desynced="$emit('desynced', $event)"
+                         @focus="$emit('focus', $event)"
+                         @blur="$emit('blur', $event)"
++                        @focus-set="$emit('focus-set', $event)"
++                        @blur-set="$emit('blur-set', $event)"
+                     />
+                 </div>
+             </div>
+@@ -89,6 +91,8 @@
+                         @desynced="$emit('desynced', $event)"
+                         @focus="$emit('focus', $event)"
+                         @blur="$emit('blur', $event)"
++                        @focus-set="$emit('focus-set', $event)"
++                        @blur-set="$emit('blur-set', $event)"
+                     />
+                 </div>
+             </div>
+diff --git a/src/Fieldtypes/Relationship.php b/src/Fieldtypes/Relationship.php
+index 57643a060..f8a62dcf7 100644
+--- a/src/Fieldtypes/Relationship.php
++++ b/src/Fieldtypes/Relationship.php
+@@ -131,6 +131,7 @@ abstract class Relationship extends Fieldtype
+             'formComponent' => $this->getFormComponent(),
+             'formComponentProps' => $this->getFormComponentProps(),
+             'taggable' => $this->getTaggable(),
++            '__collaboration' => ['data'],
+         ];
+     }
+ 
+diff --git a/src/Fieldtypes/Replicator.php b/src/Fieldtypes/Replicator.php
+index 22c8fc6ad..b21e58b82 100644
+--- a/src/Fieldtypes/Replicator.php
++++ b/src/Fieldtypes/Replicator.php
+@@ -207,6 +207,7 @@ class Replicator extends Fieldtype
+             'defaults' => $defaults,
+             'collapsed' => [],
+             'previews' => $previews,
++            '__collaboration' => ['existing', 'previews'],
+         ];
+     }
+ 
