@@ -103,6 +103,7 @@ export default {
                     localizedFields: initial.localizedFields,
                     site: initial.site,
                     fieldLocks: {},
+                    replicatorSetLocks: {},
                     errors: {},
                     isRoot: initial.isRoot,
                     preloadedAssets: [],
@@ -171,6 +172,20 @@ export default {
                     },
                     unlockField(state, handle) {
                         Vue.delete(state.fieldLocks, handle);
+                    },
+                    lockReplicatorSet(state, { handle, user, setId }) {
+                        if (!state.replicatorSetLocks[handle]) {
+                            Vue.set(state.replicatorSetLocks, handle, {});
+                        }
+                        Vue.set(state.replicatorSetLocks[handle], setId, user || true);
+                    },
+                    unlockReplicatorSet(state, { handle, setId }) {
+                        if (!state.replicatorSetLocks[handle]) return;
+                        
+                        Vue.delete(state.replicatorSetLocks[handle], setId);
+                        if (!Object.keys(state.replicatorSetLocks[handle]).length) {
+                            Vue.delete(state.replicatorSetLocks, handle);
+                        }
                     },
                     initialize(state, payload) {
                         state.blueprint = payload.blueprint;

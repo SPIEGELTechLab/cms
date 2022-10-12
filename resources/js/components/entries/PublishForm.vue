@@ -97,6 +97,8 @@
                             @desynced="desyncField"
                             @focus="container.$emit('focus', $event)"
                             @blur="container.$emit('blur', $event)"
+                            @focus-set="container.$emit('focus-set', $event)"
+                            @blur-set="container.$emit('blur-set', $event)"
                         >
                             <template #actions="{ shouldShowSidebar }">
 
