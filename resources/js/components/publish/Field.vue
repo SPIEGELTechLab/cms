@@ -67,6 +67,8 @@
                 @meta-updated="$emit('meta-updated', $event)"
                 @focus="focused"
                 @blur="blurred"
+                @focus-set="focusedSet"
+                @blur-set="blurredSet"
             /> <!-- TODO: name prop should include prefixing when used recursively like inside a grid. -->
         </slot>
 
@@ -218,6 +220,18 @@ export default {
             if (!this.isLocked) {
                 this.$emit('blur');
             }
+        },
+
+        focusedSet(id) {
+            if (!this.isLocked) {
+                this.$emit('focus-set', id);
+            }
+        },
+
+        blurredSet(id) {
+            if (!this.isLocked) {
+                this.$emit('blur-set', id);   
+            }     
         },
 
         toggleLabel() {

@@ -83,6 +83,8 @@
                         @desynced="$emit('desynced', $event)"
                         @focus="$emit('focus', $event)"
                         @blur="$emit('blur', $event)"
+                        @focus-set="$emit('focus-set', $event)"
+                        @blur-set="$emit('blur-set', $event)"
                     />
                 </div>
             </div>
@@ -108,6 +110,8 @@
                         @desynced="$emit('desynced', $event)"
                         @focus="$emit('focus', $event)"
                         @blur="$emit('blur', $event)"
+                        @focus-set="$emit('focus-set', $event)"
+                        @blur-set="$emit('blur-set', $event)"
                     />
                 </div>
             </div>
