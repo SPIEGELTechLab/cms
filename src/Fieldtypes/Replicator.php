@@ -207,6 +207,7 @@ class Replicator extends Fieldtype
             'defaults' => $defaults,
             'collapsed' => [],
             'previews' => $previews,
+            '__collaboration' => ['existing', 'previews'],
         ];
     }
 
