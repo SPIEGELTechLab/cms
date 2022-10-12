@@ -289,8 +289,9 @@ export default {
             extensions: this.getExtensions(),
             content: content,
             editable: !this.readOnly,
-            disableInputRules: ! this.config.enable_input_rules,
-            disablePasteRules: ! this.config.enable_paste_rules,
+            // Polygon TLP-1574: Remove only the input and paste rules for italics
+            disableInputRules: ['italic'],
+            disablePasteRules: ['italic'],
             onInit: ({ state }) => {
                 if (content !== null && typeof content === 'object') {
                     try {
