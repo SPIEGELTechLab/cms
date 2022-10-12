@@ -7,7 +7,10 @@
             <div class="replicator-set-header" :class="{ 'p-2': isReadOnly, 'collapsed': collapsed, 'invalid': isInvalid }">
                 <div class="item-move sortable-handle" :class="sortableHandleClass" v-if="!isReadOnly"></div>
                 <div class="flex items-center flex-1 p-2 replicator-set-header-inner cursor-pointer" :class="{'flex items-center': collapsed}" @click="toggleCollapsedState">
-                    <label v-text="display || config.handle" class="text-xs whitespace-nowrap mr-2 cursor-pointer"/>
+                    <div class="flex">
+                        <label v-text="display || config.handle" class="text-xs whitespace-no-wrap mr-1 cursor-pointer"/>
+                        <avatar v-if="lockingUser" :user="lockingUser" class="w-4 h-4 mt-px rounded-full" v-tooltip="lockingUser.name" />
+                    </div>
                     <div class="flex items-center" v-if="config.instructions && !collapsed">
                         <svg-icon name="micro/circle-help" class="text-gray-700 hover:text-gray-800 h-3 w-3 text-xs" v-tooltip="{ content: $options.filters.markdown(config.instructions), html:true }" />
                     </div>
@@ -124,6 +127,9 @@ export default {
         previews: Object,
         showFieldPreviews: {
             type: Boolean
+        },
+        lockingUser: {
+            type: Object
         }
     },
 

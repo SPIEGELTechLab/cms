@@ -60,23 +60,24 @@
                     :meta="meta.existing[set._id]"
                     :config="setConfig(set.type)"
                     :parent-name="name"
-                    :sortable-item-class="sortableItemClass"
-                    :sortable-handle-class="sortableHandleClass"
-                    :is-read-only="isReadOnly"
+                    :sortable-item-class="canReorder ? sortableItemClass : '__not_sortable__'"
+                    :sortable-handle-class="canReorder ? sortableHandleClass : 'hidden'"
+                    :is-read-only="isReadOnly || isSetLocked(set._id)"
                     :collapsed="collapsed.includes(set._id)"
                     :field-path-prefix="fieldPathPrefix || handle"
                     :has-error="setHasError(index)"
                     :previews="previews[set._id]"
                     :show-field-previews="config.previews"
                     :can-add-set="canAddSet"
+                    :locking-user="lockedSets ? lockedSets[set._id] : null"
                     @collapsed="collapseSet(set._id)"
                     @expanded="expandSet(set._id)"
                     @duplicated="duplicateSet(set._id)"
                     @updated="updated"
                     @meta-updated="updateSetMeta(set._id, $event)"
                     @removed="removed(set, index)"
-                    @focus="focused = true"
-                    @blur="blurred"
+                    @focus="$emit('focus-set', set._id)"
+                    @blur="$emit('blur-set', set._id)"
                     @previews-updated="updateSetPreviews(set._id, $event)"
                 >
                     <template v-slot:picker>
@@ -131,7 +132,6 @@ export default {
 
     data() {
         return {
-            focused: false,
             collapsed: clone(this.meta.collapsed),
             fullScreenMode: false,
             provide: {
@@ -148,6 +148,7 @@ export default {
 
         canAddSet() {
             if (this.isReadOnly) return false;
+            if (this.lockedSets && Object.keys(this.lockedSets).length) return false;
 
             return !this.config.max_sets || this.value.length < this.config.max_sets;
         },
@@ -176,10 +177,22 @@ export default {
 
         replicatorPreview() {
             return `${this.config.display}: ${__n(':count set|:count sets', this.value.length)}`;
+        },
+
+        lockedSets() {
+            return this.$store.state.publish[this.storeName].replicatorSetLocks[this.handle] || {};
+        },
+
+        canReorder() {
+            return !this.lockedSets || !Object.keys(this.lockedSets).length;
         }
     },
 
     methods: {
+
+        isSetLocked(id) {
+            return this.lockedSets[id] && this.lockedSets[id].id !== Statamic.user.id;
+        },
 
         setConfig(handle) {
             return _.find(this.setConfigs, { handle }) || {};
@@ -277,14 +290,6 @@ export default {
             this.collapsed = [];
         },
 
-        blurred() {
-            setTimeout(() => {
-                if (!this.$el.contains(document.activeElement)) {
-                    this.focused = false;
-                }
-            }, 1);
-        },
-
         setHasError(index) {
             const prefix = `${this.fieldPathPrefix || this.handle}.${index}.`;
 
@@ -297,18 +302,6 @@ export default {
     },
 
     watch: {
-
-        focused(focused, oldFocused) {
-            if (focused === oldFocused) return;
-
-            if (focused) return this.$emit('focus');
-
-            setTimeout(() => {
-                if (!this.$el.contains(document.activeElement)) {
-                    this.$emit('blur');
-                }
-            }, 1);
-        },
 
         collapsed(collapsed) {
             this.updateMeta({ ...this.meta, collapsed: clone(collapsed) });
