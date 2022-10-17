@@ -50,6 +50,7 @@ export default {
     data() {
         return {
             components: [], // extra components to be injected
+            managingVuexModule: true,
         }
     },
 
@@ -87,6 +88,7 @@ export default {
             // If the store already exists, just reinitialize the state.
             if (this.$store.state.hasOwnProperty('publish')
             && this.$store.state.publish.hasOwnProperty(this.name)) {
+                this.managingVuexModule = false;
                 this.$store.commit(`publish/${this.name}/initialize`, initial);
                 return;
             }
@@ -226,6 +228,8 @@ export default {
         },
 
         removeVuexModule() {
+            if (!this.managingVuexModule) return;
+            
             this.$store.unregisterModule(['publish', this.name]);
         },
 
