@@ -38,7 +38,8 @@
             </div>
         </div>
 
-        <div class="replicator-set-body" v-if="!collapsed">
+        <!-- Polygon TLP-2579: Collaboration - when adding a new set meta is undefined for all other users -->
+        <div class="replicator-set-body" v-if="!collapsed && meta">
             <set-field
                 v-for="field in fields"
                 v-show="showField(field, fieldPath(field))"
