@@ -6,6 +6,7 @@ export default {
     mixins: [InlinePublishForm],
 
     props: {
+        indexUrl: String,
         revision: Object
     },
 
@@ -16,8 +17,16 @@ export default {
             method: 'patch',
             action: 'update',
             title: this.revision.attributes.data.title,
-            itemUrl: `${document.location.pathname}/revisions/${this.revision.id}`,
         }
+    },
+
+    computed: {
+        /* Polygon TLP-1923: Show history within an open stack */
+        itemUrl() {
+            return this.indexUrl
+                ? `${this.indexUrl}/${this.revision.id}`
+                : `${document.location.pathname}/revisions/${this.revision.id}`;
+        },
     },
 
     methods: {
