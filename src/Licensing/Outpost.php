@@ -138,6 +138,10 @@ class Outpost
         if ($code == 422) {
             return $this->cacheAndReturnValidationResponse($e);
         } elseif ($code == 429) {
+            // Polygon TLP-1643: https://github.com/statamic/cms/issues/4194
+            if ($this->hasCachedResponse()) {
+                return $this->getCachedResponse();
+            }
             return $this->cacheAndReturnRateLimitResponse($e);
         }
 
