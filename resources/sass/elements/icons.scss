@@ -35,7 +35,8 @@ svg {
 
     &.published { @apply bg-green-light }
     &.draft, &.expired { @apply bg-grey-60 }
-    &.scheduled, &.hollow { @apply bg-transparent border border-grey-60 }
+    /* Polygon TLP-1650: Replace transparent status icon with orange one for scheduled entries */
+    &.scheduled, &.hollow { @apply bg-orange }
 }
 
 .icon-status-draft {
