@@ -1,0 +1,42 @@
+diff --git a/resources/js/components/entries/Listing.vue b/resources/js/components/entries/Listing.vue
+index be71f791c..cd3b614c7 100644
+--- a/resources/js/components/entries/Listing.vue
++++ b/resources/js/components/entries/Listing.vue
+@@ -164,7 +164,8 @@ export default {
+         getStatusClass(entry) {
+             // TODO: Replace with `entry.status` (will need to pass down)
+             if (entry.published && entry.private) {
+-                return 'bg-transparent border border-grey-60';
++                // Polygon TLP-1650: Replace transparent status icon with orange one for scheduled entries
++                return 'bg-orange';
+             } else if (entry.published) {
+                 return 'bg-green';
+             } else {
+diff --git a/resources/js/components/inputs/relationship/Selector.vue b/resources/js/components/inputs/relationship/Selector.vue
+index 955b4416e..95e1fcf8a 100644
+--- a/resources/js/components/inputs/relationship/Selector.vue
++++ b/resources/js/components/inputs/relationship/Selector.vue
+@@ -268,7 +268,8 @@ export default {
+ 
+         getStatusClass(entry) {
+             if (entry.published && entry.private) {
+-                return 'bg-transparent border border-grey-60';
++                // Polygon TLP-1650: Replace transparent status icon with orange one for scheduled entries
++                return 'bg-orange';
+             } else if (entry.published) {
+                 return 'bg-green';
+             } else {
+diff --git a/resources/sass/elements/icons.scss b/resources/sass/elements/icons.scss
+index 278964b26..cb44dd467 100644
+--- a/resources/sass/elements/icons.scss
++++ b/resources/sass/elements/icons.scss
+@@ -35,7 +35,8 @@ svg {
+ 
+     &.published { @apply bg-green-light }
+     &.draft, &.expired { @apply bg-grey-60 }
+-    &.scheduled, &.hollow { @apply bg-transparent border border-grey-60 }
++    /* Polygon TLP-1650: Replace transparent status icon with orange one for scheduled entries */
++    &.scheduled, &.hollow { @apply bg-orange }
+ }
+ 
+ .icon-status-draft {
