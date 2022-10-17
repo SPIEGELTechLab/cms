@@ -22,6 +22,7 @@ class Echo {
         };
 
         this.echo = new LaravelEcho(config);
+        window.addEventListener('unload', () => this.echo.disconnect());
 
         this.bootedCallbacks.forEach(callback => callback(this));
         this.bootedCallbacks = [];
