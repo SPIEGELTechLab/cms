@@ -1,0 +1,12 @@
+diff --git a/resources/js/components/assets/Editor/Editor.vue b/resources/js/components/assets/Editor/Editor.vue
+index 3feaada57..60e45e762 100644
+--- a/resources/js/components/assets/Editor/Editor.vue
++++ b/resources/js/components/assets/Editor/Editor.vue
+@@ -332,7 +332,6 @@ export default {
+          * When the focal point is selected
+          */
+         selectFocalPoint(point) {
+-            point = (point === '50-50-1') ? null : point;
+             this.$set(this.values, 'focus', point);
+             this.$dirty.add(this.publishContainer);
+         },
