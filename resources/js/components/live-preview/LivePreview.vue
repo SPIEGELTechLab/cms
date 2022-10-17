@@ -146,7 +146,8 @@ export default {
             let options = Object.values(_.mapObject(this.$config.get('livePreview.devices'), (dimensions, device) => {
                 return { value: device, label: __(device) };
             }));
-            options.unshift({ value: null, label: __('Responsive') });
+            // Polygon TLP-1828: Added responsive to the end of device select options
+            options.push({ value: null, label: __('Responsive') });
             return options;
         },
 
@@ -208,6 +209,15 @@ export default {
 
         previewDevice() {
             this.setIframeAttributes(document.getElementById('live-preview-iframe'));
+        },
+
+        // Polygon TLP-1828: Set the default value for device to 'mobile'
+        deviceSelectOptions: {
+            handler() {
+                if (!this.deviceSelectOptions || !Array.isArray(this.deviceSelectOptions) || !this.deviceSelectOptions.length) return;
+                this.previewDevice = this.deviceSelectOptions[0].value;
+            },
+            immediate: true,
         },
 
     },
