@@ -1,0 +1,21 @@
+diff --git a/src/Http/Resources/CP/Entries/Entries.php b/src/Http/Resources/CP/Entries/Entries.php
+index 8813894f0..62c1d8593 100644
+--- a/src/Http/Resources/CP/Entries/Entries.php
++++ b/src/Http/Resources/CP/Entries/Entries.php
+@@ -9,10 +9,15 @@ class Entries extends ResourceCollection
+ {
+     use HasRequestedColumns;
+ 
+-    public $collects = ListedEntry::class;
+     protected $blueprint;
+     protected $columnPreferenceKey;
+ 
++    // Polygon TLP-1649: Listing should show state of workingcopy
++    public function collects()
++    {
++        return app(ListedEntry::class);
++    }
++
+     public function blueprint($blueprint)
+     {
+         $this->blueprint = $blueprint;
