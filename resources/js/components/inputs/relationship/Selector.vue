@@ -273,7 +273,8 @@ export default {
 
         getStatusClass(entry) {
             if (entry.published && entry.private) {
-                return 'bg-transparent border border-gray-600';
+                // Polygon TLP-1650: Replace transparent status icon with orange one for scheduled entries
+                return 'bg-orange';
             } else if (entry.published) {
                 return 'bg-green-600';
             } else {
