@@ -1,0 +1,25 @@
+diff --git a/resources/js/components/fieldtypes/bard/Set.vue b/resources/js/components/fieldtypes/bard/Set.vue
+index 054786dcb..a488d8d90 100644
+--- a/resources/js/components/fieldtypes/bard/Set.vue
++++ b/resources/js/components/fieldtypes/bard/Set.vue
+@@ -78,7 +78,7 @@ export default {
+ 
+     mixins: [ValidatesFieldConditions, ManagesPreviewText],
+ 
+-    inject: ['setConfigs', 'isReadOnly'],
++    inject: ['setConfigs'],
+ 
+     computed: {
+ 
+@@ -141,6 +141,11 @@ export default {
+ 
+         isInvalid() {
+             return Object.keys(this.config).length === 0;
++        },
++
++        isReadOnly() {
++            // Polygon TLP-3154: injected 'isReadOnly' is not reactive
++            return this.options.bard.readOnly;
+         }
+ 
+     },
