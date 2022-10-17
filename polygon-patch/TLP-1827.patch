@@ -1,0 +1,20 @@
+diff --git a/resources/sass/elements/icons.scss b/resources/sass/elements/icons.scss
+index cb44dd467..0d3590a87 100644
+--- a/resources/sass/elements/icons.scss
++++ b/resources/sass/elements/icons.scss
+@@ -26,11 +26,12 @@ svg {
+ .icon-right { margin-left: 10px; }
+ 
+ .icon-status, .little-dot {
+-	border-radius: 7px;
++    /* Polygon TLP-1827: Enlarge status icon */
++	border-radius: calc(2em / 3);
+ 	display: inline-block;
+-	height: 7px;
++	height: calc(2em / 3);
+ 	position: relative;
+-	width: 7px;
++	width: calc(2em / 3);
+     flex-shrink: 0;
+ 
+     &.published { @apply bg-green-light }
