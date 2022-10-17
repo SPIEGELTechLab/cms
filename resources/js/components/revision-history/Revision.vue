@@ -24,8 +24,10 @@
                 <span class="badge" :class="revision.action" v-else v-text="revision.action" />
                 <span class="badge bg-orange" v-if="revision.attributes.current" v-text="__('Current')" />
 
+                <!-- Polygon TLP-1923: Show history within an open stack -->
                 <revision-preview
                     v-if="showDetails"
+                    :index-url="indexUrl"
                     :revision="revision"
                     component="entry-publish-form"
                     :component-props="componentProps"
@@ -57,6 +59,7 @@ export default {
     },
 
     props: {
+        indexUrl: String,
         revision: Object,
         restoreUrl: String,
         reference: String,

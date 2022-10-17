@@ -27,9 +27,11 @@
             >
                 <h6 class="revision-date" v-text="$moment.unix(group.day).format('LL')" />
                 <div class="revision-list">
+                    <!-- Polygon TLP-1923: Show history within an open stack -->
                     <revision
                         v-for="revision in group.revisions"
                         :key="revision.date"
+                        :index-url="indexUrl"
                         :revision="revision"
                         :restore-url="restoreUrl"
                         :reference="reference"
