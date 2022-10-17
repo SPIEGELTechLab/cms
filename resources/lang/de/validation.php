@@ -87,6 +87,8 @@ return [
     'unique_entry_value' => 'Dieser Wert wurde bereits vergeben.',
     'unique_term_value' => 'Dieser Wert wurde bereits vergeben.',
     'unique_user_value' => 'Dieser Wert wurde bereits vergeben.',
+    /* Polygon TLP-1683: TODO - Check if we can solve the part from CMS */
+    'unique_value' => 'Dieser Wert wurde bereits vergeben.',
     'duplicate_field_handle' => 'Feld mit dem Handle :handle kann nicht mehr als einmal verwendet werden.',
     'one_site_without_origin' => 'Mindestens eine Website darf keine Quelle enthalten.',
     'origin_cannot_be_disabled' => 'Kann keine deaktivierte Quelle auswählen.',
