@@ -1,0 +1,46 @@
+diff --git a/src/Http/Resources/CP/Entries/Entries.php b/src/Http/Resources/CP/Entries/Entries.php
+index 62c1d8593..d8b82306f 100644
+--- a/src/Http/Resources/CP/Entries/Entries.php
++++ b/src/Http/Resources/CP/Entries/Entries.php
+@@ -49,9 +49,7 @@ class Entries extends ResourceCollection
+ 
+         return [
+             'data' => $this->collection->each(function ($entry) {
+-                $entry
+-                    ->blueprint($this->blueprint)
+-                    ->columns($this->requestedColumns());
++                $entry->columns($this->requestedColumns());
+             }),
+ 
+             'meta' => [
+diff --git a/src/Http/Resources/CP/Entries/ListedEntry.php b/src/Http/Resources/CP/Entries/ListedEntry.php
+index a63f83e25..2eac4e2fa 100644
+--- a/src/Http/Resources/CP/Entries/ListedEntry.php
++++ b/src/Http/Resources/CP/Entries/ListedEntry.php
+@@ -8,16 +8,8 @@ use Statamic\Facades\User;
+ 
+ class ListedEntry extends JsonResource
+ {
+-    protected $blueprint;
+     protected $columns;
+ 
+-    public function blueprint($blueprint)
+-    {
+-        $this->blueprint = $blueprint;
+-
+-        return $this;
+-    }
+-
+     public function columns($columns)
+     {
+         $this->columns = $columns;
+@@ -60,7 +52,8 @@ class ListedEntry extends JsonResource
+                 $value = $extra[$key] ?? $this->resource->value($key);
+             }
+ 
+-            $value = $this->blueprint
++            // Polygon TLP-1168: https://github.com/statamic/cms/issues/2862
++            $value = $this->resource->blueprint() // blinked
+                 ->field($key)
+                 ->setValue($value)
+                 ->setParent($this->resource)
