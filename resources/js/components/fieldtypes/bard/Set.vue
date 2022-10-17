@@ -170,6 +170,9 @@ export default {
         },
 
         previewUpdated(handle, value) {
+            // Polygon TLP-2579: Collaboration - when adding a new set, this.preview is undefined for all other users
+            if (!this.previews) return;
+
             let previews = clone(this.previews);
             previews[handle] = value;
             this.extension.options.bard.updateSetPreviews(this.node.attrs.id, previews);
