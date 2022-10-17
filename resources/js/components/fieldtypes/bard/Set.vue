@@ -152,6 +152,11 @@ export default {
             return Object.keys(this.config).length === 0;
         },
 
+        isReadOnly() {
+            // Polygon TLP-3154: injected 'isReadOnly' is not reactive
+            return this.extension.options.bard.readOnly;
+        }
+
     },
 
     methods: {
