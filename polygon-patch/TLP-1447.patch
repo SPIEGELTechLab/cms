@@ -1,0 +1,55 @@
+diff --git a/resources/js/components/inputs/relationship/InlinePublishForm.vue b/resources/js/components/inputs/relationship/InlinePublishForm.vue
+index 7b63f4c2e..bc8462742 100644
+--- a/resources/js/components/inputs/relationship/InlinePublishForm.vue
++++ b/resources/js/components/inputs/relationship/InlinePublishForm.vue
+@@ -56,8 +56,20 @@ export default {
+ 
+     computed: {
+ 
++        isBase() {
++            return (
++                this.$store.state.hasOwnProperty('publish') &&
++                this.$store.state.publish.hasOwnProperty('base') &&
++                typeof this.item !== 'undefined' &&
++                this.item.hasOwnProperty('id') &&
++                this.$store.state.publish['base'].values.id === this.item.id
++            );
++        },
++
+         publishContainer() {
+-            return `relate-fieldtype-inline-${this._uid}`;
++            return this.isBase
++                ? 'base'
++                : `relate-fieldtype-inline-${this._uid}`;
+         }
+ 
+     },
+diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
+index 52c17d6c5..4863ae061 100644
+--- a/resources/js/components/publish/Container.vue
++++ b/resources/js/components/publish/Container.vue
+@@ -50,6 +50,7 @@ export default {
+     data() {
+         return {
+             components: [], // extra components to be injected
++            managingVuexModule: true,
+         }
+     },
+ 
+@@ -87,6 +88,7 @@ export default {
+             // If the store already exists, just reinitialize the state.
+             if (this.$store.state.hasOwnProperty('publish')
+             && this.$store.state.publish.hasOwnProperty(this.name)) {
++                this.managingVuexModule = false;
+                 this.$store.commit(`publish/${this.name}/initialize`, initial);
+                 return;
+             }
+@@ -210,6 +212,8 @@ export default {
+         },
+ 
+         removeVuexModule() {
++            if (!this.managingVuexModule) return;
++            
+             this.$store.unregisterModule(['publish', this.name]);
+         },
+ 
