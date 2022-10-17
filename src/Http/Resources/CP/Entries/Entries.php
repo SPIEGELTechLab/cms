@@ -10,9 +10,14 @@ class Entries extends ResourceCollection
 {
     use HasRequestedColumns;
 
-    public $collects = ListedEntry::class;
     protected $blueprint;
     protected $columnPreferenceKey;
+
+    // Polygon TLP-1649: Listing should show state of workingcopy
+    public function collects()
+    {
+        return app(ListedEntry::class);
+    }
 
     public function blueprint($blueprint)
     {
