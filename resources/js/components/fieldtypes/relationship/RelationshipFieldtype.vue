@@ -107,6 +107,11 @@ export default {
         },
 
         canReorder() {
+            // Only important for SPIEGEL polygon, shouldn't come into the statamic cms (TeaserGridFieldtype)
+            if (typeof this.config.sortable === 'boolean') {
+                return this.config.sortable ? this.maxItems > 1 : this.config.sortable;
+            }
+
             return this.maxItems > 1;
         },
 
