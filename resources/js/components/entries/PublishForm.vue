@@ -535,7 +535,8 @@ export default {
 
             this.$axios[this.method](this.actions.save, payload).then(response => {
                 this.saving = false;
-                this.title = response.data.data.title;
+                // Polygon TLP-3160: In the response, only the published title is returned, but we want to display the saved one
+                this.title = payload.title ? payload.title : response.data.data.title;
                 this.isWorkingCopy = true;
                 if (this.isBase) {
                     document.title = this.title + ' ‹ ' + this.breadcrumbs[1].text + ' ‹ ' + this.breadcrumbs[0].text + ' ‹ Statamic';
