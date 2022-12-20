@@ -186,6 +186,10 @@ export default {
             return this.linkTypes.filter((type) => {
                 if (type.type === 'asset' && ! this.config.container) {
                     return false;
+                // Polygon TLP-3250: Link entries only if containers are configured
+                // Normally you can link all collections if no explicit container is specified
+                } else if (type.type === 'entry' && ! this.config.container) {
+                    return false;
                 }
                 return true;
             });
