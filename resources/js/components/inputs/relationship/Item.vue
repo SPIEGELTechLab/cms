@@ -8,14 +8,16 @@
         <div class="item-inner">
             <div v-if="statusIcon" class="little-dot mr-1" :class="item.status" />
 
+           <!-- Polygon TLP-3276: It must be possible to identify the title element easily -->
             <div
                 v-if="item.invalid"
+                data-relationship-el="title"
                 v-tooltip.top="__('An item with this ID could not be found')"
                 v-text="item.title" />
 
-            <a v-if="!item.invalid && editable" @click="edit" v-text="item.title" />
+            <a v-if="!item.invalid && editable" data-relationship-el="title" @click="edit" v-text="item.title" />
 
-            <div v-if="!item.invalid && !editable" v-text="item.title" />
+            <div v-if="!item.invalid && !editable" data-relationship-el="title" v-text="item.title" />
 
             <inline-edit-form
                 v-if="isEditing"
