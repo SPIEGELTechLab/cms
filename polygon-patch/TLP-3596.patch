@@ -1,0 +1,49 @@
+diff --git a/src/Http/Controllers/CP/Auth/LoginController.php b/src/Http/Controllers/CP/Auth/LoginController.php
+index 5107d3ae8..eb6929bc4 100644
+--- a/src/Http/Controllers/CP/Auth/LoginController.php
++++ b/src/Http/Controllers/CP/Auth/LoginController.php
+@@ -136,7 +136,12 @@ class LoginController extends CpController
+ 
+     protected function getReferrer()
+     {
+-        $referrer = url()->previous();
++        // Uses only the previous url from the actual session. No external Page and does work, if
++        // you got redirected internally because you have not been logged in into Statamic.
++        $referrer = session()->previousUrl();
++
++        // Used in the Statamic core. Checks for the `referer` header, which we are not interested in.
++        // $referrer = session()->previousUrl();
+ 
+         return $referrer === cp_route('unauthorized') ? cp_route('index') : $referrer;
+     }
+diff --git a/src/Http/Controllers/OAuthController.php b/src/Http/Controllers/OAuthController.php
+index 0ebfc66a2..7e2448fa0 100644
+--- a/src/Http/Controllers/OAuthController.php
++++ b/src/Http/Controllers/OAuthController.php
+@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
+ use Laravel\Socialite\Facades\Socialite;
+ use Laravel\Socialite\Two\InvalidStateException;
+ use Statamic\Facades\OAuth;
++use Statamic\Support\Str;
+ 
+ class OAuthController
+ {
+@@ -33,7 +34,7 @@ class OAuthController
+ 
+     protected function successRedirectUrl()
+     {
+-        $default = '/';
++        $default = cp_route('index');
+ 
+         $previous = session('_previous.url');
+ 
+@@ -43,6 +44,8 @@ class OAuthController
+ 
+         parse_str($query, $query);
+ 
+-        return array_get($query, 'redirect', $default);
++        $referer = array_get($query, 'redirect', $default);
++
++        return Str::contains($referer, '/'.config('statamic.cp.route')) ? $referer : $default;
+     }
+ }
