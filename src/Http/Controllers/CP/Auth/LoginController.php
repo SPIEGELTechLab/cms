@@ -136,7 +136,12 @@ class LoginController extends CpController
 
     protected function getReferrer()
     {
-        $referrer = url()->previous();
+        // Uses only the previous url from the actual session. No external Page and does work, if
+        // you got redirected internally because you have not been logged in into Statamic.
+        $referrer = session()->previousUrl();
+
+        // Used in the Statamic core. Checks for the `referer` header, which we are not interested in.
+        // $referrer = session()->previousUrl();
 
         return $referrer === cp_route('unauthorized') ? cp_route('index') : $referrer;
     }
