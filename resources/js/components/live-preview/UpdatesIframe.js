@@ -21,7 +21,10 @@ const postMessageToIframe = (container, url, payload) => {
 export default {
     data() {
         return {
+<<<<<<< HEAD
             previousUrl: null,
+=======
+>>>>>>> 548f617ef (Added patch for TLP-3388)
             scrollX: 0,
             scrollY: 0
         }
