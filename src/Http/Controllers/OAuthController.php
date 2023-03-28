@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Laravel\Socialite\Facades\Socialite;
 use Laravel\Socialite\Two\InvalidStateException;
 use Statamic\Facades\OAuth;
+use Statamic\Support\Str;
 
 class OAuthController
 {
@@ -33,7 +34,7 @@ class OAuthController
 
     protected function successRedirectUrl()
     {
-        $default = '/';
+        $default = cp_route('index');
 
         $previous = session('_previous.url');
 
@@ -43,6 +44,8 @@ class OAuthController
 
         parse_str($query, $query);
 
-        return array_get($query, 'redirect', $default);
+        $referer = array_get($query, 'redirect', $default);
+
+        return Str::contains($referer, '/'.config('statamic.cp.route')) ? $referer : $default;
     }
 }
