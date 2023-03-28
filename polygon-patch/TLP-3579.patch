@@ -1,0 +1,16 @@
+diff --git a/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue b/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
+index cc69fc3ca..88089233b 100644
+--- a/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
++++ b/resources/js/components/fieldtypes/relationship/RelationshipFieldtype.vue
+@@ -107,6 +107,11 @@ export default {
+         },
+ 
+         canReorder() {
++            // Only important for SPIEGEL polygon, shouldn't come into the statamic cms (TeaserGridFieldtype)
++            if (typeof this.config.can_reorder === 'boolean') {
++                return this.config.can_reorder ? this.maxItems > 1 : this.config.can_reorder;
++            }
++
+             return this.maxItems > 1;
+         },
+ 
