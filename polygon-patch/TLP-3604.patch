@@ -1,7 +1,7 @@
-diff --git a/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php b/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
+diff --git a/src/Http/Controllers/OAuthController.php b/src/Http/Controllers/OAuthController.php
 index 7e2448fa0b..86a399dde4 100644
---- a/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
-+++ b/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
+--- a/src/Http/Controllers/OAuthController.php
++++ b/src/Http/Controllers/OAuthController.php
 @@ -3,6 +3,7 @@
  namespace Statamic\Http\Controllers;
  
