@@ -1,0 +1,49 @@
+diff --git a/src/Http/Controllers/CP/Auth/LoginController.php b/src/Http/Controllers/CP/Auth/LoginController.php
+index eb6929bc43..502633a4c7 100644
+--- a/src/Http/Controllers/CP/Auth/LoginController.php
++++ b/src/Http/Controllers/CP/Auth/LoginController.php
+@@ -140,6 +140,22 @@ class LoginController extends CpController
+         // you got redirected internally because you have not been logged in into Statamic.
+         $referrer = session()->previousUrl();
+ 
++        // It may happen that the referer link and hereby the redirect link is the logout route.
++        // If it is, we'll set the referer to null, avoid being logged out again.
++        $referrerLink = $this->getBaseUrl($referrer);
++        $logoutLink = $this->getBaseUrl(cp_route('logout'));
++        $loginLink = $this->getBaseUrl(cp_route('login'));
++
++        // Set referrer to null if equals to logout route.
++        if ($referrerLink && $logoutLink && $referrerLink === $logoutLink) {
++            $referrer = null;
++        }
++
++        // Set referrer to null if equals to login route.
++        if ($referrerLink && $loginLink && $referrerLink === $loginLink) {
++            $referrer = null;
++        }
++
+         // Used in the Statamic core. Checks for the `referer` header, which we are not interested in.
+         // $referrer = session()->previousUrl();
+ 
+@@ -151,6 +167,21 @@ class LoginController extends CpController
+         return 'email';
+     }
+ 
++    private function getBaseUrl(?string $url): ?string
++    {
++        if (is_null($url)) {
++            return null;
++        }
++
++        // Checks for `https://www.`, whereby `s` and `www.` are optional.
++        $pattern = "/(https?:\/\/)(www\.)?(.*)/";
++
++        preg_match($pattern, $url, $matches);
++
++        // The base url is in the 3 capture group.
++        return $matches[3] ?? null;
++    }
++
+     private function hasError()
+     {
+         return function ($field) {
