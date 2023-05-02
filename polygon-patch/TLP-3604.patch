@@ -1,0 +1,36 @@
+diff --git a/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php b/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
+index 7e2448fa0b..86a399dde4 100644
+--- a/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
++++ b/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/OAuthController.php
+@@ -3,6 +3,7 @@
+ namespace Statamic\Http\Controllers;
+ 
+ use Illuminate\Support\Facades\Auth;
++use Illuminate\Support\Facades\Log;
+ use Laravel\Socialite\Facades\Socialite;
+ use Laravel\Socialite\Two\InvalidStateException;
+ use Statamic\Facades\OAuth;
+@@ -46,6 +47,23 @@ class OAuthController
+ 
+         $referer = array_get($query, 'redirect', $default);
+ 
++        // PATCH START
++        // we will ignore the referrer link, in case the base url is a different one.
++        $baseUrl = url('/'); // Return the base url, like https://spiegel.de
++
++        // The referer is always https, even locally, as we do force the https protocol via service provider.
++        if (Str::of($referer)->startsWith('http://')) {
++            $referer = Str::of($referer)->replace('http://', 'https://')->toString();
++        }
++
++        if (! Str::of($referer)->startsWith($baseUrl)) {
++            $username = auth()->user()?->name ?? '';
++            Log::alert("Something fishy happened logging in user `{$username}`. The referrer link does not have the same base url as the page. Base url: {$baseUrl} and the referrer link {$referer}.");
++
++            $referer = null;
++        }
++        // PATCH END
++
+         return Str::contains($referer, '/'.config('statamic.cp.route')) ? $referer : $default;
+     }
+ }
