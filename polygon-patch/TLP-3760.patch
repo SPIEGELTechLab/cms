@@ -1,0 +1,17 @@
+diff --git a/src/Http/Controllers/CP/SearchController.php b/src/Http/Controllers/CP/SearchController.php
+index 0b64485561..53d0ec9246 100644
+--- a/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/CP/SearchController.php
++++ b/client-data/statamic/polygon/addons/statamic/cms/src/Http/Controllers/CP/SearchController.php
+@@ -25,11 +25,6 @@ class SearchController extends CpController
+                     'taxonomy', 'is_term',
+                     'container', 'is_asset',
+                 ])->withShallowNesting();
++            })
++            // We do return values, so we get a fresh collection with a zero based index.
++            // If an array in JavaScript does not start with zero, it will be returned as object.
++            // In that case, the global search does not work correctly. By accident, this issue seems
++            // Fixes in the Statamic 4.0 version. By updating, this patch can be removed.
++            ->values();
+-            });
+     }
+ }
