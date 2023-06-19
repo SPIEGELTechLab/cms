@@ -269,6 +269,14 @@ export default {
 
             this.$preferences.set(this.preferencesKey, this.preferencesPayload)
                 .then(response => {
+                    // POLYGON POSTHOG TRACKING: exists in a patch and should not come in the main statamic cms
+                    if (this.$events && typeof this.$events.$emit === 'function') {
+                        this.$events.$emit('polygon-trigger-posthog-event-tracking', {
+                            event: 'Filter Save Preference',
+                            filter_key: this.preferencesKey ?? '',
+                        });
+                    }
+
                     this.$refs.savePopover.close();
                     this.$emit('saved', this.savingPresetHandle);
                     this.$toast.success(this.isUpdatingPreset ? __('Filter preset updated') : __('Filter preset saved'));
