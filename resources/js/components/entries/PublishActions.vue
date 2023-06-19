@@ -196,6 +196,14 @@ export default {
                 this.$toast.success(__('Revision created'));
                 this.revisionMessage = null;
                 this.$emit('saved', { isWorkingCopy: true, response });
+
+                // POLYGON POSTHOG TRACKING: exists in a patch and should not come in the main statamic cms
+                if (this.$events && typeof this.$events.$emit === 'function') {
+                    this.$events.$emit('polygon-trigger-posthog-event-tracking', {
+                        event: 'Create Revision',
+                        entry_id: response.data?.data?.id ?? '',
+                    });
+                }
             }).catch(e => this.handleAxiosError(e));
         },
 
