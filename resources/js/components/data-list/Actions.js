@@ -43,6 +43,14 @@ export default {
                 values
             };
 
+            // POLYGON POSTHOG TRACKING: exists in a patch and should not come in the main statamic cms
+            if (action.tracking_event_handle && this.$events && typeof this.$events.$emit === 'function') {
+                this.$events.$emit('polygon-trigger-posthog-event-tracking', {
+                    event: action.tracking_event_handle,
+                    entry_id: this.selections,
+                });
+            }
+
             this.$axios.post(this.url, payload, { responseType: 'blob' }).then(response => {
                 response.headers['content-disposition']
                     ? this.handleFileDownload(response) // Pass blob response for downloads
