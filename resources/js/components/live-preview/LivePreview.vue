@@ -264,7 +264,12 @@ export default {
         setIframeAttributes(iframe) {
             iframe.setAttribute('frameborder', '0');
             iframe.setAttribute('class', this.previewDevice ? 'device' : 'responsive');
-            if (this.previewDevice) iframe.setAttribute('style', `width: ${this.previewDeviceWidth}; height: ${this.previewDeviceHeight}`);
+            if (this.previewDevice) {
+                iframe.setAttribute('style', `width: ${this.previewDeviceWidth}; height: ${this.previewDeviceHeight}`);
+            } else {
+                // TLP-3679: core update fix live preview responsive mode
+                iframe.removeAttribute('style')
+            }
         },
 
         close() {
