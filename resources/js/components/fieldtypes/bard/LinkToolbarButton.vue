@@ -49,7 +49,8 @@ export default {
             if (this.showingToolbar) {
                 this.linkAttrs = this.editor.getAttributes('link');
             } else {
-                this.editor.view.dom.focus();
+                // TLP-3679: core update fix scroll into view after change
+                this.editor.view.focus(null, { scrollIntoView: false });
             }
         },
 
@@ -57,7 +58,8 @@ export default {
             this.editor.commands.setLink(attributes);
             this.linkAttrs = null;
             this.showingToolbar = false;
-            this.editor.view.dom.focus();
+            // TLP-3679: core update fix scroll into view after change
+            this.editor.view.focus(null, { scrollIntoView: false });
         }
 
     }
