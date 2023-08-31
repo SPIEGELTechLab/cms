@@ -242,7 +242,8 @@ class URL
             return config('app.url');
         }
 
-        $rootUrl = app('request')->root();
+        // https://github.com/statamic/cms/pull/8659
+        $rootUrl = url()->to('/');
 
         return Str::ensureRight($rootUrl, '/');
     }
