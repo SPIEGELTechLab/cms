@@ -8,7 +8,10 @@ export default defineConfig(({ mode }) => {
     const env = loadEnv(mode, process.cwd(), '');
 
     return {
-        base: '/vendor/statamic/cp/build',
+        // Patch: TLP-4046-04
+        // Change the base so it fits our setup
+        base: '/services/statamic/static/local/vendor/statamic/cp/build',
+        // base: '/vendor/statamic/cp/build', original from Statamic
         plugins: [
             laravel({
                 valetTls: env.VALET_TLS,

@@ -1,0 +1,16 @@
+diff --git a/vite.config.js b/vite.config.js
+index 9178733d6..205ca4e2c 100644
+--- a/vite.config.js
++++ b/vite.config.js
+@@ -8,7 +8,10 @@ export default defineConfig(({ mode }) => {
+     const env = loadEnv(mode, process.cwd(), '');
+ 
+     return {
+-        base: '/vendor/statamic/cp/build',
++        // Patch: TLP-4046-04
++        // Change the base so it fits our setup
++        base: '/services/statamic/static/local/vendor/statamic/cp/build',
++        // base: '/vendor/statamic/cp/build', original from Statamic
+         plugins: [
+             laravel({
+                 valetTls: env.VALET_TLS,
