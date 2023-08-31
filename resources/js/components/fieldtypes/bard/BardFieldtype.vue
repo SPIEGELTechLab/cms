@@ -345,9 +345,12 @@ export default {
 
         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
 
-        document.querySelector(`label[for="${this.fieldId}"]`).addEventListener('click', () => {
-            this.editor.commands.focus();
-        });
+        // nested bard-fields are otherwise not found directly
+        setTimeout(() => {
+            document.querySelector(`label[for="${this.fieldId}"]`).addEventListener('click', () => {
+                this.editor.commands.focus();
+            });
+        }, 0);
     },
 
     beforeDestroy() {

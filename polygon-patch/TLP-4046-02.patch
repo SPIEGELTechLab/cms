@@ -1,0 +1,20 @@
+diff --git a/resources/js/components/fieldtypes/bard/BardFieldtype.vue b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+index bc5a798c0..9b7bd52b4 100644
+--- a/resources/js/components/fieldtypes/bard/BardFieldtype.vue
++++ b/resources/js/components/fieldtypes/bard/BardFieldtype.vue
+@@ -345,9 +345,12 @@ export default {
+ 
+         this.$store.commit(`publish/${this.storeName}/setFieldSubmitsJson`, this.fieldPathPrefix || this.handle);
+ 
+-        document.querySelector(`label[for="${this.fieldId}"]`).addEventListener('click', () => {
+-            this.editor.commands.focus();
+-        });
++        // nested bard-fields are otherwise not found directly
++        setTimeout(() => {
++            document.querySelector(`label[for="${this.fieldId}"]`).addEventListener('click', () => {
++                this.editor.commands.focus();
++            });
++        }, 0);
+     },
+ 
+     beforeDestroy() {
