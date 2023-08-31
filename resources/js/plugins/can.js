@@ -1,5 +1,5 @@
 const can = function(permission) {
-    const permissions = JSON.parse(atob(Statamic.$config.get('permissions')));
+    const permissions = Statamic.$config.get('permissions') ? JSON.parse(atob(Statamic.$config.get('permissions'))) : [];
 
     return permissions.includes('super') || permissions.includes(permission);
 };
