@@ -151,6 +151,11 @@ export default {
 
     },
 
+    beforeDestroy() {
+        // Polygon TLP-4446: the key-binding in the bard-fieldtype is not cleared correctly as soon as you click into text
+        this.unbindKeys();
+    },
+
     methods: {
 
         addSet(handle) {

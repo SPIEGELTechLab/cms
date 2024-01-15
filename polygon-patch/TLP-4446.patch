@@ -1,0 +1,16 @@
+diff --git a/resources/js/components/fieldtypes/replicator/SetPicker.vue b/resources/js/components/fieldtypes/replicator/SetPicker.vue
+index 6f9725a3d..c330e7347 100644
+--- a/resources/js/components/fieldtypes/replicator/SetPicker.vue
++++ b/resources/js/components/fieldtypes/replicator/SetPicker.vue
+@@ -151,6 +151,11 @@ export default {
+ 
+     },
+ 
++    beforeDestroy() {
++        // Polygon TLP-4446: the key-binding in the bard-fieldtype is not cleared correctly as soon as you click into text
++        this.unbindKeys();
++    },
++
+     methods: {
+ 
+         addSet(handle) {
