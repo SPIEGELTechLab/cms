@@ -36,6 +36,7 @@
         listing-url="{{ cp_route('collections.show', $collection) }}"
         :preview-targets="{{ json_encode($previewTargets) }}"
         :autosave-interval="{{ json_encode($autosaveInterval) }}"
+        :polygon-read-only-mode="{{ $str::bool($polygonReadOnlyMode) }}"
     ></entry-publish-form>
 
 @endsection

@@ -45,6 +45,11 @@ export default {
             type: Boolean,
             default: true,
         },
+        // TLP-4395: Polygon Feature -> Entries require a property to recognise the ReadOnly state
+        polygonReadOnlyMode: {
+            type: Boolean,
+            default: false
+        },
     },
 
     data() {
@@ -83,6 +88,7 @@ export default {
                 localizedFields: _.clone(this.localizedFields),
                 site: this.site,
                 isRoot: this.isRoot,
+                polygonReadOnlyMode: this.polygonReadOnlyMode,
             };
 
             // If the store already exists, just reinitialize the state.
@@ -110,6 +116,7 @@ export default {
                     isRoot: initial.isRoot,
                     preloadedAssets: [],
                     autosaveInterval: null,
+                    polygonReadOnlyMode: initial.polygonReadOnlyMode,
                 },
                 mutations: {
                     setFieldValue(state, payload) {
@@ -272,7 +279,8 @@ export default {
         },
 
         dirty() {
-            if (this.trackDirtyState) this.$dirty.add(this.name);
+            // TLP-4395: Polygon Feature -> read only entries cannot be marked as dirty
+            if (this.trackDirtyState && !this.polygonReadOnlyMode) this.$dirty.add(this.name);
         }
 
     },

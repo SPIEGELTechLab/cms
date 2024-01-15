@@ -1,0 +1,131 @@
+diff --git a/resources/js/components/entries/PublishForm.vue b/resources/js/components/entries/PublishForm.vue
+index 794f3943a..981aed3e2 100644
+--- a/resources/js/components/entries/PublishForm.vue
++++ b/resources/js/components/entries/PublishForm.vue
+@@ -60,6 +60,7 @@
+             :localized-fields="localizedFields"
+             :is-root="isRoot"
+             :track-dirty-state="trackDirtyState"
++            :polygon-read-only-mode="polygonReadOnlyMode"
+             @updated="values = $event"
+         >
+             <live-preview
+@@ -343,6 +344,7 @@ export default {
+         collectionHasRoutes: Boolean,
+         previewTargets: Array,
+         autosaveInterval: Number,
++        polygonReadOnlyMode: Boolean,
+     },
+ 
+     data() {
+diff --git a/resources/js/components/inputs/relationship/Item.vue b/resources/js/components/inputs/relationship/Item.vue
+index d6d84eb1d..faf139640 100644
+--- a/resources/js/components/inputs/relationship/Item.vue
++++ b/resources/js/components/inputs/relationship/Item.vue
+@@ -77,6 +77,14 @@ export default {
+         edit() {
+             if (! this.editable) return;
+             if (this.item.invalid) return;
++
++            // TLP-4395: Polygon Workaround to open articles in a new tab
++            if (this.item.collection?.handle === 'article') {
++                window.open(this.item.edit_url, '_blank');
++
++                return;
++            }
++
+             this.isEditing = true;
+         },
+ 
+diff --git a/resources/js/components/publish/Container.vue b/resources/js/components/publish/Container.vue
+index edc3ee09a..1e8dea5f1 100644
+--- a/resources/js/components/publish/Container.vue
++++ b/resources/js/components/publish/Container.vue
+@@ -45,6 +45,11 @@ export default {
+             type: Boolean,
+             default: true,
+         },
++        // TLP-4395: Polygon Feature -> Entries require a property to recognise the ReadOnly state
++        polygonReadOnlyMode: {
++            type: Boolean,
++            default: false
++        },
+     },
+ 
+     data() {
+@@ -83,6 +88,7 @@ export default {
+                 localizedFields: _.clone(this.localizedFields),
+                 site: this.site,
+                 isRoot: this.isRoot,
++                polygonReadOnlyMode: this.polygonReadOnlyMode,
+             };
+ 
+             // If the store already exists, just reinitialize the state.
+@@ -110,6 +116,7 @@ export default {
+                     isRoot: initial.isRoot,
+                     preloadedAssets: [],
+                     autosaveInterval: null,
++                    polygonReadOnlyMode: initial.polygonReadOnlyMode,
+                 },
+                 mutations: {
+                     setFieldValue(state, payload) {
+@@ -272,7 +279,8 @@ export default {
+         },
+ 
+         dirty() {
+-            if (this.trackDirtyState) this.$dirty.add(this.name);
++            // TLP-4395: Polygon Feature -> read only entries cannot be marked as dirty
++            if (this.trackDirtyState && !this.polygonReadOnlyMode) this.$dirty.add(this.name);
+         }
+ 
+     },
+diff --git a/resources/views/entries/edit.blade.php b/resources/views/entries/edit.blade.php
+index 54e79ca04..2e11a850f 100644
+--- a/resources/views/entries/edit.blade.php
++++ b/resources/views/entries/edit.blade.php
+@@ -36,6 +36,7 @@
+         listing-url="{{ cp_route('collections.show', $collection) }}"
+         :preview-targets="{{ json_encode($previewTargets) }}"
+         :autosave-interval="{{ json_encode($autosaveInterval) }}"
++        :polygon-read-only-mode="{{ $str::bool($polygonReadOnlyMode) }}"
+     ></entry-publish-form>
+ 
+ @endsection
+diff --git a/src/Entries/Entry.php b/src/Entries/Entry.php
+index 8e95457db..3a7125d0e 100644
+--- a/src/Entries/Entry.php
++++ b/src/Entries/Entry.php
+@@ -36,6 +36,7 @@ use Statamic\Facades\Blink;
+ use Statamic\Facades\Collection;
+ use Statamic\Facades\Site;
+ use Statamic\Facades\Stache;
++use Statamic\Facades\User;
+ use Statamic\Fields\Value;
+ use Statamic\GraphQL\ResolvesValues;
+ use Statamic\Revisions\Revisable;
+@@ -222,6 +223,12 @@ class Entry implements Contract, Augmentable, Responsable, Localization, Protect
+ 
+     public function editUrl()
+     {
++        // TLP-4395: Polygon Workaround to open articles in edit-mode or read-only-mode
++        $isArticleEditMode = User::current()->get('article_edit_mode_enabled') ?? false;
++        if ($this->collection()->handle() === 'article' && !$isArticleEditMode) {
++            return $this->cpUrl('collections.entries.edit') . '/read-only' ;
++        }
++
+         return $this->cpUrl('collections.entries.edit');
+     }
+ 
+diff --git a/src/Http/Controllers/CP/Collections/EntriesController.php b/src/Http/Controllers/CP/Collections/EntriesController.php
+index 96f1101ba..ed71ea369 100644
+--- a/src/Http/Controllers/CP/Collections/EntriesController.php
++++ b/src/Http/Controllers/CP/Collections/EntriesController.php
+@@ -150,6 +150,8 @@ class EntriesController extends CpController
+             'canManagePublishState' => User::current()->can('publish', $entry),
+             'previewTargets' => $collection->previewTargets()->all(),
+             'autosaveInterval' => $collection->autosaveInterval(),
++            // TLP-4395: Polygon Feature -> Entries require a property to recognise the ReadOnly state
++            'polygonReadOnlyMode' => false,
+         ];
+ 
+         if ($request->wantsJson()) {

@@ -77,6 +77,14 @@ export default {
         edit() {
             if (! this.editable) return;
             if (this.item.invalid) return;
+
+            // TLP-4395: Polygon Workaround to open articles in a new tab
+            if (this.item.collection?.handle === 'article') {
+                window.open(this.item.edit_url, '_blank');
+
+                return;
+            }
+
             this.isEditing = true;
         },
 

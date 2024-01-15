@@ -36,6 +36,7 @@ use Statamic\Facades\Blink;
 use Statamic\Facades\Collection;
 use Statamic\Facades\Site;
 use Statamic\Facades\Stache;
+use Statamic\Facades\User;
 use Statamic\Fields\Value;
 use Statamic\GraphQL\ResolvesValues;
 use Statamic\Revisions\Revisable;
@@ -222,6 +223,12 @@ class Entry implements Contract, Augmentable, Responsable, Localization, Protect
 
     public function editUrl()
     {
+        // TLP-4395: Polygon Workaround to open articles in edit-mode or read-only-mode
+        $isArticleEditMode = User::current()->get('article_edit_mode_enabled') ?? false;
+        if ($this->collection()->handle() === 'article' && !$isArticleEditMode) {
+            return $this->cpUrl('collections.entries.edit') . '/read-only' ;
+        }
+
         return $this->cpUrl('collections.entries.edit');
     }
 

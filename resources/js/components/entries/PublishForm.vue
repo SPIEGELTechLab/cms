@@ -60,6 +60,7 @@
             :localized-fields="localizedFields"
             :is-root="isRoot"
             :track-dirty-state="trackDirtyState"
+            :polygon-read-only-mode="polygonReadOnlyMode"
             @updated="values = $event"
         >
             <live-preview
@@ -343,6 +344,7 @@ export default {
         collectionHasRoutes: Boolean,
         previewTargets: Array,
         autosaveInterval: Number,
+        polygonReadOnlyMode: Boolean,
     },
 
     data() {

@@ -150,6 +150,8 @@ class EntriesController extends CpController
             'canManagePublishState' => User::current()->can('publish', $entry),
             'previewTargets' => $collection->previewTargets()->all(),
             'autosaveInterval' => $collection->autosaveInterval(),
+            // TLP-4395: Polygon Feature -> Entries require a property to recognise the ReadOnly state
+            'polygonReadOnlyMode' => false,
         ];
 
         if ($request->wantsJson()) {
